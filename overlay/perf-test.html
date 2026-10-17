@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>NWU Avatare – Performance-Test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: transparent; }
+  body.vorschau { background: #0a0a0c radial-gradient(ellipse at 30% 40%, #1b1a22 0%, #0a0a0c 70%); }
+  canvas { display: block; }
+  #hud {
+    position: fixed; left: 12px; top: 12px; z-index: 2;
+    font: 13px/1.45 Consolas, 'Courier New', monospace; color: #e8e8e8;
+    background: rgba(13,13,16,0.82); border: 1px solid rgba(201,168,76,0.45);
+    padding: 8px 12px; border-radius: 6px; min-width: 250px; pointer-events: none;
+  }
+  #hud b { color: #e8c96d; font-weight: 600; }
+  #hud .klein { color: #8f8a80; font-size: 11px; margin-top: 6px; }
+  #hud .messung { color: #e8c96d; margin-top: 6px; white-space: pre; }
+  #hud.aus { display: none; }
+</style>
+</head>
+<body>
+<div id="hud"></div>
+<script src="lib/pixi.min.js"></script>
+<script src="config.js"></script>
+<script src="perf-test.js"></script>
+</body>
+</html>
