@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Das Ritual — NightWither Unity</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://*.workers.dev; base-uri 'none'; form-action 'none'">
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preload" href="fonts/rajdhani-700.woff" as="font" type="font/woff" crossorigin>
+<link rel="stylesheet" href="css/ritual.css">
+</head>
+<body>
+<div class="nebelschicht" aria-hidden="true"></div>
+
+<main class="buehne">
+
+  <!-- 1. Start -->
+  <section class="schritt" id="s-start" aria-labelledby="t-start">
+    <img class="krone" src="crown.webp" alt="" width="96" height="96">
+    <h1 class="titel" id="t-start">Das Ritual</h1>
+    <p class="unter">NightWither Unity</p>
+    <div class="karte">
+      <p>Morrígan wird dir Fragen stellen. Antworte ehrlich, nicht klug.
+        Am Ende weist sie dich einem der sechs Häuser zu.</p>
+      <p class="warnung">Die Wahl des Hauses ist <strong>endgültig</strong>.</p>
+    </div>
+    <button class="knopf" id="b-start" type="button">Ritual beginnen</button>
+  </section>
+
+  <!-- 2. Fragen -->
+  <section class="schritt" id="s-quiz" hidden aria-labelledby="t-frage">
+    <div class="fortschritt" aria-hidden="true"><span id="balken"></span></div>
+    <p class="zaehler" id="zaehler"></p>
+    <h2 class="frage" id="t-frage" tabindex="-1"></h2>
+    <div class="antworten" id="antworten"></div>
+  </section>
+
+  <!-- 3. Verkündung -->
+  <section class="schritt" id="s-haus" hidden aria-labelledby="t-haus">
+    <p class="unter">Morrígan hat entschieden</p>
+    <div class="wappen" id="wappen"></div>
+    <h2 class="titel hausname" id="t-haus" tabindex="-1"></h2>
+    <p class="wesen" id="wesen"></p>
+    <blockquote class="spruch"><p id="spruch"></p><cite>Morrígan</cite></blockquote>
+    <button class="knopf" id="b-zur-figur" type="button">Wähle deine Gestalt</button>
+  </section>
+
+  <!-- 4. Figur -->
+  <section class="schritt" id="s-figur" hidden aria-labelledby="t-figur">
+    <h2 class="titel klein" id="t-figur" tabindex="-1">Wähle deine Gestalt</h2>
+    <p class="unter" id="figur-haus"></p>
+    <div class="figuren" id="figuren" role="radiogroup" aria-labelledby="t-figur"></div>
+    <p class="hinweis">Platzhalter. Die gezeichneten Figuren folgen.</p>
+    <button class="knopf" id="b-zur-bindung" type="button" disabled>Diese Gestalt wählen</button>
+  </section>
+
+  <!-- 5. Bindung: Name eingeben, Code bekommen -->
+  <section class="schritt" id="s-bindung" hidden aria-labelledby="t-bindung">
+    <h2 class="titel klein" id="t-bindung" tabindex="-1">Die Bindung</h2>
+    <p class="unter">Verbinde deine Gestalt mit deinem Namen im Chat</p>
+    <div class="karte">
+      <label class="feld">
+        <span>Plattform</span>
+        <select id="plattform"></select>
+      </label>
+      <label class="feld">
+        <span>Dein Name im Chat</span>
+        <input id="name" type="text" autocomplete="username" autocapitalize="off" spellcheck="false" maxlength="40" required>
+      </label>
+      <p class="fehler" id="name-fehler" role="alert"></p>
+    </div>
+    <p class="warnung">Nach der Bestätigung sind Haus und Gestalt fest.</p>
+    <button class="knopf" id="b-code" type="button">Code anfordern</button>
+  </section>
+
+  <!-- 6. Code im Chat schreiben -->
+  <section class="schritt" id="s-code" hidden aria-labelledby="t-code">
+    <h2 class="titel klein" id="t-code" tabindex="-1">Schreibe im Chat</h2>
+    <button class="befehl" id="befehl" type="button" title="Kopieren"></button>
+    <p class="kopiert" id="kopiert" aria-live="polite"></p>
+    <div class="karte">
+      <p id="code-text"></p>
+      <p class="frist" id="frist" aria-live="polite"></p>
+    </div>
+    <p class="demo" id="demo" hidden>Demo-Modus: Die Seite ist noch nicht mit dem Server verbunden. Der Code wird nicht geprüft.</p>
+    <button class="knopf leise" id="b-neu-code" type="button" hidden>Neuen Code anfordern</button>
+  </section>
+
+  <!-- 7. Fertig -->
+  <section class="schritt" id="s-fertig" hidden aria-labelledby="t-fertig">
+    <div class="wappen klein" id="wappen-fertig"></div>
+    <h2 class="titel" id="t-fertig" tabindex="-1">Willkommen</h2>
+    <p class="wesen" id="fertig-text"></p>
+    <div class="figur-gross" id="figur-fertig"></div>
+    <p class="unter">Schreib im Stream-Chat, und deine Gestalt erscheint am Rahmen.</p>
+  </section>
+
+</main>
+
+<script src="data/haeuser.js"></script>
+<script src="data/quiz.js"></script>
+<script src="data/auswertung.js"></script>
+<script src="js/einstellungen.js"></script>
+<script src="js/grafik.js"></script>
+<script src="js/ritual.js"></script>
+</body>
+</html>

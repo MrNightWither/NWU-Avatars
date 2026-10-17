@@ -1,8 +1,11 @@
 # NWU Avatare
 
-Stream-Avatare für das NWU-Universum: Zuschauer machen auf nightwither.de ein Quiz,
-landen in einem von 6 Häusern, wählen eine Figur, und die läuft im Stream um den
-Kamera-Rahmen. Mit Level, Items, Portal-Events und Haus-Duellen.
+Stream-Avatare für das NWU-Universum: Zuschauer machen ein Quiz, landen in einem von
+6 Häusern, wählen eine Figur, und die läuft im Stream um den Kamera-Rahmen. Mit Level,
+Items, Portal-Events und Haus-Duellen.
+
+Die Seite bekommt eine eigene Subdomain und wird nur über Twitch verlinkt
+(nicht auf der Hauptseite, nicht im Linktree). Suchmaschinen sind ausgesperrt.
 
 Der vollständige Plan steht in [`docs/PLAN.md`](docs/PLAN.md).
 
@@ -11,8 +14,8 @@ Der vollständige Plan steht in [`docs/PLAN.md`](docs/PLAN.md).
 | Paket | Inhalt | Status |
 |---|---|---|
 | **0** | Performance-Test | ✅ Prototyp fertig, **Messung auf deinem PC offen** |
-| 1 | Fundament (Datenbank, Chat-Bestätigung, Anwesenheit, Punkte) | – |
-| 2 | Website (Quiz, Charakterwahl, Schrank, Profil) | – |
+| 1 | Fundament (Datenbank, Chat-Bestätigung, Anwesenheit, Punkte) | 📝 Datenmodell entworfen ([`docs/DATENMODELL.md`](docs/DATENMODELL.md)) |
+| **2** | Website | 🟡 Ritual fertig (Quiz, Haus, Gestalt, Bindung per Code), läuft im Demo-Modus bis der Worker steht |
 | 3 | Figuren-Overlay | – |
 | 4 | Level und Items | – |
 | 5 | Portal und Terrain | – |
@@ -22,20 +25,29 @@ Der vollständige Plan steht in [`docs/PLAN.md`](docs/PLAN.md).
 ## Aufbau
 
 ```
-docs/
-  PLAN.md       Gesamtplan
-  ENGINE.md     Prüfung der Animations-Engine (Plan 15.5)
-  PAKET-0.md    Anleitung und Ergebnistabelle für den Performance-Test
-overlay/
-  perf-test.html  OBS-Browserquelle für Paket 0
-  perf-test.js    Platzhalter-Figuren, Laufweg, Portal, Messung
-  config.js       zentrale Einstellungen (FPS, Obergrenze, Partikel, Szenen, Häuser)
-  lib/            PixiJS 8 (MIT), lokal, damit nichts aus dem Internet geladen werden muss
+index.html            Die Ritual-Seite (Quiz → Haus → Gestalt → Bindung)
+css/ritual.css        Aussehen (NWU-Look: Schwarz, Gold, Rajdhani/Inter)
+js/ritual.js          Ablauf der Seite
+js/einstellungen.js   Worker-Adresse, Chat-Befehl, Plattformen
+js/grafik.js          Platzhalter-Wappen und -Figuren (SVG)
+data/haeuser.js       Die 6 Häuser – EINE Quelle für Seite und Overlay
+data/quiz.js          24 Fragen, pro Durchgang 12 zufällig
+data/auswertung.js    Quiz-Auswertung (gleich für Seite und Worker)
+overlay/              OBS-Browserquelle (Paket 0: perf-test.html)
+docs/                 Plan, Engine-Prüfung, Datenmodell, Anleitung Paket 0
 ```
 
-## Schnellstart Paket 0
+## Häuser und Quiz anpassen
 
-In OBS eine **Browserquelle** mit **Lokale Datei** → `overlay/perf-test.html`, 1920 × 1080.
-Alles Weitere in [`docs/PAKET-0.md`](docs/PAKET-0.md).
+- **Namen, Farben, Beschreibung, Morrígan-Sprüche:** `data/haeuser.js`.
+  Die ids `haus1` … `haus6` bitte nicht ändern, darauf verweist die Datenbank.
+- **Fragen:** `data/quiz.js`. Jede Antwort gibt Punkte an 1 bis 2 Häuser
+  (`'M2'` = Mond 2 Punkte, `'F2 B1'` = Flamme 2, Blut 1). Aktuell bekommt jedes Haus
+  gleich viele Punkte über alle Fragen. Wenn du etwas änderst, das Gleichgewicht halten.
+- Das Quiz zieht pro Durchgang 12 von 24 Fragen. Bei knappem Ergebnis gewinnt das Haus
+  mit weniger Mitgliedern (sobald der Worker die Belegung liefert).
 
-Zum Anschauen im Browser: `overlay/perf-test.html?bg=1` öffnen.
+## Ansehen
+
+Lokal: Im Repo-Ordner `python -m http.server` starten und `http://localhost:8000` öffnen.
+Paket 0 in OBS: siehe [`docs/PAKET-0.md`](docs/PAKET-0.md).

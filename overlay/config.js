@@ -22,13 +22,6 @@ window.NWU_CONFIG = {
     unten:    { x: 0.03, y: 0.62, w: 0.25, h: 0.30 },
   },
 
-  // Platzhalter für die 6 Häuser. Namen, Wappen und Farben kommen später (Plan 15.1).
-  haeuser: [
-    { id: 'haus1', name: 'Haus 1 (Mond)',   farbe: 0x8fa8d8 },
-    { id: 'haus2', name: 'Haus 2 (Blut)',   farbe: 0xb3122e },
-    { id: 'haus3', name: 'Haus 3 (Nebel)',  farbe: 0x8a8f99 },
-    { id: 'haus4', name: 'Haus 4 (Flamme)', farbe: 0xe0672b },
-    { id: 'haus5', name: 'Haus 5 (Dornen)', farbe: 0x4f8a3c },
-    { id: 'haus6', name: 'Haus 6 (Raben)',  farbe: 0x5b4b8a },
-  ],
+  // Die 6 Häuser kommen aus data/haeuser.js (eine Quelle für Website und Overlay).
+  haeuser: window.NWU_HAEUSER,
 };
