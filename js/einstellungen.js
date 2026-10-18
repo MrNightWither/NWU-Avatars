@@ -11,6 +11,10 @@ window.NWU_SEITE = {
   // So lange ist ein Code gültig (Minuten).
   codeGueltig: 15,
 
+  // Links zu Impressum und Datenschutz (auf deiner Hauptseite), erscheinen unten auf jeder Seite. Leer = keine Links.
+  impressum: '',
+  datenschutz: '',
+
   plattformen: [
     { id: 'twitch',  name: 'Twitch' },
     { id: 'kick',    name: 'Kick' },

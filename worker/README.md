@@ -436,6 +436,22 @@ public class CPHInline
 }
 ```
 
+## Streamer.bot: `!nwu` (Links zum Ritual und zu den Befehlen)
+
+Ohne Worker, nur eine Chat-Antwort. **Action „NWU Info“** – Trigger: Command `!nwu` (Everyone, Cooldown z. B. 30 Sekunden):
+
+```csharp
+public class CPHInline
+{
+    public bool Execute()
+    {
+        const string SEITE = "https://mrnightwither.github.io/NWU-Avatars/";
+        CPH.SendMessage($"🔮 Morrígan: Dein Haus findest du im Ritual: {SEITE} · Alle Befehle: {SEITE}befehle.html");
+        return true;
+    }
+}
+```
+
 ## Streamer.bot: Spiele im Overlay (Ruhm buchen)
 
 Das Overlay entscheidet Fang den Raben, Wettrennen, Tauziehen, Letzter steht und Schatzsuche selbst und meldet das

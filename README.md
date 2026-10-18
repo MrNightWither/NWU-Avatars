@@ -110,6 +110,9 @@ jubelt, der Verlierer setzt sich kurz. Höheres Level hilft etwas (höchstens 70
 **Flüstern aus dem Westen:** etwa alle 25 Minuten (`fluesternMinuten` in `config.js`) erscheint am linken Rand Nebel
 mit violetten Augen, dazu ein Rabe oder eine Dornenranke – ein leiser Hinweis auf die verborgenen Häuser.
 
+Alle Chat-Befehle für Zuschauer stehen auf `befehle.html` (Quelle: `data/befehle.js`), `!nwu` schickt den Link.
+Die Spiele stehen in `overlay/spiele.js`.
+
 **Spiele** (Start im Chat durch dich und – wenn `spiele.starter` auf `'mods'` steht – durch Mods; Zeiten in
 `overlay/config.js` → `spiele`, Ruhm in `data/ruhm.js` → `spiele`):
 
@@ -117,7 +120,7 @@ mit violetten Augen, dazu ein Rabe oder eine Dornenranke – ein leiser Hinweis 
 |---|---|---|---|
 | Fang den Raben | von allein (etwa alle 15 Min.) oder `!rabe` | als Erster `!fang` | +25 |
 | Wettrennen der Häuser | `!rennen` oder von allein | jede Nachricht schiebt den Läufer des eigenen Hauses an (1× pro Sekunde) | +30 für alle, die das Siegerhaus angefeuert haben, +100 Pokal-Ruhm fürs Siegerhaus |
-| Tauziehen | `!tauziehen`, `!tauziehen mond blut` oder von allein | `!zieh` (60 Sekunden) | +30 für alle, die im Siegerhaus gezogen haben, +100 Pokal-Ruhm fürs Siegerhaus |
+| Tauziehen | `!tauziehen`, `!tauziehen mond blut` oder von allein | `!zieh` (60 Sekunden, höchstens 2 pro Sekunde und Person) | +30 für alle, die im Siegerhaus gezogen haben, +100 Pokal-Ruhm fürs Siegerhaus |
 | Letzter steht | `!letzter` oder von allein | `!dabei` (45 Sekunden anmelden), dann schlagen Blitze ein | +150 für den Letzten |
 | Schatzsuche | `!schatz` oder von allein | `!grab oben` / `rechts` / `unten` / `links` (60 Sekunden, zählt der erste Tipp) | +100 richtig, −20 falsch (nie unter den Beginn des Levels) |
 | Würfel der Morrígan | `!wurf` (jeder, 1× pro Stream) | – | 6 = doppelter Ruhm für 4 Std., 1 = 5 Min. Silhouette, 2–5 = Augenzahl × 10 |

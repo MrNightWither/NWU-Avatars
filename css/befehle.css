@@ -1,0 +1,9 @@
+/* Befehlsseite: baut auf css/stufen.css auf */
+.befehle { display: grid; grid-template-columns: minmax(150px, max-content) 1fr; gap: 8px 16px; align-items: baseline; }
+.befehle dt code { font-family: Consolas, 'Courier New', monospace; color: var(--gold-hi); font-size: 0.92rem; }
+.befehle dd { font-size: 0.92rem; color: #d8d2c4; }
+.befehle .beispiel { color: var(--muted); }
+@media (max-width: 560px) {
+  .befehle { grid-template-columns: 1fr; gap: 2px; }
+  .befehle dd { margin-bottom: 8px; }
+}
