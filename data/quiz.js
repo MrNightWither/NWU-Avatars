@@ -1,7 +1,7 @@
 // Fragenpool fürs Ritual (Plan 3). Pro Durchgang werden zufällig RUNDEN Fragen gezogen.
 // Jede Antwort gibt versteckte Punkte an 1 bis 2 Häuser: 2 = passt stark, 1 = passt etwas.
 // Kürzel: M = Mond (haus1), B = Blut (haus2), N = Nebel (haus3), F = Flamme (haus4)
-// Jede Frage hat genau eine starke Antwort (2) pro Haus, dazu 8–9 Nebenpunkte (1) je Haus.
+// Jede Frage hat genau eine starke Antwort (2) pro Haus, dazu ähnlich viele Nebenpunkte (1) je Haus.
 // Dornen (haus5) und Raben (haus6) sind "verlorene Häuser" und kommen im Quiz erst später dazu.
 // Der Worker rechnet das Ergebnis später mit derselben Datei nach, damit niemand schummeln kann.
 (function () {
@@ -207,11 +207,75 @@
       ['Dazugehören.', 'B2 N1'],
       ['Frei sein.', 'N2'],
       ['Brennen.', 'F2']]],
+
+    // ----- Fragen über dich selbst (ids mit „s“, pro Durchgang kommen immer ein paar davon) -----
+    ['s01', 'Wie würden dich deine Freunde beschreiben?', [
+      ['Ruhig. Man kann mit mir über alles reden.', 'M2'],
+      ['Loyal. Ich lasse niemanden hängen.', 'B2'],
+      ['Geheimnisvoll. Keiner kennt mich ganz.', 'N2 M1'],
+      ['Laut, lustig und immer vorne dabei.', 'F2']]],
+    ['s02', 'Was ist deine größte Schwäche?', [
+      ['Ich denke zu viel nach.', 'M2'],
+      ['Ich vertraue zu schnell.', 'B2'],
+      ['Ich lasse niemanden an mich heran.', 'N2'],
+      ['Ich bin zu ungeduldig.', 'F2 B1']]],
+    ['s03', 'Wann fühlst du dich am wohlsten?', [
+      ['Spät in der Nacht, wenn alles still ist.', 'M2 N1'],
+      ['Wenn alle meine Leute um mich sind.', 'B2'],
+      ['Wenn mich niemand beobachtet.', 'N2'],
+      ['Wenn etwas Aufregendes passiert.', 'F2']]],
+    ['s04', 'Wie triffst du wichtige Entscheidungen?', [
+      ['Ich wäge alles in Ruhe ab.', 'M2'],
+      ['Ich frage die, denen ich vertraue.', 'B2 M1'],
+      ['Ich behalte sie für mich, bis es so weit ist.', 'N2'],
+      ['Aus dem Bauch heraus.', 'F2']]],
+    ['s05', 'Was gibt dir Kraft nach einem langen Tag?', [
+      ['Allein sein und den Kopf ausschalten.', 'M2'],
+      ['Ein Abend mit Menschen, die ich liebe.', 'B2'],
+      ['Einfach verschwinden, ohne dass jemand fragt.', 'N2'],
+      ['Etwas tun: Sport, Musik, laut sein.', 'F2 B1']]],
+    ['s06', 'Du kommst neu in eine Gruppe. Was machst du?', [
+      ['Erst mal beobachten.', 'M2 N1'],
+      ['Ich suche mir schnell ein, zwei Leute.', 'B2'],
+      ['Ich bleibe am Rand und lerne alle kennen, ohne dass sie mich kennen.', 'N2'],
+      ['Ich stelle mich vor, als wäre ich schon immer da.', 'F2']]],
+    ['s07', 'Welche Rolle hast du in deinem Freundeskreis?', [
+      ['Die, die zuhört und Rat gibt.', 'M2'],
+      ['Die, die alle zusammenhält.', 'B2'],
+      ['Die, die mehr weiß, als sie sagt.', 'N2'],
+      ['Die, die alle mitreißt.', 'F2 M1']]],
+    ['s08', 'Was bringt dich zum Lachen?', [
+      ['Leiser, trockener Humor.', 'M2'],
+      ['Alte Geschichten mit meinen Leuten.', 'B2 F1'],
+      ['Dinge, die nur ich bemerkt habe.', 'N2'],
+      ['Chaos. Je verrückter, desto besser.', 'F2']]],
+    ['s09', 'Wie verbringst du am liebsten einen freien Tag?', [
+      ['Mit einem Buch, einem Spiel oder einer Geschichte.', 'M2'],
+      ['Mit Familie oder Freunden.', 'B2'],
+      ['Irgendwo, wo mich niemand findet.', 'N2 F1'],
+      ['Draußen, unterwegs, Hauptsache was erleben.', 'F2']]],
+    ['s10', 'Was sagen andere hinter deinem Rücken über dich?', [
+      ['„Man weiß nie, was im Kopf vorgeht.“', 'M2'],
+      ['„Auf den ist Verlass.“', 'B2'],
+      ['„Wer ist das eigentlich wirklich?“', 'N2 B1'],
+      ['„Mit dem wird es nie langweilig.“', 'F2']]],
+    ['s11', 'Worauf bist du am meisten stolz?', [
+      ['Dass ich mir selbst treu geblieben bin.', 'M2'],
+      ['Auf die Menschen an meiner Seite.', 'B2'],
+      ['Auf Dinge, von denen niemand weiß.', 'N2'],
+      ['Auf das, was ich mich getraut habe.', 'F2 N1']]],
+    ['s12', 'Was brauchst du, um glücklich zu sein?', [
+      ['Ruhe und Klarheit.', 'M2 F1'],
+      ['Menschen, die bleiben.', 'B2'],
+      ['Freiraum und ein paar Geheimnisse.', 'N2'],
+      ['Abenteuer.', 'F2']]],
   ];
 
   const ziel = typeof window !== 'undefined' ? window : globalThis;   // Browser und Worker
   ziel.NWU_QUIZ = {
     runden: 12,
+    // So viele der 12 Fragen kommen immer aus den Fragen über einen selbst (ids mit „s“)
+    selbstProRunde: 4,
     // Liegen die besten Häuser so nah beieinander (Anteil 0–1), zählt die Belegung (Plan 3).
     knapp: 0.05,
     fragen: roh.map(([id, frage, antworten]) => ({
@@ -221,6 +285,14 @@
         text,
         punkte: Object.fromEntries(code.split(' ').map((c) => [H[c[0]], Number(c.slice(1))])),
       })),
+      selbst: id.startsWith('s'),
     })),
+  };
+  // Fragen für einen Durchgang ziehen: ein paar über einen selbst, der Rest Situationen, zufällig gemischt
+  ziel.NWU_QUIZ.ziehen = (mischen) => {
+    const Q = ziel.NWU_QUIZ;
+    const selbst = mischen(Q.fragen.filter((f) => f.selbst)).slice(0, Q.selbstProRunde);
+    const rest = mischen(Q.fragen.filter((f) => !f.selbst)).slice(0, Q.runden - selbst.length);
+    return mischen([...selbst, ...rest]).map((f) => f.id);
   };
 })();

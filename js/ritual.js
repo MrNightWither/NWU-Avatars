@@ -49,7 +49,7 @@
 
   // ---------- 1. Start ----------
   $('b-start').addEventListener('click', () => {
-    st = { fragen: mischen(QUIZ.fragen).slice(0, QUIZ.runden).map((f) => f.id), antworten: [] };
+    st = { fragen: QUIZ.ziehen(mischen), antworten: [] };
     sichern();
     frageZeigen('start');
   });

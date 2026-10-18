@@ -66,7 +66,7 @@ docs/                 Plan, Fortschritt (Level 1–100), Engine-Prüfung, Datenm
 - **Verlorene Häuser wecken:** in `data/haeuser.js` bei Dornen/Raben `verloren: true` entfernen,
   im Quiz Antworten mit `D`/`R` ergänzen und in `js/film.js` die Orte wieder eintragen.
   Den Nebel auf der Karte macht `tools/nebel.py` (Original liegt in `assets/roh/karte.jpg`).
-- Das Quiz zieht pro Durchgang 12 von 40 Fragen. Bei knappem Ergebnis gewinnt das Haus
+- Das Quiz zieht pro Durchgang 12 von 52 Fragen: immer 4 über einen selbst (ids mit „s“), 8 Situationen. Bei knappem Ergebnis gewinnt das Haus
   mit weniger Mitgliedern (sobald der Worker die Belegung liefert).
 
 ## Overlay Stufe 1 in OBS
