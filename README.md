@@ -85,6 +85,7 @@ Oder per Adresse mit Einstellungen, z. B. `…/overlay/avatare.html?n=12&szene=s
 | `bg=1` | dunkler Hintergrund mit Rahmen zum Ansehen im Browser |
 | `hud=0` | Anzeige oben links aus |
 | `stufe1` | alle Figuren als Einzelbild statt aus Teilen (zum Vergleichen) |
+| `sb` | Adresse des Streamer.bot-WebSocket-Servers (sonst aus `config.js`), z. B. `sb=ws://127.0.0.1:8080/` |
 | `sieger` | Haus mit Krone zum Testen, z. B. `sieger=haus2` (mit Worker kommt es aus `/pokal`) |
 
 **Chat:** In `overlay/config.js` bei `kanal` deinen Twitch-Namen eintragen (oder `?kanal=…`).
@@ -109,11 +110,29 @@ jubelt, der Verlierer setzt sich kurz. Höheres Level hilft etwas (höchstens 70
 **Flüstern aus dem Westen:** etwa alle 25 Minuten (`fluesternMinuten` in `config.js`) erscheint am linken Rand Nebel
 mit violetten Augen, dazu ein Rabe oder eine Dornenranke – ein leiser Hinweis auf die verborgenen Häuser.
 
+**Spiele** (Start im Chat durch dich und – wenn `spiele.starter` auf `'mods'` steht – durch Mods; Zeiten in
+`overlay/config.js` → `spiele`, Ruhm in `data/ruhm.js` → `spiele`):
+
+| Spiel | Start | Mitmachen | Ruhm |
+|---|---|---|---|
+| Fang den Raben | von allein (etwa alle 15 Min.) oder `!rabe` | als Erster `!fang` | +25 |
+| Wettrennen der Häuser | `!rennen` oder von allein | jede Nachricht schiebt den Läufer des eigenen Hauses an (1× pro Sekunde) | +30 für alle, die das Siegerhaus angefeuert haben, +100 Pokal-Ruhm fürs Siegerhaus |
+| Tauziehen | `!tauziehen`, `!tauziehen mond blut` oder von allein | `!zieh` (60 Sekunden) | +30 für alle, die im Siegerhaus gezogen haben, +100 Pokal-Ruhm fürs Siegerhaus |
+| Letzter steht | `!letzter` oder von allein | `!dabei` (45 Sekunden anmelden), dann schlagen Blitze ein | +150 für den Letzten |
+| Schatzsuche | `!schatz` oder von allein | `!grab oben` / `rechts` / `unten` / `links` (60 Sekunden, zählt der erste Tipp) | +100 richtig, −20 falsch (nie unter den Beginn des Levels) |
+| Würfel der Morrígan | `!wurf` (jeder, 1× pro Stream) | – | 6 = doppelter Ruhm für 4 Std., 1 = 5 Min. Silhouette, 2–5 = Augenzahl × 10 |
+
+Rennen, Tauziehen, Letzter steht und Schatzsuche starten außerdem etwa alle 30 Minuten von allein (`zufallMinuten`), wenn
+mindestens 3 Figuren da sind. Fehlt einem Haus beim Rennen oder Tauziehen ein Mitglied im Chat, läuft ein Gast für das Haus. Den Ruhm bucht
+Streamer.bot (Aktion „NWU Spiel“ und „NWU Würfel“, Anleitung in `worker/README.md`). Ohne Streamer.bot-Verbindung
+(`streamerbot` in `config.js`) laufen die Spiele nur zum Spaß. Während eines Spiels gibt es keine Duelle und kein
+großes Portal.
+
 **Zeichen der Zitadelle:** Mods (Wächter) tragen einen goldenen Ring zu ihren Füßen, die Rolle `koenigin`
 (Partnerin) zusätzlich Diadem und violetten Schimmer. Das Siegerhaus des Vormonats trägt Kronen.
 
 Tasten (OBS: Rechtsklick → Interagieren): `T` Test-Chatter, `M` Nachricht, `K` !lurk, `R` Raid,
-`P` Portal auf/zu, `U` Level-Up (zufällige Figur), `G` Gruppenbild, `J` alle jubeln, `D` Duell, `F` Haus-Ruf, `W` Flüstern aus dem Westen, `S` Sparmodus,
+`P` Portal auf/zu, `U` Level-Up (zufällige Figur), `G` Gruppenbild, `J` alle jubeln, `D` Duell, `F` Haus-Ruf, `W` Flüstern aus dem Westen, `B` Rabe, `E` Wettrennen, `Z` Tauziehen, `L` Letzter steht, `X` Schatzsuche, `Q` Würfel (zufällige Figur), `S` Sparmodus,
 `1/2/3` = 4/12/30 Demo-Figuren, `H` Anzeige.
 
 **Aussehen und Freischaltungen:** Die Haare jeder Figur sind eine eigene Ebene und werden pro Person

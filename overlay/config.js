@@ -38,6 +38,25 @@ window.NWU_CONFIG = {
   // Flüstern aus dem Westen: ungefähr alle X Minuten (zufällig ±40 %), 0 = aus. Taste W zum Testen.
   fluesternMinuten: 25,
 
+  // Spiele im Overlay. Start per Chat: !rennen, !tauziehen [haus] [haus], !letzter, !schatz, !rabe
+  // starter: 'mods' = Streamer und Mods dürfen starten, 'streamer' = nur der Streamer. Tasten zum Testen siehe Anzeige.
+  spiele: {
+    starter: 'mods',
+    zufallMinuten: 30,          // Rennen, Tauziehen, Letzter steht oder Schatzsuche starten ungefähr alle X Minuten von allein, 0 = nur per Befehl
+    zufallAb: 3,                // … aber nur, wenn mindestens so viele Figuren da sind
+    rabeMinuten: 15,            // Fang den Raben kommt von allein ungefähr alle X Minuten (±40 %), 0 = nur per Befehl
+    rabeSekunden: 14,           // so lange fliegt er durchs Bild
+    rennenSekunden: 120,        // spätestens dann gewinnt, wer vorne liegt
+    tauziehenSekunden: 60,
+    letzterAnmeldung: 45,       // Sekunden für !dabei
+    schatzSekunden: 60,
+    wurfSchattenMinuten: 5,     // Würfel: bei einer 1 so lange ohne Gestalt
+    aktion: 'NWU Spiel',        // Name der Aktion in Streamer.bot, die den Ruhm bucht
+  },
+  // WebSocket-Server von Streamer.bot (Servers/Clients → WebSocket Server, Autostart, ohne Passwort, nur 127.0.0.1),
+  // z. B. 'ws://127.0.0.1:8080/'. Leer = Spiele laufen nur zum Spaß, ohne Ruhm. Auch per ?sb=… möglich.
+  streamerbot: '',
+
   // Großes Portal: automatisch alle X Minuten (0 = nur per Taste P), Dauer auf dem Terrain
   portal: { alleMinuten: 20, dauerSekunden: 150 },
 

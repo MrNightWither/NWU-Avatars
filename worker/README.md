@@ -436,6 +436,117 @@ public class CPHInline
 }
 ```
 
+## Streamer.bot: Spiele im Overlay (Ruhm buchen)
+
+Das Overlay entscheidet Fang den Raben, Wettrennen, Tauziehen, Letzter steht und Schatzsuche selbst und meldet das
+Ergebnis über den **WebSocket-Server von Streamer.bot** an die Aktion „NWU Spiel“. Die bucht den Ruhm beim Worker.
+Wie viel Ruhm es gibt, steht fest in `data/ruhm.js` (`spiele`) – das Overlay sagt nur, wer gewonnen oder verloren hat.
+Der Worker nimmt pro Spiel höchstens eine Meldung pro paar Minuten an (falls das Overlay doppelt offen ist).
+
+Einrichten:
+1. Streamer.bot → **Servers/Clients → WebSocket Server**: Address `127.0.0.1`, Port `8080`, **Auto Start** an,
+   **Authentication aus** (er ist nur auf dem eigenen PC erreichbar). Starten.
+2. In `overlay/config.js`: `streamerbot: 'ws://127.0.0.1:8080/'`.
+3. Aktion **„NWU Spiel“** anlegen (genau dieser Name, ohne Trigger – das Overlay ruft sie auf):
+
+```csharp
+using System;
+using System.Linq;
+using System.Net.Http;
+using System.Text;
+using Newtonsoft.Json.Linq;
+
+public class CPHInline
+{
+    static readonly HttpClient http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+    const string URL = "https://nwu-avatare.DEIN-NAME.workers.dev/spiel";
+
+    public bool Execute()
+    {
+        var daten = new JObject
+        {
+            ["spiel"] = args.ContainsKey("spiel") ? args["spiel"].ToString() : "",
+            ["plattform"] = "twitch",
+            ["gewinner"] = args.ContainsKey("gewinner") ? args["gewinner"].ToString() : "",
+            ["verlierer"] = args.ContainsKey("verlierer") ? args["verlierer"].ToString() : "",
+        };
+        var req = new HttpRequestMessage(HttpMethod.Post, URL);
+        req.Headers.Add("Authorization", "Bearer " + CPH.GetGlobalVar<string>("nwuAvatarSecret", true));
+        req.Content = new StringContent(daten.ToString(), Encoding.UTF8, "application/json");
+        try
+        {
+            var a = JObject.Parse(http.SendAsync(req).Result.Content.ReadAsStringAsync().Result);
+            if ((bool?)a["ok"] != true) return true;
+            var g = a["gewinner"] as JArray;
+            string namen = string.Join(", ", g.Select(n => "@" + n));
+            string spiel = daten["spiel"].ToString();
+            if (g.Count > 0 && spiel == "rabe") CPH.SendMessage($"🐦‍⬛ {namen} hat den Raben gefangen! +{a["ruhm"]} Ruhm.");
+            else if (g.Count > 0 && spiel == "letzter") CPH.SendMessage($"⚡ {namen} steht als Letzter! +{a["ruhm"]} Ruhm.");
+            else if (spiel == "schatz") CPH.SendMessage($"💰 Schatzsuche: {g.Count} haben die Truhe gefunden (+{a["ruhm"]} Ruhm), {((JArray)a["verlierer"]).Count} gingen leer aus ({a["abzug"]} Ruhm).");
+            else if (a["haus"] != null && a["haus"].Type != JTokenType.Null)
+            {
+                string mit = g.Count > 0 ? $", +{a["ruhm"]} für {g.Count}, die mitgemacht haben." : ".";
+                CPH.SendMessage($"🏆 {a["spiel"]}: Das {a["haus"]} gewinnt! +{a["hausRuhm"]} Ruhm für den Hauspokal{mit}");
+            }
+            foreach (var s in a["aufstiege"] ?? new JArray()) CPH.SendMessage($"✨ @{s["name"]} steigt auf: jetzt Level {s["level"]}!");
+        }
+        catch (Exception e) { CPH.LogWarn("NWU Spiel: " + e.Message); }
+        return true;
+    }
+}
+```
+
+Gestartet werden die Spiele im Chat: `!rennen`, `!tauziehen` (oder `!tauziehen mond blut`), `!letzter`, `!schatz`,
+`!rabe` – vom Streamer und, wenn `spiele.starter` in `overlay/config.js` auf `'mods'` steht, auch von Mods.
+Der Rabe kommt außerdem von allein (`rabeMinuten`), die anderen vier Spiele ungefähr alle `zufallMinuten` (wenn mindestens
+`zufallAb` Figuren da sind). Beim Rennen und Tauziehen bekommt das Siegerhaus zusätzlich 100 Ruhm im Hauspokal. Dafür braucht Streamer.bot keine eigenen Befehle: das Overlay
+liest den Chat mit (`!fang`, `!zieh`, `!dabei`, `!grab oben`).
+
+## Streamer.bot: Würfel der Morrígan (`!wurf`)
+
+Einmal pro Stream (10 Stunden Sperre): **6** = doppelter Ruhm für 4 Stunden, **1** = die Figur verliert für
+5 Minuten ihre Gestalt, **2–5** = Augenzahl × 10 Ruhm. Der Worker würfelt, das Overlay zeigt den Würfel über der Figur.
+
+**Action „NWU Würfel“** – Trigger: Command `!wurf` (Everyone):
+
+```csharp
+using System;
+using System.Net.Http;
+using System.Text;
+using Newtonsoft.Json.Linq;
+
+public class CPHInline
+{
+    static readonly HttpClient http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+    const string URL = "https://nwu-avatare.DEIN-NAME.workers.dev/wurf";
+
+    public bool Execute()
+    {
+        string user = args["user"].ToString();
+        var daten = new JObject { ["plattform"] = "twitch", ["plattformId"] = args["userId"].ToString() };
+        var req = new HttpRequestMessage(HttpMethod.Post, URL);
+        req.Headers.Add("Authorization", "Bearer " + CPH.GetGlobalVar<string>("nwuAvatarSecret", true));
+        req.Content = new StringContent(daten.ToString(), Encoding.UTF8, "application/json");
+        try
+        {
+            var a = JObject.Parse(http.SendAsync(req).Result.Content.ReadAsStringAsync().Result);
+            string grund = (string)a["grund"];
+            if (grund == "unbekannt") { CPH.SendMessage($"@{user} Morrígans Würfel rollen nur für die, die einem Haus angehören."); return true; }
+            if (grund == "schon") { CPH.SendMessage($"@{user} Du hast in diesem Stream schon gewürfelt."); return true; }
+            if ((bool?)a["ok"] != true) return true;
+            int w = (int)a["wurf"];
+            // Das Overlay erkennt „@Name würfelt eine N“ – diesen Teil nicht ändern
+            if (w == 6) CPH.SendMessage($"🎲 @{a["name"]} würfelt eine 6! Morrígan lächelt: doppelter Ruhm für die nächsten 4 Stunden.");
+            else if (w == 1) CPH.SendMessage($"🎲 @{a["name"]} würfelt eine 1 … Morrígan nimmt dir für 5 Minuten deine Gestalt.");
+            else CPH.SendMessage($"🎲 @{a["name"]} würfelt eine {w}: +{a["ruhm"]} Ruhm.");
+            foreach (var s in a["aufstiege"] ?? new JArray()) CPH.SendMessage($"✨ @{s["name"]} steigt auf: jetzt Level {s["level"]}!");
+        }
+        catch (Exception e) { CPH.LogWarn("NWU Würfel: " + e.Message); }
+        return true;
+    }
+}
+```
+
 ## Streamer.bot: Schatten-Essenz für die Meilensteinkarte
 
 Jede Plattform hat ihren eigenen Pfad und ihre eigene Essenz. Eine Action **„NWU Essenz“** mit einer

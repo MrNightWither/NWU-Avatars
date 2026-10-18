@@ -272,6 +272,58 @@ assert.equal(r.daten.wert, 1000);
 r = await ruf('/erfolge');
 assert.equal(r.daten.follower.twitch, 641); assert.equal(r.daten.unterstuetzer.twitch, 13); assert.equal(r.daten.follower.youtube, 0);
 
+// Spiele im Overlay (über Streamer.bot) und Würfel der Morrígan
+const stand = async () => (await ruf('/avatare/profil?plattform=twitch&id=111')).daten;
+assert.equal((await sb('/spiel', { spiel: 'rabe', plattform: 'twitch', gewinner: '111' }, 'falsch')).status, 401);
+assert.equal((await sb('/spiel', { spiel: 'quatsch', plattform: 'twitch', gewinner: '111' })).status, 400);
+let vorher = await stand();
+r = await sb('/spiel', { spiel: 'rabe', plattform: 'twitch', gewinner: '111,fremd9', ruhm: 99999 });
+assert.equal(r.daten.ok, true); assert.deepEqual(r.daten.gewinner, ['mrnightwither'], 'nur 1 Gewinner beim Raben');
+assert.equal((await stand()).ruhm, vorher.ruhm + 25, 'Menge kommt vom Worker, nicht vom Overlay');
+assert.equal((await sb('/spiel', { spiel: 'rabe', plattform: 'twitch', gewinner: '111' })).daten.grund, 'zu_frueh', 'Pause gegen doppelte Meldungen');
+// Schatzsuche: Abzug für Verlierer, aber nie unter den Beginn des Levels
+vorher = await stand();
+r = await sb('/spiel', { spiel: 'schatz', plattform: 'twitch', gewinner: [], verlierer: ['111'] });
+assert.equal(r.daten.ok, true); assert.equal(r.daten.abzug, -20);
+const nachAbzug = (await stand()).ruhm;
+assert.equal(nachAbzug, Math.max(globalThis.NWU_RUHM.ruhmFuerLevel(vorher.level), vorher.ruhm - 20));
+assert.equal((await stand()).level, vorher.level, 'niemand steigt durch ein Spiel ab');
+env.DB.roh.exec('DELETE FROM spiel_log');
+env.DB.roh.exec(`UPDATE profil SET ruhm = ${globalThis.NWU_RUHM.ruhmFuerLevel(vorher.level) + 5}`);
+await sb('/spiel', { spiel: 'schatz', plattform: 'twitch', verlierer: '111' });
+assert.equal((await stand()).ruhm, globalThis.NWU_RUHM.ruhmFuerLevel(vorher.level), 'Abzug stoppt am Level-Beginn');
+env.DB.roh.exec('DELETE FROM spiel_log');
+r = await sb('/spiel', { spiel: 'schatz', plattform: 'twitch', gewinner: ['111'], verlierer: ['111'] });
+assert.deepEqual(r.daten.verlierer, [], 'wer gewinnt, verliert nicht gleichzeitig');
+// Siegerhaus bekommt Pokal-Ruhm, auch ohne Mitspieler
+const nebelVorher = (await ruf("/pokal")).daten.haeuser.haus3;
+r = await sb('/spiel', { spiel: 'tauziehen', plattform: 'twitch', gewinner: '', haus: 'haus3' });
+assert.equal(r.daten.ok, true); assert.equal(r.daten.hausRuhm, 100);
+assert.equal((await ruf('/pokal')).daten.haeuser.haus3, nebelVorher + 100);
+assert.equal((await sb('/spiel', { spiel: 'rennen', plattform: 'twitch', haus: 'haus5' })).daten.grund, 'leer', 'verborgene Häuser nicht');
+assert.equal((await sb('/spiel', { spiel: 'rabe', plattform: 'twitch', haus: 'haus1' })).daten.grund, 'leer', 'Rabe ohne Hauspreis');
+// Würfel: einmal pro Stream; 6 = doppelter Ruhm
+assert.equal((await sb('/wurf', { plattform: 'twitch', plattformId: 'fremd9' })).daten.grund, 'unbekannt');
+r = await sb('/wurf', { plattform: 'twitch', plattformId: '111' });
+assert.equal(r.daten.ok, true); assert.ok(r.daten.wurf >= 1 && r.daten.wurf <= 6);
+assert.equal((await sb('/wurf', { plattform: 'twitch', plattformId: '111' })).daten.grund, 'schon', 'nur einmal pro Stream');
+env.DB.roh.exec(`UPDATE profil SET doppelt_bis = '${new Date(Date.now() + 3600000).toISOString()}'`);
+vorher = await stand();
+await ruhm({ plattform: 'twitch', quelle: 'anwesenheit', nutzer: ['111'] });
+assert.equal((await stand()).ruhm, vorher.ruhm + 30, 'doppelter Ruhm nach einer 6');
+env.DB.roh.exec(`UPDATE profil SET doppelt_bis = '${new Date(Date.now() - 1000).toISOString()}'`);
+vorher = await stand();
+await ruhm({ plattform: 'twitch', quelle: 'anwesenheit', nutzer: ['111'] });
+assert.equal((await stand()).ruhm, vorher.ruhm + 15, 'danach wieder normal');
+const wuerfe = new Set();
+for (let i = 0; i < 60; i++) {
+  env.DB.roh.exec('UPDATE profil SET wurf_am = NULL');
+  const w = (await sb('/wurf', { plattform: 'twitch', plattformId: '111' })).daten;
+  wuerfe.add(w.wurf);
+  if (w.wurf > 1 && w.wurf < 6) assert.equal(w.ruhm, w.wurf * 10);
+}
+assert.equal(wuerfe.size, 6, 'alle Augenzahlen kommen vor');
+
 // Unbekannter Pfad
 assert.equal((await ruf('/gibtsnicht')).status, 404);
 

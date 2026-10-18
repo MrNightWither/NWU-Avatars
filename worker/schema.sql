@@ -10,6 +10,8 @@ CREATE TABLE IF NOT EXISTS profil (
   level         INTEGER NOT NULL DEFAULT 1,   -- folgt immer aus ruhm (data/ruhm.js)
   ruhm          INTEGER NOT NULL DEFAULT 0,
   aussehen      TEXT,                       -- JSON, z. B. { "haare": "rot" } (freigeschaltet nach Level)
+  wurf_am       TEXT,                       -- letzter !wurf (Würfel der Morrígan)
+  doppelt_bis   TEXT,                       -- doppelter Ruhm bis (Würfel: 6)
   punkte        INTEGER NOT NULL DEFAULT 0,
   quiz          TEXT NOT NULL,              -- JSON { fragen, antworten }
   gesperrt      INTEGER NOT NULL DEFAULT 0,
@@ -96,3 +98,12 @@ CREATE TABLE IF NOT EXISTS pruefung_antwort (
   profil_id     TEXT NOT NULL,
   PRIMARY KEY (pruefung_id, profil_id)      -- jede Person antwortet nur einmal
 );
+
+-- Spiele im Overlay: wann welches Spiel zuletzt Ruhm gebracht hat (gegen doppelte Meldungen)
+CREATE TABLE IF NOT EXISTS spiel_log (
+  spiel         TEXT NOT NULL,
+  zeit          TEXT NOT NULL,
+  gewinner      INTEGER NOT NULL,
+  verlierer     INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS spiel_log_zeit ON spiel_log (spiel, zeit);

@@ -62,6 +62,14 @@ Später am 18.10. dazugekommen (ebenfalls getestet, nicht live):
 - **Figurenseite** `figur.html` und **Hausseiten** `haus.html` (mit Geschichte je Haus in `data/haeuser.js`)
 - Hinweis: Auf der Website zeigen die Figurenbilder noch die Standard-Haarfarbe des Hauses, nicht die eigene.
 
+Ebenfalls am 18.10. (getestet im Browser und mit Worker-Tests, nicht live):
+- **Spiele im Overlay** (auch zufällig von allein, Siegerhaus bei Rennen/Tauziehen +100 Pokal-Ruhm): Fang den Raben (`!fang`), Wettrennen der Häuser (`!rennen`), Tauziehen (`!tauziehen`, `!zieh`),
+  Letzter steht (`!letzter`, Anmeldung `!dabei`), Schatzsuche (`!schatz`, `!grab oben`, +100 / −20 Ruhm),
+  Würfel der Morrígan (`!wurf`). Das Overlay meldet Ergebnisse über den **Streamer.bot-WebSocket-Server** an die
+  Aktion „NWU Spiel“, der Worker bucht feste Mengen (`/spiel`, `/wurf`). Einrichtung: `worker/README.md`.
+  Offen: am PC WebSocket-Server einschalten, `streamerbot` in `overlay/config.js` eintragen, Aktionen anlegen.
+  Tauziehen läuft an der **oberen** Kante (unten hängen die Figuren kopfüber).
+
 ## Gewünschte Features (Reihenfolge-Vorschlag, ursprünglich)
 
 1. **Ruhm automatisch** (Grundlage für alles) – inkl. Anwesenheit für stille Zuschauer
@@ -115,3 +123,6 @@ lassen (Idee für die Geschichte: Morrígan ist uralt, die Kugel hält sie jung)
   (Eis, roter Stein, Sumpf, Lava). Braucht Gemini-Bilder (Kreaturen, Untergründe).
 - **Das Erwachen:** einmaliges Live-Event, wenn die Zitadelle auf der Reise-Karte erreicht ist – Nebel lichtet sich
   in Overlay und Website, Raben und Dornen werden wählbar (`verloren: true` entfernen, Quiz/Film ergänzen).
+- **Truhe oder Falle:** drei Truhen, der Chat stimmt ab, welche du öffnest; Belohnung für alle oder Strafe für dich.
+- **Haus-Lotterie:** nur mit einer eigenen Spielwährung (nicht mit Ruhm, sonst verliert man Level; und kein
+  Glücksspiel mit etwas, das man über Subs/Bits bekommen hat).

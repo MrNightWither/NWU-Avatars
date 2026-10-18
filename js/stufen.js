@@ -17,7 +17,18 @@
     b.textContent = q.ruhmPro100 ? `${q.ruhmPro100} Ruhm` : `${q.ruhm} Ruhm`;
     li.append(b, ' · ' + q.name);
     return li;
+  }), ...Object.values(RUHM.spiele || {}).map((sp) => {
+    const li = document.createElement('li');
+    const b = document.createElement('b');
+    b.textContent = `${sp.gewinner} Ruhm`;
+    li.append(b, ' · ' + sp.name + (sp.verlierer ? ` (falsch geraten: ${String(sp.verlierer).replace('-', '−')} Ruhm)` : ''));
+    return li;
   }), (() => {
+    const li = document.createElement('li');
+    const b = document.createElement('b'); b.textContent = 'Würfel der Morrígan';
+    li.append(b, ` (!wurf, einmal pro Stream): 6 = doppelter Ruhm für ${RUHM.doppeltStunden} Stunden, 2–5 = Augenzahl × ${RUHM.wurfRuhm}, 1 = du verlierst kurz deine Gestalt`);
+    return li;
+  })(), (() => {
     const li = document.createElement('li');
     const b = document.createElement('b'); b.textContent = 'Der Schattenkönig';
     li.append(b, ' kann dich jederzeit selbst erheben.');

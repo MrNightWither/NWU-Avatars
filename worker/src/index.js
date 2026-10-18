@@ -6,7 +6,7 @@
 //   ERLAUBTE_HERKUNFT   Komma-Liste erlaubter Website-Adressen für CORS
 //   STREAMERBOT_SECRET  Secret für /avatare/bestaetigen (nie in den Code!)
 //   ADMIN_SECRET        Secret für /avatare/rolle
-//   (STREAMERBOT_SECRET gilt auch für /avatare/level, /avatare/aussehen, /ruhm, /reise/essenz, /erfolge/plus)
+//   (STREAMERBOT_SECRET gilt auch für /avatare/level, /avatare/aussehen, /ruhm, /reise/essenz, /erfolge/plus, /spiel, /wurf)
 
 import '../../data/haeuser.js';
 import '../../data/quiz.js';
@@ -267,6 +267,7 @@ async function ruhmBuchen(env, eintraege, fuerHaus) {
   const m = monat(), befehle = [], aufstiege = [];
   for (const e of eintraege) {
     if (e.menge <= 0) continue;
+    if (e.doppelt_bis && e.doppelt_bis > jetzt()) e.menge *= 2;      // Würfel der Morrígan: eine 6
     const ruhm = e.ruhm + e.menge, level = RUHM.levelFuerRuhm(ruhm);
     befehle.push(env.DB.prepare('UPDATE profil SET ruhm = ?, level = ? WHERE id = ?').bind(ruhm, level, e.id));
     if (fuerHaus && e.haus) {
@@ -284,7 +285,7 @@ async function profileZu(env, plattform, ids) {
   const gefunden = [];
   for (let i = 0; i < ids.length; i += 80) {
     const teil = ids.slice(i, i + 80);
-    const { results } = await env.DB.prepare(`SELECT k.plattform_id AS pid, k.name, p.id, p.haus, p.ruhm, p.level, p.rolle
+    const { results } = await env.DB.prepare(`SELECT k.plattform_id AS pid, k.name, p.id, p.haus, p.ruhm, p.level, p.rolle, p.doppelt_bis, p.wurf_am
       FROM konto k JOIN profil p ON p.id = k.profil_id
       WHERE k.plattform = ? AND p.gesperrt = 0 AND k.plattform_id IN (${teil.map(() => '?').join(',')})`).bind(plattform, ...teil).all();
     gefunden.push(...results);
@@ -334,6 +335,60 @@ async function chronik(env, cors) {
     listen[h.id] = results;
   }
   return antwort({ pokal: await pokalDaten(env), listen }, 200, { ...cors, 'Cache-Control': 'max-age=60' });
+}
+
+// ---------- Spiele im Overlay ----------
+// Von Streamer.bot (Aktion „NWU Spiel“, ausgelöst vom Overlay): Ergebnis eines Spiels. Die Mengen stehen fest in
+// data/ruhm.js, das Overlay sagt nur, wer gewonnen oder verloren hat.
+const idListe = (x) => [...new Set((Array.isArray(x) ? x : typeof x === 'string' ? x.split(',') : [])
+  .map((v) => String(v).trim()).filter((v) => v && v.length <= 64))];
+async function spielMelden(req, env) {
+  if (!sbErlaubt(req, env)) return fehler('Nicht erlaubt', 401);
+  const d = await jsonLesen(req);
+  const art = d && RUHM.spiele[d.spiel];
+  if (!art || !PLATTFORMEN.includes(d.plattform)) return antwort({ ok: false, grund: 'ungueltig' }, 400);
+  const gewinner = idListe(d.gewinner).slice(0, art.maxGewinner || 200);
+  const verlierer = art.verlierer ? idListe(d.verlierer).filter((id) => !gewinner.includes(id)).slice(0, 200) : [];
+  const haus = art.haus && globalThis.NWU_AKTIVE_HAEUSER.some((h) => h.id === d.haus) ? d.haus : null;
+  if (!gewinner.length && !verlierer.length && !haus) return antwort({ ok: false, grund: 'leer' });
+  const seit = new Date(Date.now() - art.pauseMinuten * 60000).toISOString();
+  if (await env.DB.prepare('SELECT 1 FROM spiel_log WHERE spiel = ? AND zeit > ? LIMIT 1').bind(d.spiel, seit).first())
+    return antwort({ ok: false, grund: 'zu_frueh' });
+  const sieger = await profileZu(env, d.plattform, gewinner);
+  const pech = await profileZu(env, d.plattform, verlierer);
+  await env.DB.prepare('INSERT INTO spiel_log (spiel, zeit, gewinner, verlierer) VALUES (?, ?, ?, ?)').bind(d.spiel, jetzt(), sieger.length, pech.length).run();
+  const aufstiege = await ruhmBuchen(env, sieger.map((p) => ({ ...p, menge: art.gewinner })), true);
+  // Abzug: nie unter den Beginn des eigenen Levels, niemand steigt durch ein Spiel ab
+  const abzug = pech.map((p) => env.DB.prepare('UPDATE profil SET ruhm = ? WHERE id = ?')
+    .bind(Math.max(RUHM.ruhmFuerLevel(p.level), Math.min(p.ruhm, p.ruhm + art.verlierer)), p.id));
+  if (abzug.length) await env.DB.batch(abzug);
+  if (haus) await env.DB.prepare('INSERT INTO haus_ruhm (monat, haus, ruhm) VALUES (?, ?, ?) ON CONFLICT(monat, haus) DO UPDATE SET ruhm = ruhm + excluded.ruhm')
+    .bind(monat(), haus, art.haus).run();
+  return antwort({ ok: true, spiel: art.name, ruhm: art.gewinner, abzug: art.verlierer || 0,
+    haus: haus ? HAEUSER.find((h) => h.id === haus).name : null, hausRuhm: haus ? art.haus : 0,
+    gewinner: sieger.map((p) => p.name), verlierer: pech.map((p) => p.name), aufstiege });
+}
+
+// Von Streamer.bot: !wurf – Würfel der Morrígan, einmal pro Stream
+async function wurf(req, env) {
+  if (!sbErlaubt(req, env)) return fehler('Nicht erlaubt', 401);
+  const d = await jsonLesen(req);
+  if (!d || !PLATTFORMEN.includes(d.plattform) || typeof d.plattformId !== 'string') return antwort({ ok: false, grund: 'ungueltig' }, 400);
+  const [ich] = await profileZu(env, d.plattform, [d.plattformId]);
+  if (!ich) return antwort({ ok: false, grund: 'unbekannt' });
+  const sperre = new Date(Date.now() - RUHM.wurfStunden * 3600000).toISOString();
+  // atomar: nur wenn seit wurfStunden nicht gewürfelt wurde
+  const frei = await env.DB.prepare('UPDATE profil SET wurf_am = ? WHERE id = ? AND (wurf_am IS NULL OR wurf_am < ?)').bind(jetzt(), ich.id, sperre).run();
+  if (!frei.meta.changes) return antwort({ ok: false, grund: 'schon', name: ich.name });
+  const zahl = 1 + (crypto.getRandomValues(new Uint32Array(1))[0] % 6);
+  let ruhm = 0, aufstiege = [];
+  if (zahl === 6) {
+    await env.DB.prepare('UPDATE profil SET doppelt_bis = ? WHERE id = ?').bind(new Date(Date.now() + RUHM.doppeltStunden * 3600000).toISOString(), ich.id).run();
+  } else if (zahl > 1) {
+    ruhm = zahl * RUHM.wurfRuhm;
+    aufstiege = await ruhmBuchen(env, [{ ...ich, menge: ruhm }], true);
+  }
+  return antwort({ ok: true, name: ich.name, wurf: zahl, ruhm, doppelt: zahl === 6, aufstiege });
 }
 
 // ---------- Morrígans Prüfung ----------
@@ -548,6 +603,8 @@ export default {
       if (req.method === 'POST' && url.pathname === '/pruefung/start') return await pruefungStarten(req, env);
       if (req.method === 'POST' && url.pathname === '/pruefung/antwort') return await pruefungAntwort(req, env);
       if (req.method === 'POST' && url.pathname === '/pruefung/ende') return await pruefungEnde(req, env);
+      if (req.method === 'POST' && url.pathname === '/spiel') return await spielMelden(req, env);
+      if (req.method === 'POST' && url.pathname === '/wurf') return await wurf(req, env);
       if (req.method === 'POST' && url.pathname === '/prophezeiung') return await prophezeiung(req, env);
       if (req.method === 'GET' && url.pathname === '/reise') return await reiseLesen(env, cors);
       if (req.method === 'POST' && url.pathname === '/reise/essenz') return await essenzMelden(req, env);

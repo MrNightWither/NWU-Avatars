@@ -13,6 +13,21 @@
       bits:        { ruhmPro100: 30, name: 'Bits (pro 100)', maxAnzahl: 100000 },
       pruefung:    { ruhm: 100, name: 'Morrígans Prüfung gewonnen' },
     },
+    // Spiele im Overlay. Das Overlay meldet das Ergebnis über Streamer.bot, der Worker bucht nur diese Mengen
+    // (verlierer: Abzug, aber nie unter den Beginn des eigenen Levels) und höchstens einmal pro pauseMinuten.
+    // haus: zusätzlicher Ruhm für das Siegerhaus im Haus-Pokal, auch wenn niemand mitgemacht hat.
+    spiele: {
+      rabe:      { name: 'Fang den Raben', gewinner: 25, maxGewinner: 1, pauseMinuten: 3 },
+      rennen:    { name: 'Wettrennen der Häuser (wer anfeuert)', gewinner: 30, haus: 100, pauseMinuten: 5 },
+      tauziehen: { name: 'Tauziehen (wer mitzieht)', gewinner: 30, haus: 100, pauseMinuten: 3 },
+      letzter:   { name: 'Letzter steht', gewinner: 150, maxGewinner: 1, pauseMinuten: 5 },
+      schatz:    { name: 'Schatzsuche', gewinner: 100, verlierer: -20, pauseMinuten: 3 },
+    },
+    // Würfel der Morrígan (!wurf): einmal pro Stream (wurfStunden), 6 = doppelter Ruhm für doppeltStunden,
+    // 1 = Gestalt für 5 Minuten verloren, 2–5 = Augenzahl × wurfRuhm
+    wurfStunden: 10,
+    doppeltStunden: 4,
+    wurfRuhm: 10,
     // Wächter der Zitadelle (Mods, Partnerin) bekommen für Anwesenheit mehr: sie schreiben oft wenig,
     // sind aber da und halten Wache.
     waechterFaktor: 1.5,
