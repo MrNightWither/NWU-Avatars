@@ -87,7 +87,7 @@ Tasten (OBS: Rechtsklick → Interagieren): `T` Test-Chatter, `M` Nachricht, `K`
 `P` Portal auf/zu, `U` Level-Up, `G` Gruppenbild, `J` alle jubeln, `S` Sparmodus,
 `1/2/3` = 4/12/30 Demo-Figuren, `H` Anzeige.
 
-Neue Figuren: Seitenansicht freistellen (`tools/figur.py`), auf 120 px Höhe verkleinern,
+Neue Figuren: Seitenansicht freistellen (`tools/figur.py`), auf 160 px Höhe verkleinern,
 nach `overlay/figuren/` legen und in `overlay/config.js` unter `figuren` eintragen.
 
 ## Ansehen
