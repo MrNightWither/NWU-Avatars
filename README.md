@@ -34,7 +34,7 @@ data/haeuser.js       Die 6 Häuser – EINE Quelle für Seite und Overlay
 data/quiz.js          24 Fragen, pro Durchgang 12 zufällig
 data/auswertung.js    Quiz-Auswertung (gleich für Seite und Worker)
 overlay/              OBS-Browserquelle (Paket 0: perf-test.html)
-docs/                 Plan, Engine-Prüfung, Datenmodell, Anleitung Paket 0
+docs/                 Plan, Engine-Prüfung, Datenmodell, Gemini-Prompts, Anleitung Paket 0
 ```
 
 ## Häuser und Quiz anpassen

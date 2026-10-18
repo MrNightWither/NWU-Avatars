@@ -355,3 +355,14 @@ Ein Slot freischalten heißt: er wird nutzbar. Die Auswahl an Items pro Slot wä
 - Haus-Namen, Wappen und Rollen als Konfiguration/Variablen halten, nicht fest im Code.
 - Alles so bauen, dass es auf einem PC gut läuft und später verschiebbar ist.
 - Bezug zu bestehenden Plänen: NWU-Overlays (Portal-Trigger, Goldene Stunde, Saison-Look, Schatten-Train, Raid-Begrüßung) und Morrígan Command Station (Oracle-VPS, Streamer.bot, OBS-Anbindung).
+
+---
+
+## 17. Nachträge (18.10.2026)
+
+- **Ton:** Auf der **Website** ist Ton erlaubt (mit Stumm-Knopf, startet erst nach dem ersten Klick). Im **Overlay** bleibt es bei: kein Ton, höchstens Pausen- und Startscreen.
+- **Website wie ein Film:** Die Ritual-Seite wird eine Kamerafahrt über eine **Karte des NWU-Universums**. Start mit Blick über die Karte, bei jeder Frage fliegt die Kamera weiter, bei der Verkündung Zoom auf das Gebiet des Hauses, dort Wahl der Gestalt.
+- **Karte:** gibt es noch nicht, wird neu erstellt. Sie dient gleichzeitig als Grundlage für die **Meilensteinkarte**.
+- **Bilder:** Karte, Wappen und Charaktere werden mit **Gemini** erzeugt. Prompts: `docs/GEMINI-PROMPTS.md`.
+- **Overlay-Figuren:** werden aus Gemini-Teile-Bögen **zerlegt** (getrennte Ebenen fürs Puppet-System). Nachbesserung einplanen.
+- **Proportionen (Vorschlag):** leicht kindlich, etwa 3 Köpfe groß, damit die Figuren im Stream bei ca. 50 Pixeln erkennbar bleiben. Noch zu bestätigen.
