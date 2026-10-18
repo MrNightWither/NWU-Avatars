@@ -4,8 +4,8 @@ Stand: 17.10.2026. Grundlage: Plan Abschnitte 4, 5, 8 und 12.
 Die Website (Paket 2) spricht bereits genau diese Schnittstellen an. Solange in
 `js/einstellungen.js` keine `api` eingetragen ist, läuft sie im Demo-Modus.
 
-Vorschlag Speicherort: **Cloudflare Worker + D1** (SQLite-Datenbank von Cloudflare).
-Der Worker existiert schon und hält die Discord-Webhooks als Secrets. Ob Echtzeit-Teile
+Speicherort: **eigener Cloudflare Worker `nwu-avatare` + D1** (Code in `worker/`, Einrichtung in `worker/README.md`).
+Der bestehende Worker `nwu-anmeldung` bleibt unberührt. Ob Echtzeit-Teile
 (Anwesenheit, Kampf, Overlay-Zustand) später dort oder auf einem Server laufen, ist offen.
 
 ## Grundsätze
@@ -99,6 +99,15 @@ Dann berechnet er das Haus selbst, legt die Anmeldung an und antwortet:
 ```json
 { "status": "offen" }          // oder "bestaetigt" / "abgelaufen"
 ```
+
+### `GET /avatare/profil?plattform=twitch&id=…` (öffentlich, für das Overlay)
+
+Alternativ `&name=…`. Antwort: `{ "gefunden": true, "haus": "haus1", "rolle": null, "figur": "b", "level": 1 }`
+oder `{ "gefunden": false }`. Wird 60 Sekunden zwischengespeichert.
+
+### `POST /avatare/rolle` (nur mit `ADMIN_SECRET`)
+
+`{ "plattform": "twitch", "plattformId": "…", "rolle": "waechter" }` – `rolle: null` entfernt die Rolle.
 
 ### `POST /avatare/bestaetigen` (nur Streamer.bot, mit Secret)
 

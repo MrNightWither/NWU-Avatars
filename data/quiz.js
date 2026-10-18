@@ -128,7 +128,8 @@
       ['Den Spiegel, in dem man den Mond sieht.', 'M2']]],
   ];
 
-  window.NWU_QUIZ = {
+  const ziel = typeof window !== 'undefined' ? window : globalThis;   // Browser und Worker
+  ziel.NWU_QUIZ = {
     runden: 12,
     // Liegen die besten Häuser so nah beieinander (Anteil 0–1), zählt die Belegung (Plan 3).
     knapp: 0.05,

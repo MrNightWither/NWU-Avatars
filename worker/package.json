@@ -1,0 +1,9 @@
+{
+  "name": "nwu-avatare-worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --no-warnings test/test.js",
+    "deploy": "wrangler deploy"
+  }
+}

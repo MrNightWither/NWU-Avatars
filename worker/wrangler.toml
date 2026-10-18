@@ -1,0 +1,17 @@
+# Eigener Worker für die NWU Avatare (getrennt von nwu-anmeldung)
+name = "nwu-avatare"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "nwu-avatare"
+database_id = "HIER_DIE_ID_EINTRAGEN"   # kommt von: npx wrangler d1 create nwu-avatare
+
+[vars]
+# Erlaubte Website-Adressen (ohne Pfad, mit Komma trennen). Später die Subdomain ergänzen.
+ERLAUBTE_HERKUNFT = "https://mrnightwither.github.io"
+
+# Secrets NICHT hier eintragen, sondern mit:
+#   npx wrangler secret put STREAMERBOT_SECRET
+#   npx wrangler secret put ADMIN_SECRET

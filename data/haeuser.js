@@ -3,7 +3,7 @@
 // Die ids (haus1 … haus6) bleiben fest, darauf verweist die Datenbank.
 // wappenBild: fertiges Wappen aus assets/ – fehlt es, wird ein Platzhalter gezeichnet.
 // figurBilder: true = assets/figur-hausX-a … -d.webp sind da, sonst Platzhalter-Figuren.
-window.NWU_HAEUSER = [
+(typeof window !== 'undefined' ? window : globalThis).NWU_HAEUSER = [
   {
     id: 'haus1', name: 'Haus des Mondes', kurz: 'Mond', symbol: 'mond', wappenBild: 'assets/wappen-haus1.webp', figurBilder: true,
     farbe: 0x8fa8d8, css: '#8fa8d8',
@@ -68,7 +68,7 @@ window.NWU_HAEUSER = [
 
 // 4 Startcharaktere pro Haus (Plan 3). Gleiche Grundtypen, Aussehen später pro Haus.
 // Namen und Beschreibungen sind Platzhalter.
-window.NWU_FIGUREN = [
+(typeof window !== 'undefined' ? window : globalThis).NWU_FIGUREN = [
   { id: 'a', typ: 'Klinge',  text: 'Kämpft in vorderster Reihe.' },
   { id: 'b', typ: 'Seher',   text: 'Wirkt Zauber und liest die Zeichen.' },
   { id: 'c', typ: 'Schatten', text: 'Schnell, leise und schwer zu fassen.' },
