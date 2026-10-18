@@ -96,3 +96,14 @@ Plan:
 (Texte: `docs/PROLOG-TEXT.md`). Stimme: die eigene KI-Stimme. Sie klingt jung – entweder älter machen
 (Tonhöhe −2 bis −4 Halbtöne, langsamer, etwas Hall, Höhen absenken, z. B. in Audacity) oder bewusst jung
 lassen (Idee für die Geschichte: Morrígan ist uralt, die Kugel hält sie jung).
+
+## Ideen für später (gemerkt, noch nicht gebaut)
+
+- **Kanalpunkte:** Zuschauer lösen für Kanalpunkte etwas mit ihrer Figur aus (tanzen, Funken sprühen,
+  kurz auf dem Thron der Zitadelle sitzen). Streamer.bot → Reward Redemption → Bot-Nachricht, die das Overlay liest.
+- **Stream-Ende:** Alle Figuren verneigen sich, winken und gehen durch das Portal (Streamer.bot „Stream Offline“
+  oder Taste/Befehl kurz vor Schluss).
+- **Kreaturen-Kämpfe:** alle Häuser gemeinsam gegen Kreaturen der Spaltung, Untergrund je nach Portal
+  (Eis, roter Stein, Sumpf, Lava). Braucht Gemini-Bilder (Kreaturen, Untergründe).
+- **Das Erwachen:** einmaliges Live-Event, wenn die Zitadelle auf der Reise-Karte erreicht ist – Nebel lichtet sich
+  in Overlay und Website, Raben und Dornen werden wählbar (`verloren: true` entfernen, Quiz/Film ergänzen).
