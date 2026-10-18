@@ -57,3 +57,19 @@ Erst `README.md`, `docs/GESCHICHTE.md`, `docs/FORTSCHRITT.md` lesen.
 - Bilder: Haus-Symbole, Frisuren, Kopfschmuck, Begleiter (`GEMINI-PROMPTS.md` 8–11), Reise- und Erfolgskarte (6–7)
 - Zahlen für Subs/Mitglieder pro Plattform (Erfolgskarte)
 - Rolle der Partnerin, Grund der Spaltung (darf auch offen bleiben)
+
+## Qualität der Figuren im Stream (offen, wichtig)
+
+Test 18.10.: Bei 56 px Höhe verschwimmen Haare, Gravuren und Waffen – die Illustrationen haben zu viele feine
+Details für diese Größe. Bei 96 px erkennt man fast alles. Dicke Umrisse per Programm nachträglich zu
+erzeugen hilft nicht (Rüstungsschatten werden mit schwarz).
+
+Stream Avatars wirkt scharf, weil es Pixel-Art ist, die für die kleine Größe gezeichnet und ganzzahlig
+hochskaliert wird.
+
+Plan:
+1. Figuren größer zeigen (80–100 px statt 56, `figurHoehe` in `overlay/config.js`) und in OBS vergleichen.
+2. „Klein-Version“ je Figur von Gemini: vereinfacht, großer Kopf, dicke Linien, keine feinen Details
+   (Prompt steht im Chat-Verlauf; als Test zuerst die Klinge).
+3. Mipmaps für die Figuren-Texturen aktivieren (weicheres Verkleinern ohne Flimmern), in OBS prüfen.
+4. Erst wenn das nicht reicht: echte Pixel-Art mit Laufbildern (größter Umbau, eher mit Zeichner).
