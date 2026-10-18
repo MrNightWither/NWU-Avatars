@@ -53,7 +53,11 @@
   // ---------- Bilder ----------
   const laden = (src) => new Promise((ok, fehler) => {
     const img = new Image();
-    img.onload = () => ok(PIXI.Texture.from(img));
+    img.onload = () => {
+      const t = PIXI.Texture.from(img);
+      t.source.autoGenerateMipmaps = true;     // weicheres Verkleinern ohne Flimmern (Figuren sind stark verkleinert)
+      ok(t);
+    };
     img.onerror = () => fehler(new Error('Bild fehlt: ' + src));
     img.src = src;
   });
@@ -79,6 +83,8 @@
     punkt: textur((g) => g.circle(8, 8, 8).fill({ color: 0xffffff, alpha: 0.3 }).circle(8, 8, 4).fill(0xffffff)),
     glanz: textur((g) => { for (let r = 32; r > 0; r -= 2) g.circle(32, 32, r).fill({ color: 0xffffff, alpha: 0.035 }); }),
     strahl: textur((g) => { for (let i = 0; i < 12; i++) g.rect(i, 0, 24 - 2 * i, 160).fill({ color: 0xffffff, alpha: 0.06 }); }),
+    diadem: textur((g) => g.poly([0, 9, 4, 6, 7, 8, 11, 1, 15, 8, 18, 6, 22, 9, 18, 11, 4, 11]).fill(0xd9dcf2).stroke({ width: 1.4, color: 0x221a33 })
+      .circle(11, 5, 2).fill(0xb88cff)),
     krone: textur((g) => g.poly([1, 15, 1, 4, 6, 9, 11, 1, 16, 9, 21, 4, 21, 15]).fill(0xe8c96d).stroke({ width: 1.6, color: 0x2a1d08 })
       .circle(11, 2, 1.6).fill(0xfff0b8).rect(1, 15, 20, 3).fill(0xc9a84c).stroke({ width: 1.2, color: 0x2a1d08 })),
   };
@@ -257,12 +263,32 @@
       schimmer.scale.set(S.hoehe / 40, S.hoehe / 30); schimmer.y = -S.hoehe * 0.5;
       root.addChildAt(schimmer, 1);
     }
+    // Zeichen der Zitadelle: Wächter (Mods) tragen einen goldenen Ring zu ihren Füßen,
+    // die Königin (Rolle koenigin) zusätzlich ein Diadem und einen violett-goldenen Schimmer
+    const waechter = !info.silhouette && (info.mod || ['waechter', 'koenigin'].includes(info.rolle));
+    const koenigin = !info.silhouette && info.rolle === 'koenigin';
+    let zeichen = null, diadem = null;
+    if (waechter) {
+      zeichen = new PIXI.Graphics()
+        .ellipse(0, 0, S.hoehe * 0.38, S.hoehe * 0.075).stroke({ width: 2, color: 0xe8c96d, alpha: 0.9 })
+        .ellipse(0, 0, S.hoehe * 0.3, S.hoehe * 0.055).stroke({ width: 1, color: 0xfff0b8, alpha: 0.6 });
+      root.addChildAt(zeichen, 1);
+    }
+    if (koenigin) {
+      const aura = new PIXI.Sprite(T.glanz);
+      aura.anchor.set(0.5); aura.tint = 0xb88cff; aura.alpha = 0.4; aura.blendMode = 'add';
+      aura.scale.set(S.hoehe / 38, S.hoehe / 28); aura.y = -S.hoehe * 0.5;
+      root.addChildAt(aura, 1);
+      diadem = new PIXI.Sprite(T.diadem);
+      diadem.anchor.set(0.5, 1); diadem.scale.set(S.hoehe / 75);
+      root.addChild(diadem);
+    }
     const krone = new PIXI.Sprite(T.krone);
     krone.anchor.set(0.5, 1); krone.scale.set(S.hoehe / 70); krone.y = -S.hoehe * 1.04; krone.visible = false;
     root.addChild(krone);
     figurenEbene.addChild(root);
     const fi = {
-      krone,
+      krone, zeichen, diadem, rolle: info.rolle || null,
       root, koerper, rig, schatten, basis, vorlage, jubel: 0, winken: 0, farbe: HAUSFARBE[vorlage.haus] || 0xc9a84c,
       id: info.id || null, name: info.name || '', mod: !!info.mod, demo: !!info.demo,
       level, staub: !info.silhouette && FREI(level, 'staub'), funkenSpur: !info.silhouette && FREI(level, 'funken'), spurZeit: 0,
@@ -329,7 +355,8 @@
       fi.koerper.scale.set(fi.basis * sx * fi.richtung, fi.basis * sy);
       fi.koerper.y = -(laufen * schritt * S.hoehe * 0.035 + sprungY);
       fi.koerper.rotation = fi.richtung * schlafen * 0.1;
-      window.NWU_RIG.pose(fi.rig, { laufen, idle, sitzen, schlafen, phase: fi.phase, t: t + fi.versatz, jubel: fi.jubel, winken: fi.winken });
+      fi.schlag = lerp(fi.schlag || 0, fi.schlagBis > zeit ? 1 : 0, Math.min(1, dt * 14));
+      window.NWU_RIG.pose(fi.rig, { laufen, idle, sitzen, schlafen, phase: fi.phase, t: t + fi.versatz, jubel: fi.jubel, winken: fi.winken, schlag: fi.schlag });
     } else {
       const sy = 1 + laufen * (0.045 * schritt - 0.03) + idle * 0.018 * atmen + hocken * (-0.16 + 0.015 * atmen) + sprungS + fi.puls * 0.12;
       const sx = 1 + (1 - sy) * 0.6 + fi.puls * 0.06;
@@ -363,7 +390,7 @@
     fi.entfernen = true; fi.einblenden = Math.min(fi.einblenden, 0.3);
     nachId.delete(u.id);
     const neu = figurErzeugen(vorlageFuer(profil.haus, profil.figur, u.id), { id: u.id, name: u.name, mod: u.mod || ['waechter', 'koenigin'].includes(profil.rolle),
-      level: profil.level, aussehen: profil.aussehen, s: fi.s });
+      level: profil.level, aussehen: profil.aussehen, s: fi.s, rolle: profil.rolle });
     setTimeout(() => levelUp(neu), 900);
   }
 
@@ -390,6 +417,8 @@
     if (fi && !fi.entfernen) {
       fi.letzte = zeit;
       if (!fi.root) return;                               // Profil lädt noch
+      const duellRuf = text.match(/^!duell\s+@?([a-z0-9_]{2,25})/);
+      if (duellRuf) { duellStarten(fi, figuren.find((f) => !f.entfernen && f.name === duellRuf[1])); return; }
       if (text.startsWith('!lurk')) { fi.lurker = true; fi.zustandZeit = 0; }
       else if (text.startsWith('!wache') && fi.mod) { fi.wache = true; }
       else if (art === 'nachricht') { if (fi.lurker && !text.startsWith('!')) { fi.lurker = false; fi.zustandZeit = 0; } leuchten(fi); }
@@ -401,7 +430,7 @@
     const ungebunden = ergebnis === 'ungebunden', profil = ungebunden ? null : ergebnis;
     const vorlage = profil ? vorlageFuer(profil.haus, profil.figur, u.id) : vorlageFuer(null, null, u.id);
     fi = figurErzeugen(vorlage, { id: u.id, name: u.name, mod: u.mod || (profil && ['waechter', 'koenigin'].includes(profil.rolle)), lurker: text.startsWith('!lurk'),
-      level: profil ? profil.level : 1, aussehen: profil ? profil.aussehen : null, silhouette: ungebunden });
+      level: profil ? profil.level : 1, aussehen: profil ? profil.aussehen : null, silhouette: ungebunden, rolle: profil ? profil.rolle : null });
     if (ungebunden) fi.pruefeBis = zeit + 60;
   }
 
@@ -438,6 +467,64 @@
     fi.level = level;
     fi.staub = FREI(level, 'staub');
     fi.funkenSpur = FREI(level, 'funken');
+  }
+
+  // ---------- Ehrenduelle: !duell @Name ----------
+  // Beide laufen am Rahmen aufeinander zu, drei Schlagabtausche mit Funken, dann jubelt der Sieger und
+  // der Verlierer setzt sich kurz hin. Es geht nur um den Stolz – kein Ruhm wird gewonnen oder verloren.
+  const DUELL_PAUSE = 120;                   // Sekunden, bis dieselbe Person wieder fordern darf
+  const duellStil = new PIXI.TextStyle({ fontFamily: 'Georgia, serif', fontSize: 15, fontWeight: 'bold', fill: 0xf1e9d6, stroke: { color: 0x120d06, width: 3 } });
+  let duell = null;
+  const darfDuellieren = (f) => f && f.root && !f.entfernen && !f.versteckt && !f.ungebunden && f.modus === 'rahmen';
+  function duellStarten(a, b) {
+    if (duell || a === b || !darfDuellieren(a) || !darfDuellieren(b) || (a.duellPause || 0) > zeit) return false;
+    let d = norm(b.s - a.s); if (d > umfang / 2) d -= umfang;
+    const mitte = a.s + d / 2, abstand = S.hoehe * 0.42, r = Math.sign(d) || 1;
+    for (const [f, seite] of [[a, -1], [b, 1]]) {
+      f.modus = 'duell'; f.zielS = mitte + seite * r * abstand; f.duellRichtung = -seite * r;
+      f.lurkerVorher = f.lurker; f.lurker = false; f.angekommen = false;
+    }
+    a.duellPause = zeit + DUELL_PAUSE;
+    duell = { a, b, phase: 'anlauf', t: 0, schlaege: 0 };
+    return true;
+  }
+  function duellSchritt(dt) {
+    if (!duell) return;
+    const { a, b } = duell;
+    duell.t += dt;
+    const weg = [a, b].some((f) => f.entfernen || f.versteckt || f.modus !== 'duell');
+    const beenden = () => {
+      for (const f of [a, b]) if (f.modus === 'duell') { f.modus = 'rahmen'; f.lurker = f.lurkerVorher; f.zustandZeit = 2; }
+      duell = null;
+    };
+    if (weg) { beenden(); return; }
+    if (duell.phase === 'anlauf') {
+      if ((a.angekommen && b.angekommen) || duell.t > 10) { duell.phase = 'kampf'; duell.t = 0; }
+    } else if (duell.phase === 'kampf') {
+      if (duell.t > 0.85) {
+        duell.t = 0;
+        const angreifer = duell.schlaege % 2 ? b : a;
+        angreifer.schlagBis = zeit + 0.32; angreifer.puls = 0.6;
+        const m = { x: (a.root.x + b.root.x) / 2, y: (a.root.y + b.root.y) / 2 };
+        const oben = versetzt(m.x, m.y, a.winkel, S.hoehe * 0.55);
+        funken(oben.x, oben.y, 0xffe2a0, 7); funken(oben.x, oben.y, angreifer.farbe, 5);
+        if (++duell.schlaege >= 6) { duell.phase = 'ende'; duell.t = 0; }
+      }
+    } else if (duell.phase === 'ende' && !duell.sieger) {
+      // Höheres Level hilft ein wenig, entscheidet aber nie sicher (höchstens 70 : 30)
+      const vorteil = Math.max(-0.2, Math.min(0.2, ((a.level || 1) - (b.level || 1)) * 0.02));
+      const sieger = Math.random() < 0.5 + vorteil ? a : b, verlierer = sieger === a ? b : a;
+      duell.sieger = sieger;
+      sieger.jubelBis = zeit + 3; huepfen(sieger); leuchten(sieger);
+      verlierer.zustand = 'sitzen'; verlierer.g.sitzen = 0.5;
+      const t = new PIXI.Text({ text: `⚔ ${sieger.name || 'Sieg'}`, style: duellStil });
+      t.anchor.set(0.5);
+      const p = versetzt(sieger.root.x, sieger.root.y, sieger.winkel, S.hoehe * 1.35);
+      t.position.set(p.x, p.y);
+      effekt(t, { vy: -14, leben: 2.6, max: 2.6 });
+    } else if (duell.phase === 'ende' && duell.t > 3.5) {
+      beenden();
+    }
   }
 
   // ---------- Morrígans Prüfung (aus den Bot-Nachrichten von Streamer.bot) ----------
@@ -556,6 +643,7 @@
     const dt = Math.min(0.1, ticker.deltaMS / 1000);
     zeit += dt;
     portalAblauf(dt);
+    duellSchritt(dt);
     portalAktualisieren(grossesPortal, dt, zeit);
     for (let i = kleinePortale.length - 1; i >= 0; i--) {
       const k = kleinePortale[i];
@@ -582,12 +670,17 @@
       if (fi.versteckt) continue;
 
       fi.zustandZeit -= dt;
-      if (fi.zustandZeit <= 0 && fi.modus !== 'formation') zustandWechseln(fi);
+      if (fi.zustandZeit <= 0 && fi.modus !== 'formation' && fi.modus !== 'duell') zustandWechseln(fi);
       fi.eile = fi.modus === 'heim' ? 2 : fi.modus === 'formation' ? 3 : 1;
 
       // ----- Bewegung je nach Modus -----
-      if (fi.modus === 'rahmen' || fi.modus === 'formation') {
-        if (fi.modus === 'formation') {
+      if (fi.modus === 'rahmen' || fi.modus === 'formation' || fi.modus === 'duell') {
+        if (fi.modus === 'duell') {
+          // zum Duellplatz laufen, dann dem Gegner zugewandt stehen (duellSchritt steuert den Rest)
+          let d = norm(fi.zielS - fi.s); if (d > umfang / 2) d -= umfang;
+          if (Math.abs(d) > 3) { fi.richtung = Math.sign(d); fi.zustand = 'laufen'; fi.s += Math.sign(d) * Math.min(Math.abs(d), 160 * dt); fi.angekommen = false; }
+          else { fi.richtung = fi.duellRichtung; if (fi.zustand === 'laufen') fi.zustand = 'idle'; fi.angekommen = true; }
+        } else if (fi.modus === 'formation') {
           let d = norm(fi.zielS - fi.s); if (d > umfang / 2) d -= umfang;
           if (Math.abs(d) > 3) { fi.richtung = Math.sign(d); fi.zustand = 'laufen'; fi.s += Math.sign(d) * Math.min(Math.abs(d), 230 * dt); }
           else {
@@ -648,7 +741,9 @@
       fi.root.alpha = Math.max(0, fi.einblenden) * fi.modusAlpha;
       fi.root.scale.set(0.6 + 0.4 * Math.max(0, Math.min(1, fi.einblenden)) * (0.7 + 0.3 * fi.modusAlpha));
       fi.root.rotation = fi.winkel;
-      fi.krone.visible = !fi.ungebunden && fi.vorlage.haus === siegerHaus;
+      fi.krone.visible = !fi.ungebunden && !fi.diadem && fi.vorlage.haus === siegerHaus;
+      if (fi.zeichen) fi.zeichen.alpha = 0.55 + 0.35 * Math.sin(zeit * 2.2 + fi.versatz);
+      if (fi.diadem) fi.diadem.y = fi.koerper.y - S.hoehe * 0.93 + (fi.koerper.pivot.y || 0) * fi.basis;
       if (fi.krone.visible) fi.krone.y = fi.koerper.y - S.hoehe * 0.95 + (fi.koerper.pivot.y || 0) * fi.basis;
       animieren(fi, dt, zeit);
       spur(fi, dt);
@@ -695,7 +790,7 @@
     hud.innerHTML =
       `<b>NWU Avatare</b> · ${Math.round(app.ticker.FPS)} FPS · ${da.filter((f) => !f.versteckt).length}/${da.length} Figuren · Chat: ${chatStatus}` +
       `${S.sparmodus ? ' · <b>Sparmodus</b>' : ''}${EV.phase !== 'aus' ? ' · Portal: ' + EV.phase : ''}` +
-      `<div class="klein">T Test-Chatter · M Nachricht · K !lurk · R Raid · P Portal · U Level-Up · G Gruppenbild · J Jubeln · S Sparmodus · 1/2/3 Demo · H Anzeige</div>`;
+      `<div class="klein">T Test-Chatter · M Nachricht · K !lurk · R Raid · P Portal · U Level-Up · G Gruppenbild · J Jubeln · D Duell · S Sparmodus · 1/2/3 Demo · H Anzeige</div>`;
   }
 
   let testNr = 0;
@@ -723,6 +818,7 @@
     else if (k === 'g') formation(12, false);
     else if (k === 'p') { if (EV.phase === 'aus') portalStarten(); else portalBeenden(); }
     else if (k === 'u') { const f = zufallsFigur(); if (f) levelUp(f); }
+    else if (k === 'd') { const da = figuren.filter(darfDuellieren); if (da.length > 1) duellStarten(da[0], da[1 + Math.floor(Math.random() * (da.length - 1))]); }
     else if (k === 'j') figuren.forEach((f, i) => setTimeout(() => { huepfen(f); f.jubelBis = zeit + 2.5; }, i * 60));
     else if (k === 's') { S.sparmodus = !S.sparmodus; sichtbarkeit(); }
     else if (k === '1') demoSetzen(4);
@@ -732,5 +828,5 @@
   });
 
   demoSetzen(S.demo);
-  window.NWU = { S, figuren, chatter, formation, portalStarten, portalBeenden, levelUp, EV, demoSetzen, figurErzeugen, VORLAGEN };
+  window.NWU = { S, figuren, chatter, formation, portalStarten, portalBeenden, levelUp, EV, demoSetzen, figurErzeugen, VORLAGEN, duellStarten, duellLaeuft: () => !!duell };
 })();

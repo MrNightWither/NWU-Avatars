@@ -96,8 +96,14 @@ seine echte Figur aus dem Ritual, sonst eine zufällige.
 **Großes Portal:** aufrechtes Tor am Terrain-Streifen unten, die Figuren laufen heraus und nach
 2,5 Minuten wieder hinein. Automatisch alle 20 Minuten (`portal` in `config.js`) oder per Taste.
 
+**Ehrenduelle:** `!duell @Name` – beide laufen am Rahmen aufeinander zu, drei Schlagabtausche mit Funken, der Sieger
+jubelt, der Verlierer setzt sich kurz. Höheres Level hilft etwas (höchstens 70 : 30). Pro Person alle 2 Minuten.
+
+**Zeichen der Zitadelle:** Mods (Wächter) tragen einen goldenen Ring zu ihren Füßen, die Rolle `koenigin`
+(Partnerin) zusätzlich Diadem und violetten Schimmer. Das Siegerhaus des Vormonats trägt Kronen.
+
 Tasten (OBS: Rechtsklick → Interagieren): `T` Test-Chatter, `M` Nachricht, `K` !lurk, `R` Raid,
-`P` Portal auf/zu, `U` Level-Up (zufällige Figur), `G` Gruppenbild, `J` alle jubeln, `S` Sparmodus,
+`P` Portal auf/zu, `U` Level-Up (zufällige Figur), `G` Gruppenbild, `J` alle jubeln, `D` Duell, `S` Sparmodus,
 `1/2/3` = 4/12/30 Demo-Figuren, `H` Anzeige.
 
 **Aussehen und Freischaltungen:** Die Haare jeder Figur sind eine eigene Ebene und werden pro Person

@@ -43,7 +43,18 @@ Erst `README.md`, `docs/GESCHICHTE.md`, `docs/FORTSCHRITT.md` lesen.
    `overlay/config.js` → `szenen` einen Laufweg eintragen. Ohne Kamera brauchen die Figuren einen anderen Weg
    (z. B. unterer Bildrand als Terrain-Streifen oder Rahmen eines anderen Elements). Am PC in OBS ausmessen.
 
-## Gewünschte Features (Reihenfolge-Vorschlag)
+## Gebaut am 18.10. (abends, in der Cloud)
+
+Alles getestet (Worker-Tests, Overlay/Website im Browser), aber noch nicht live mit Streamer.bot und Worker:
+- **Ruhm automatisch** (`data/ruhm.js`, Worker `POST /ruhm`, Streamer.bot-Code) inkl. Wächter ×1,5
+- **Silhouette** für Ungebundene + Verwandlung nach dem Ritual + Morrígans Hinweis (First Words)
+- **Haus-Pokal** (`/pokal`) mit Krone für das Siegerhaus, **Chronik** (`chronik.html`, `/chronik`)
+- **Morrígans Prüfung** (26 Fragen, `/pruefung/*`, Overlay-Karte, Streamer.bot-Code)
+- **Zeichen der Zitadelle** (Mods: goldener Ring; Rolle `koenigin`: Diadem + Schimmer)
+- **Ehrenduelle** (`!duell @Name`, Taste D)
+- **Mipmaps** für die Figuren (in OBS prüfen, ob es schärfer/ruhiger aussieht)
+
+## Gewünschte Features (Reihenfolge-Vorschlag, ursprünglich)
 
 1. **Ruhm automatisch** (Grundlage für alles) – inkl. Anwesenheit für stille Zuschauer
 2. **Silhouette** für Ungebundene + Morrígans Hinweis im Chat

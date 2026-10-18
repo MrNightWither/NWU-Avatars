@@ -29,24 +29,24 @@
   }
 
   // p: laufen, idle, sitzen, schlafen (0–1, weich überblendet), phase (Schrittzyklus), t (Zeit),
-  //    jubel (0–1), winken (0–1)
+  //    jubel (0–1), winken (0–1), schlag (0–1, Duell)
   function pose(r, p) {
     const { teile, def } = r;
     const sw = Math.sin(p.phase), hock = p.sitzen + p.schlafen;
     const atmen = Math.sin(p.t * (p.schlafen > 0.5 ? 1.4 : 2.3));
-    const jub = p.jubel || 0, wink = p.winken || 0;
+    const jub = p.jubel || 0, wink = p.winken || 0, schlag = p.schlag || 0;
     const winkel = {
       beinV: -sw * 0.5 * p.laufen - hock * 1.45,
       beinH: sw * 0.5 * p.laufen - hock * 1.3,
       armV: sw * 0.45 * p.laufen + p.idle * 0.04 * atmen - hock * 0.45
-        - jub * (2.6 + 0.12 * Math.sin(p.t * 9)) - wink * (2.4 + 0.35 * Math.sin(p.t * 11)),
+        - jub * (2.6 + 0.12 * Math.sin(p.t * 9)) - wink * (2.4 + 0.35 * Math.sin(p.t * 11)) - schlag * 1.9,
       armH: -sw * 0.45 * p.laufen - p.idle * 0.03 * atmen - hock * 0.3
         - jub * (2.4 + 0.12 * Math.sin(p.t * 9 + 1.2)),
       kopf: p.idle * 0.03 * atmen + p.schlafen * 0.35 + p.laufen * 0.04 * Math.sin(p.phase * 2) - jub * 0.12 + wink * 0.05,
       umhang: p.laufen * (0.32 + 0.06 * Math.sin(p.phase * 2)) + 0.05 * Math.sin(p.t * 1.6) + hock * 0.15,
       rumpf: 0,
     };
-    const neigung = p.laufen * 0.06 + p.schlafen * 0.14 - jub * 0.04;
+    const neigung = p.laufen * 0.06 + p.schlafen * 0.14 - jub * 0.04 + schlag * 0.12;
     const [hx, hy] = def.huefte;
     const c = Math.cos(neigung), s = Math.sin(neigung);
     for (const id in teile) {

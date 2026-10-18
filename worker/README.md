@@ -178,6 +178,20 @@ public class CPHInline
 }
 ```
 
+## Rollen: Wächter und Königin (von Hand, PowerShell)
+
+Mods werden im Overlay automatisch über das Mod-Abzeichen im Chat erkannt (goldener Ring, mehr Ruhm fürs
+Dabeisein). Für deine Partnerin die Rolle **koenigin** setzen (Diadem, violetter Schimmer, Wächter-Rechte),
+nachdem sie das Ritual gemacht hat. Ihre Twitch-ID findest du z. B. in Streamer.bot unter Users.
+
+```powershell
+$h = @{ Authorization = "Bearer DEIN_ADMIN_SECRET" }
+Invoke-RestMethod -Method Post -Uri "https://nwu-avatare.DEIN-NAME.workers.dev/avatare/rolle" -Headers $h `
+  -ContentType "application/json" -Body '{"plattform": "twitch", "plattformId": "IHRE_TWITCH_ID", "rolle": "koenigin"}'
+```
+
+Mögliche Rollen: `waechter`, `koenigin`, `koenigskreis`, `verbuendet` (oder `null` zum Entfernen).
+
 ## Streamer.bot: Morrígans Hinweis für Ungebundene
 
 Wer im Stream zum ersten Mal schreibt und noch kein Ritual gemacht hat, bekommt **einmal pro Stream** einen Hinweis.
