@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Die Stufen — NightWither Unity</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self' https://*.workers.dev; base-uri 'none'; form-action 'none'">
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="preload" href="fonts/rajdhani-700.woff" as="font" type="font/woff" crossorigin>
+<link rel="stylesheet" href="css/stufen.css">
+</head>
+<body>
+<div class="hintergrund" aria-hidden="true"></div>
+
+<header class="kopf">
+  <a class="zurueck" href="./">← Zum Ritual</a>
+  <h1>Die Stufen</h1>
+  <p class="unter">Was auf dich wartet</p>
+</header>
+
+<main class="inhalt">
+  <section class="karte" aria-labelledby="t-stand">
+    <h2 id="t-stand">Dein Stand</h2>
+    <form class="suche" id="suche">
+      <select id="plattform" aria-label="Plattform"></select>
+      <input id="name" type="text" placeholder="Dein Name im Chat" autocomplete="username" autocapitalize="off" spellcheck="false" maxlength="40" aria-label="Dein Name im Chat">
+      <button class="knopf" type="submit">Ansehen</button>
+    </form>
+    <p class="hinweis" id="hinweis"></p>
+    <div class="stand" id="stand" hidden>
+      <img class="figur" id="figur" alt="">
+      <div class="stand-text">
+        <p class="haus" id="s-haus"></p>
+        <p class="level"><span>Level</span> <b id="s-level"></b></p>
+        <p class="naechstes" id="s-naechstes"></p>
+        <div class="balken" aria-hidden="true"><span id="s-balken"></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="karte" aria-labelledby="t-wie">
+    <h2 id="t-wie">So steigst du auf</h2>
+    <ul class="wie">
+      <li><b>Der Schattenkönig</b> erhebt dich: <code>!levelup</code> im Stream.</li>
+      <li class="bald"><b>Dabei sein</b> – Chatten, Folgen, Abonnieren, Raids und Bits bringen Erfahrung. <span class="marke">bald</span></li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="t-weg">
+    <h2 class="weg-titel" id="t-weg">Der Weg bis zur Legende</h2>
+    <ol class="weg" id="weg"></ol>
+  </section>
+</main>
+
+<script src="data/haeuser.js"></script>
+<script src="data/aussehen.js"></script>
+<script src="data/fortschritt.js"></script>
+<script src="js/einstellungen.js"></script>
+<script src="js/stufen.js"></script>
+</body>
+</html>

@@ -30,6 +30,7 @@ Der vollständige Plan steht in [`docs/PLAN.md`](docs/PLAN.md).
 index.html            Die Ritual-Seite (Quiz → Haus → Gestalt → Bindung)
 reise.html            Meilensteinkarte (Website; ?szene=1 als OBS-Szene; Test: ?twitch=5200&kick=9000 …)
 erfolge.html          Erfolgskarte Follower/Unterstützer (?szene=1 für OBS; Test: ?f_twitch=640&u_twitch=13)
+stufen.html           Alle Stufen bis Level 100 und „Dein Stand“ per Chat-Name (Test: ?level=12&haus=haus2&figur=c)
 worker/               Eigener Cloudflare Worker nwu-avatare (D1), Anleitung + Streamer.bot-Code
 css/ritual.css        Aussehen (NWU-Look: Schwarz, Gold, Rajdhani/Inter)
 js/ritual.js          Ablauf der Seite
@@ -42,6 +43,8 @@ data/haeuser.js       Die Häuser (4 aktiv, Dornen/Raben verloren) – EINE Quel
 data/quiz.js          24 Fragen, pro Durchgang 12 zufällig
 data/auswertung.js    Quiz-Auswertung (gleich für Seite und Worker)
 data/erfolge.js       Erfolgskarte: Stufen der beiden Wege, Plattformen
+data/aussehen.js      Haarfarben und Freischaltungen, die schon funktionieren (Overlay + Worker)
+data/fortschritt.js   Der ganze Stufenplan für die Website (fertig/bald)
 data/meilensteine.js  Reise: vier Pfade, Meilensteine, Essenz-Regeln, Orte auf der Karte
 overlay/              OBS-Browserquellen: avatare.html (Figuren), rig-test.html (Teil-Figuren prüfen), perf-test.html (Paket 0)
 docs/                 Plan, Fortschritt (Level 1–100), Engine-Prüfung, Datenmodell, Gemini-Prompts, Anleitung Paket 0

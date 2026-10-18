@@ -1,0 +1,73 @@
+@font-face { font-family: 'Rajdhani'; font-weight: 500; font-display: swap; src: url('../fonts/rajdhani-500.woff') format('woff'); }
+@font-face { font-family: 'Rajdhani'; font-weight: 700; font-display: swap; src: url('../fonts/rajdhani-700.woff') format('woff'); }
+@font-face { font-family: 'Inter'; font-weight: 400; font-display: swap; src: url('../fonts/inter-400.woff') format('woff'); }
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --gold: #c9a84c; --gold-hi: #e8c96d; --text: #e8e8e8; --muted: #8f8a80; --haus: #c9a84c;
+  --kopf: Rajdhani, 'Arial Narrow', system-ui, sans-serif; }
+body { background: #050507; color: var(--text); font-family: Inter, system-ui, sans-serif; line-height: 1.5; min-height: 100vh; }
+
+.hintergrund { position: fixed; inset: 0; z-index: -1;
+  background: linear-gradient(rgba(5,5,7,0.82), rgba(5,5,7,0.95)), url('../assets/karte-klein.webp') center / cover no-repeat; }
+
+.kopf { text-align: center; padding: 28px 16px 8px; position: relative; }
+.kopf h1 { font-family: var(--kopf); font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; font-size: clamp(1.6rem, 6vw, 2.4rem); }
+.kopf .unter { font-family: var(--kopf); color: var(--muted); letter-spacing: 0.25em; text-transform: uppercase; font-size: 0.8rem; }
+.zurueck { position: absolute; left: 16px; top: 16px; color: var(--gold); text-decoration: none; font-size: 0.9rem; }
+.zurueck:focus-visible, .knopf:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
+
+.inhalt { width: min(720px, calc(100% - 32px)); margin: 16px auto 60px; display: grid; gap: 18px; }
+h2 { font-family: var(--kopf); font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; font-size: 1.05rem; color: var(--gold-hi); margin-bottom: 10px; }
+
+.karte { background: rgba(12,12,16,0.82); border: 1px solid rgba(201,168,76,0.3); border-radius: 12px; padding: 16px 18px; backdrop-filter: blur(4px); }
+
+.suche { display: flex; gap: 8px; flex-wrap: wrap; }
+.suche select, .suche input { background: #0d0d11; color: var(--text); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 10px 12px; font: inherit; }
+.suche input { flex: 1 1 180px; min-width: 0; }
+.knopf { background: linear-gradient(#e0c06a, #b8933c); color: #17120a; border: 0; border-radius: 8px; padding: 10px 18px;
+  font-family: var(--kopf); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; }
+.hinweis { margin-top: 8px; font-size: 0.88rem; color: var(--muted); min-height: 1.3em; }
+
+.stand { display: flex; gap: 16px; align-items: center; margin-top: 10px; }
+.stand .figur { width: 96px; height: auto; flex: none; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.6)); }
+.stand-text { flex: 1; min-width: 0; }
+.haus { font-family: var(--kopf); letter-spacing: 0.14em; text-transform: uppercase; color: var(--haus); font-weight: 700; }
+.level { font-family: var(--kopf); font-size: 1.1rem; }
+.level span { color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; font-size: 0.85rem; }
+.level b { font-size: 2.2rem; color: var(--gold-hi); }
+.naechstes { font-size: 0.9rem; }
+.balken { height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+.balken span { display: block; height: 100%; width: 0; background: var(--haus); box-shadow: 0 0 8px var(--haus); transition: width 1.2s ease; }
+
+.wie { list-style: none; display: grid; gap: 6px; }
+.wie li::before { content: '✦ '; color: var(--gold); }
+.wie code { color: var(--gold-hi); }
+.wie li.bald { color: var(--muted); }
+.marke { display: inline-block; font-family: var(--kopf); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase;
+  border: 1px solid rgba(201,168,76,0.4); color: var(--gold); border-radius: 999px; padding: 0 7px; vertical-align: middle; }
+
+/* Der Weg: senkrechte Linie mit Stufen */
+.weg-titel { text-align: center; margin: 8px 0 14px; }
+.weg { list-style: none; position: relative; padding-left: 64px; display: grid; gap: 12px; }
+.weg::before { content: ''; position: absolute; left: 27px; top: 10px; bottom: 10px; width: 2px;
+  background: linear-gradient(var(--gold), rgba(201,168,76,0.15)); }
+.stufe { position: relative; background: rgba(12,12,16,0.78); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 14px; }
+.stufe .nr { position: absolute; left: -64px; top: 50%; transform: translateY(-50%); width: 56px; height: 56px; border-radius: 50%;
+  display: grid; place-items: center; background: #0b0b0e; border: 2px solid rgba(201,168,76,0.45);
+  font-family: var(--kopf); font-weight: 700; font-size: 1.15rem; color: var(--gold); }
+.stufe h3 { font-family: var(--kopf); font-weight: 700; letter-spacing: 0.08em; font-size: 1.05rem; }
+.stufe p { font-size: 0.88rem; color: #c9c4b8; }
+.stufe.bald h3, .stufe.bald p { opacity: 0.6; }
+.stufe.gross { border-color: rgba(201,168,76,0.5); }
+.stufe.gross .nr { border-color: var(--gold-hi); box-shadow: 0 0 14px rgba(232,201,109,0.45); }
+.stufe.erreicht { border-color: color-mix(in srgb, var(--haus) 60%, transparent); }
+.stufe.erreicht .nr { background: var(--haus); color: #0b0b0e; border-color: var(--haus); box-shadow: 0 0 12px var(--haus); }
+
+@media (max-width: 480px) {
+  .weg { padding-left: 52px; } .weg::before { left: 21px; }
+  .stufe .nr { left: -52px; width: 44px; height: 44px; font-size: 0.95rem; }
+  .stand .figur { width: 72px; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; } }
+[hidden] { display: none !important; }
+@media (max-width: 560px) { .kopf { padding-top: 46px; } }
