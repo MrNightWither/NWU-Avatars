@@ -192,10 +192,11 @@ Invoke-RestMethod -Method Post -Uri "https://nwu-avatare.DEIN-NAME.workers.dev/a
 
 Mögliche Rollen: `waechter`, `koenigin`, `koenigskreis`, `verbuendet` (oder `null` zum Entfernen).
 
-## Streamer.bot: Morrígans Hinweis für Ungebundene
+## Streamer.bot: Morrígans Hinweis für Ungebundene und Jahrestag
 
 Wer im Stream zum ersten Mal schreibt und noch kein Ritual gemacht hat, bekommt **einmal pro Stream** einen Hinweis.
-Im Overlay läuft diese Person als Silhouette, bis sie gebunden ist.
+Im Overlay läuft diese Person als Silhouette, bis sie gebunden ist. Hat jemand heute **Jahrestag der Bindung**,
+gratuliert Morrígan (im Overlay leuchtet die Figur an diesem Tag golden).
 
 1. **Trigger:** Twitch → Chat → **First Words** (feuert bei der ersten Nachricht jeder Person im Stream).
 2. **Global Variable** `nwuRitualLink` = Adresse der Website (z. B. `https://mrnightwither.github.io/NWU-Avatars/`).
@@ -219,6 +220,11 @@ public class CPHInline
             var antwort = JObject.Parse(http.GetStringAsync(URL + Uri.EscapeDataString(args["userId"].ToString())).Result);
             if ((bool?)antwort["gefunden"] == false)
                 CPH.SendMessage($"🜏 Morrígan: Ich sehe dich, @{user}, doch du gehörst noch keinem Haus an. Vollende das Ritual: {CPH.GetGlobalVar<string>("nwuRitualLink", true)}");
+            else if ((int?)antwort["jahrestag"] > 0)
+            {
+                int j = (int)antwort["jahrestag"];
+                CPH.SendMessage($"🜏 Morrígan: Heute vor {j} {(j == 1 ? "Jahr" : "Jahren")} hast du dich dem {antwort["hausName"]} angeschlossen, @{user}. Die Zitadelle erinnert sich.");
+            }
         }
         catch (Exception e) { CPH.LogWarn("NWU Hinweis: " + e.Message); }
         return true;
@@ -392,6 +398,39 @@ public class CPHInline
                 CPH.SendMessage($"@{user} Nur wer einem Haus angehört, kann Morrígans Prüfung ablegen. Vollende zuerst das Ritual.");
         }
         catch (Exception e) { CPH.LogWarn("NWU Prüfung Antwort: " + e.Message); }
+        return true;
+    }
+}
+```
+
+## Streamer.bot: Morrígans Prophezeiung
+
+Einmal pro Stream ein rätselhafter Satz, teils mit dem echten Stand im Haus-Pokal (Sätze: `data/prophezeiungen.js`).
+Das Overlay zeigt ihn als Karte. Trigger z. B. **Stream Online** mit einer **Delay**-Sub-Action davor
+(30–60 Minuten), oder ein Command `!prophezeiung` nur für dich.
+
+```csharp
+using System;
+using System.Net.Http;
+using System.Text;
+using Newtonsoft.Json.Linq;
+
+public class CPHInline
+{
+    static readonly HttpClient http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+    const string URL = "https://nwu-avatare.DEIN-NAME.workers.dev/prophezeiung";
+
+    public bool Execute()
+    {
+        var req = new HttpRequestMessage(HttpMethod.Post, URL);
+        req.Headers.Add("Authorization", "Bearer " + CPH.GetGlobalVar<string>("nwuAvatarSecret", true));
+        req.Content = new StringContent("{}", Encoding.UTF8, "application/json");
+        try
+        {
+            var a = JObject.Parse(http.SendAsync(req).Result.Content.ReadAsStringAsync().Result);
+            if ((bool?)a["ok"] == true) CPH.SendMessage($"🔮 Morrígan prophezeit: {a["text"]}");
+        }
+        catch (Exception e) { CPH.LogWarn("NWU Prophezeiung: " + e.Message); }
         return true;
     }
 }

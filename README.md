@@ -99,6 +99,8 @@ seine echte Figur aus dem Ritual, sonst eine zufällige.
 **Ehrenduelle:** `!duell @Name` – beide laufen am Rahmen aufeinander zu, drei Schlagabtausche mit Funken, der Sieger
 jubelt, der Verlierer setzt sich kurz. Höheres Level hilft etwas (höchstens 70 : 30). Pro Person alle 2 Minuten.
 
+**Morrígans Prophezeiung:** einmal pro Stream ein rätselhafter Satz (teils mit dem echten Pokal-Stand) als Karte.
+**Jahrestag der Bindung:** an diesem Tag leuchtet die Figur golden, Morrígan gratuliert im Chat.
 **Haus-Ruf:** `!ruf` – alle Figuren des eigenen Hauses laufen zur rufenden Person und jubeln (pro Haus alle 3 Minuten).
 **Wächter-Wache:** schreibt ein Mod `!wache`, stellen sich die anderen Mods für einige Sekunden neben ihn.
 **Willkommen:** wird eine Silhouette durch das Ritual zur echten Gestalt, läuft ihr Haus zu ihr und begrüßt sie.

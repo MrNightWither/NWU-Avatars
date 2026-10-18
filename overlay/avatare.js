@@ -283,6 +283,12 @@
       diadem.anchor.set(0.5, 1); diadem.scale.set(S.hoehe / 75);
       root.addChild(diadem);
     }
+    if (info.jahrestag > 0 && !info.silhouette) {
+      const gold = new PIXI.Sprite(T.glanz);
+      gold.anchor.set(0.5); gold.tint = 0xe8c96d; gold.alpha = 0.5; gold.blendMode = 'add';
+      gold.scale.set(S.hoehe / 36, S.hoehe / 26); gold.y = -S.hoehe * 0.5;
+      root.addChildAt(gold, 1);
+    }
     const krone = new PIXI.Sprite(T.krone);
     krone.anchor.set(0.5, 1); krone.scale.set(S.hoehe / 70); krone.y = -S.hoehe * 1.04; krone.visible = false;
     root.addChild(krone);
@@ -433,7 +439,8 @@
     const ungebunden = ergebnis === 'ungebunden', profil = ungebunden ? null : ergebnis;
     const vorlage = profil ? vorlageFuer(profil.haus, profil.figur, u.id) : vorlageFuer(null, null, u.id);
     fi = figurErzeugen(vorlage, { id: u.id, name: u.name, mod: u.mod || (profil && ['waechter', 'koenigin'].includes(profil.rolle)), lurker: text.startsWith('!lurk'),
-      level: profil ? profil.level : 1, aussehen: profil ? profil.aussehen : null, silhouette: ungebunden, rolle: profil ? profil.rolle : null });
+      level: profil ? profil.level : 1, aussehen: profil ? profil.aussehen : null, silhouette: ungebunden, rolle: profil ? profil.rolle : null,
+      jahrestag: profil ? profil.jahrestag : 0 });
     if (ungebunden) fi.pruefeBis = zeit + 60;
   }
 
@@ -535,7 +542,8 @@
   // „🔮 @Name hat Morrígans Prüfung bestanden! …“ · „🔮 Die Zeit ist um. Niemand … Richtig war B) …“
   const karte = document.getElementById('pruefung');
   let karteZu = null, zeitAnim = null;
-  function karteZeigen(frage, antworten, fuss, sekunden) {
+  function karteZeigen(frage, antworten, fuss, sekunden, kopf) {
+    karte.querySelector('.kopf').textContent = kopf || 'Morrígans Prüfung';
     karte.querySelector('.frage').textContent = frage;
     karte.querySelector('.antworten').replaceChildren(...antworten.map((a) => { const s = document.createElement('span'); s.textContent = a; return s; }));
     karte.querySelector('.fuss').textContent = fuss;
@@ -548,6 +556,8 @@
     karteZu = setTimeout(() => karte.classList.remove('an'), ((sekunden || 0) + 8) * 1000);
   }
   function pruefungNachricht(text) {
+    const prophezeiung = text.match(/Morrígan prophezeit:\s*(.+)$/i);
+    if (prophezeiung) { karteZeigen(`„${prophezeiung[1].trim()}“`, [], '', 0, 'Morrígans Prophezeiung'); clearTimeout(karteZu); karteZu = setTimeout(() => karte.classList.remove('an'), 14000); return true; }
     const start = text.match(/Morrígans Prüfung:\s*(.+?)\s+—\s+(.+?)\s+—\s+.*?\((\d+) Sekunden\)/i);
     if (start) { karteZeigen(start[1], start[2].split(' · '), 'Antworte im Chat mit !a, !b oder !c', Number(start[3])); return true; }
     const sieg = text.match(/@([A-Za-z0-9_]{2,25}) hat Morrígans Prüfung bestanden/i);

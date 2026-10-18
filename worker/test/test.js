@@ -73,7 +73,7 @@ assert.equal((await anmeldung('MrNightWither')).status, 409, 'Name schon gebunde
 
 // Profil für das Overlay
 r = await ruf('/avatare/profil?plattform=twitch&id=111');
-assert.deepEqual({ ...r.daten }, { gefunden: true, haus: 'haus1', rolle: null, figur: 'b', level: 1, ruhm: 0, aussehen: {} });
+assert.deepEqual({ ...r.daten }, { gefunden: true, haus: 'haus1', rolle: null, figur: 'b', level: 1, ruhm: 0, aussehen: {}, hausName: 'Haus des Mondes', jahrestag: 0 });
 assert.equal((await ruf('/avatare/profil?plattform=twitch&name=MRNIGHTWITHER')).daten.gefunden, true);
 assert.equal((await ruf('/avatare/profil?plattform=twitch&name=niemand')).daten.gefunden, false);
 
@@ -172,6 +172,18 @@ assert.equal((await sb('/pruefung/antwort', { plattform: 'twitch', plattformId: 
 r = await sb('/pruefung/start');
 assert.equal(r.daten.ok, true); assert.notEqual(r.daten.id, pid);
 await sb('/pruefung/ende');
+
+// Prophezeiung: mit Pokal-Daten werden die Platzhalter ersetzt
+r = await sb('/prophezeiung');
+assert.equal(r.daten.ok, true); assert.ok(r.daten.text.length > 10); assert.ok(!/\{[FZL]\}/.test(r.daten.text));
+for (let i = 0; i < 30; i++) assert.ok(!/\{|undefined/.test((await sb('/prophezeiung')).daten.text));
+assert.equal((await sb('/prophezeiung', {}, 'falsch')).status, 401);
+
+// Jahrestag: Bindung genau vor einem Jahr
+const vorEinemJahr = new Date(); vorEinemJahr.setUTCFullYear(vorEinemJahr.getUTCFullYear() - 1);
+env.DB.roh.prepare("UPDATE profil SET erstellt_am = ? WHERE id = (SELECT profil_id FROM konto WHERE plattform_id = '111')").run(vorEinemJahr.toISOString());
+assert.equal((await ruf('/avatare/profil?plattform=twitch&id=111')).daten.jahrestag, 1);
+assert.equal((await ruf('/avatare/profil?plattform=twitch&id=222')).daten.jahrestag, 0);
 
 // Abgelaufener Code
 r = await anmeldung('SpaeterLeser', { ip: '5.5.5.5' });

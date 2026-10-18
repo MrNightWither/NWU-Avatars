@@ -16,6 +16,7 @@ import '../../data/erfolge.js';
 import '../../data/aussehen.js';
 import '../../data/ruhm.js';
 import '../../data/pruefung.js';
+import '../../data/prophezeiungen.js';
 
 const HAEUSER = globalThis.NWU_HAEUSER;
 const QUIZ = globalThis.NWU_QUIZ;
@@ -181,13 +182,19 @@ async function profil(url, env, cors) {
   const id = url.searchParams.get('id');
   const name = (url.searchParams.get('name') || '').toLowerCase();
   if (!PLATTFORMEN.includes(plattform) || (!id && !name)) return fehler('Ungültige Anfrage', 400, cors);
-  const sql = `SELECT p.haus, p.rolle, p.figur, p.level, p.ruhm, p.aussehen FROM konto k JOIN profil p ON p.id = k.profil_id
+  const sql = `SELECT p.haus, p.rolle, p.figur, p.level, p.ruhm, p.aussehen, p.erstellt_am FROM konto k JOIN profil p ON p.id = k.profil_id
                WHERE k.plattform = ? AND ${id ? 'k.plattform_id = ?' : 'k.name_klein = ?'} AND p.gesperrt = 0`;
   const p = await env.DB.prepare(sql).bind(plattform, id || name).first();
   if (!p) return antwort({ gefunden: false }, 200, { ...cors, 'Cache-Control': 'max-age=60' });
   let aussehen = {};
   try { aussehen = p.aussehen ? JSON.parse(p.aussehen) : {}; } catch (e) { /* kaputt = Standard */ }
-  return antwort({ gefunden: true, ...p, aussehen }, 200, { ...cors, 'Cache-Control': 'max-age=60' });
+  // Jahrestag der Bindung: heute derselbe Tag wie bei der Bindung, mindestens ein Jahr her
+  const heute = jetzt(), seit = p.erstellt_am || heute;
+  const jahre = seit.slice(5, 10) === heute.slice(5, 10) ? Number(heute.slice(0, 4)) - Number(seit.slice(0, 4)) : 0;
+  const haus = HAEUSER.find((h) => h.id === p.haus);
+  const { erstellt_am, ...rest } = p;
+  return antwort({ gefunden: true, ...rest, aussehen, hausName: haus ? haus.name : null, jahrestag: Math.max(0, jahre) },
+    200, { ...cors, 'Cache-Control': 'max-age=60' });
 }
 
 // Admin: Rolle setzen (z. B. aus Streamer.bot-Gruppen oder per Hand)
@@ -394,6 +401,21 @@ async function pruefungEnde(req, env) {
   return antwort({ ok: true, id: p.id, richtig: p.richtig, richtigText: richtig.text, gewinner: p.gewinner_name || null });
 }
 
+// ---------- Morrígans Prophezeiung ----------
+// Von Streamer.bot (einmal pro Stream): ein Satz, teils mit dem echten Stand im Haus-Pokal
+async function prophezeiung(req, env) {
+  if (!sbErlaubt(req, env)) return fehler('Nicht erlaubt', 401);
+  const P = globalThis.NWU_PROPHEZEIUNGEN;
+  const pokal = await pokalDaten(env);
+  const rang = Object.entries(pokal.haeuser).sort((a, b) => b[1] - a[1]);
+  const mitDaten = rang.length >= 2 && rang[0][1] > 0;
+  const auswahl = P.saetze.filter((s) => mitDaten || !/\{[FZL]\}/.test(s));
+  const satz = auswahl[crypto.getRandomValues(new Uint32Array(1))[0] % auswahl.length];
+  const ersetzt = satz.replace(/\{F\}/g, P.namen[rang[0][0]]).replace(/\{Z\}/g, P.namen[rang[1] && rang[1][0]])
+    .replace(/\{L\}/g, P.namen[rang[rang.length - 1][0]]);
+  return antwort({ ok: true, text: ersetzt.charAt(0).toUpperCase() + ersetzt.slice(1) });
+}
+
 // ---------- Meilensteinkarte (vier Pfade, einer pro Plattform) ----------
 const PFADE = REISE.pfade.map((p) => p.id);
 
@@ -524,6 +546,7 @@ export default {
       if (req.method === 'POST' && url.pathname === '/pruefung/start') return await pruefungStarten(req, env);
       if (req.method === 'POST' && url.pathname === '/pruefung/antwort') return await pruefungAntwort(req, env);
       if (req.method === 'POST' && url.pathname === '/pruefung/ende') return await pruefungEnde(req, env);
+      if (req.method === 'POST' && url.pathname === '/prophezeiung') return await prophezeiung(req, env);
       if (req.method === 'GET' && url.pathname === '/reise') return await reiseLesen(env, cors);
       if (req.method === 'POST' && url.pathname === '/reise/essenz') return await essenzMelden(req, env);
       if (req.method === 'POST' && url.pathname === '/reise/hand') return await essenzHand(req, env);
