@@ -17,7 +17,7 @@
     ],
   },
   {
-    id: 'haus2', name: 'Haus des Blutes', kurz: 'Blut', symbol: 'blut', wappenBild: 'assets/wappen-haus2.webp',
+    id: 'haus2', name: 'Haus des Blutes', kurz: 'Blut', symbol: 'blut', wappenBild: 'assets/wappen-haus2.webp', figurBilder: true,
     farbe: 0xb3122e, css: '#d0243f',
     wesen: 'Treu bis in den Tod. Wer zu euch gehört, ist niemals allein.',
     sprueche: [
@@ -27,7 +27,7 @@
     ],
   },
   {
-    id: 'haus3', name: 'Haus des Nebels', kurz: 'Nebel', symbol: 'nebel', wappenBild: 'assets/wappen-haus3.webp',
+    id: 'haus3', name: 'Haus des Nebels', kurz: 'Nebel', symbol: 'nebel', wappenBild: 'assets/wappen-haus3.webp', figurBilder: true,
     farbe: 0x9aa3b0, css: '#9aa3b0',
     wesen: 'Ungreifbar und listig. Ihr seid überall und nirgends.',
     sprueche: [
@@ -37,7 +37,7 @@
     ],
   },
   {
-    id: 'haus4', name: 'Haus der Flamme', kurz: 'Flamme', symbol: 'flamme', wappenBild: 'assets/wappen-haus4.webp',
+    id: 'haus4', name: 'Haus der Flamme', kurz: 'Flamme', symbol: 'flamme', wappenBild: 'assets/wappen-haus4.webp', figurBilder: true,
     farbe: 0xe0672b, css: '#e8753a',
     wesen: 'Wild, mutig und unaufhaltsam. Wo ihr hingeht, wird es hell und laut.',
     sprueche: [

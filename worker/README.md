@@ -135,6 +135,49 @@ public class CPHInline
 }
 ```
 
+## Streamer.bot: Befehl `!haare <farbe>`
+
+Jeder ändert seine eigene Haarfarbe, sobald das Level reicht (Level 5, steht in `data/aussehen.js`).
+Farben: silber, weiss, schwarz, braun, blond, rot, kupfer, blau, lila, gruen, rosa.
+
+1. **Commands → Add:** Name `Haare`, Commands `!haare` und `!haarfarbe`, Location *Start*, Permissions: *Everyone*,
+   Cooldown pro Nutzer z. B. 30 Sekunden.
+2. **Action** mit **Execute C# Code**:
+
+```csharp
+using System;
+using System.Net.Http;
+using System.Text;
+using Newtonsoft.Json.Linq;
+
+public class CPHInline
+{
+    static readonly HttpClient http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+    const string URL = "https://nwu-avatare.DEIN-NAME.workers.dev/avatare/aussehen";
+
+    public bool Execute()
+    {
+        string user = args["user"].ToString();
+        string farbe = args.ContainsKey("input0") ? args["input0"].ToString() : "";
+        var daten = new JObject { ["plattform"] = "twitch", ["plattformId"] = args["userId"].ToString(), ["haare"] = farbe };
+        var req = new HttpRequestMessage(HttpMethod.Post, URL);
+        req.Headers.Add("Authorization", "Bearer " + CPH.GetGlobalVar<string>("nwuAvatarSecret", true));
+        req.Content = new StringContent(daten.ToString(), Encoding.UTF8, "application/json");
+        try
+        {
+            var antwort = JObject.Parse(http.SendAsync(req).Result.Content.ReadAsStringAsync().Result);
+            string grund = (string)antwort["grund"];
+            if ((bool?)antwort["ok"] == true) CPH.SendMessage($"@{user} Deine Haare sind jetzt {antwort["haare"]}. (Im Overlay nach spätestens einer Minute)");
+            else if (grund == "level") CPH.SendMessage($"@{user} Haarfarbe gibt es ab Level {antwort["level"]}.");
+            else if (grund == "unbekannt") CPH.SendMessage($"@{user} Du hast noch keine Gestalt. Erst das Ritual!");
+            else CPH.SendMessage($"@{user} Farben: silber, weiss, schwarz, braun, blond, rot, kupfer, blau, lila, gruen, rosa");
+        }
+        catch (Exception e) { CPH.LogWarn("NWU Haare: " + e.Message); }
+        return true;
+    }
+}
+```
+
 ## Streamer.bot: Schatten-Essenz für die Meilensteinkarte
 
 Jede Plattform hat ihren eigenen Pfad und ihre eigene Essenz. Eine Action **„NWU Essenz“** mit einer

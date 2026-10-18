@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS profil (
   rolle         TEXT,                       -- NULL | waechter | koenigskreis | verbuendet | koenig | morrigan
   figur         TEXT NOT NULL,              -- 'a' | 'b' | 'c' | 'd'
   level         INTEGER NOT NULL DEFAULT 1,
+  aussehen      TEXT,                       -- JSON, z. B. { "haare": "rot" } (freigeschaltet nach Level)
   punkte        INTEGER NOT NULL DEFAULT 0,
   quiz          TEXT NOT NULL,              -- JSON { fragen, antworten }
   gesperrt      INTEGER NOT NULL DEFAULT 0,

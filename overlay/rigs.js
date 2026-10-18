@@ -64,3 +64,16 @@ window.NWU_RIGS = {
     ],
   },
 };
+
+// Haare als eigene Ebene über dem Kopf (wird im Overlay pro Person eingefärbt), und dieselben
+// Figuren für die anderen Häuser: gleiche Gelenke, umgefärbte Teile (tools/umfaerben.py).
+(function () {
+  const R = window.NWU_RIGS;
+  for (const id of Object.keys(R)) {
+    const teile = R[id].teile, i = teile.findIndex((t) => t.id === 'kopf');
+    if (i >= 0 && !teile.some((t) => t.id === 'haare')) teile.splice(i + 1, 0, { ...teile[i], id: 'haare', bild: 'haare', haare: true });
+  }
+  for (const haus of ['haus2', 'haus3', 'haus4']) {
+    for (const typ of 'abcd') R[`${haus}-${typ}`] = R[`haus1-${typ}`];
+  }
+})();

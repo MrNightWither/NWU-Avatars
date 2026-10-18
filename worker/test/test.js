@@ -73,7 +73,7 @@ assert.equal((await anmeldung('MrNightWither')).status, 409, 'Name schon gebunde
 
 // Profil für das Overlay
 r = await ruf('/avatare/profil?plattform=twitch&id=111');
-assert.deepEqual({ ...r.daten }, { gefunden: true, haus: 'haus1', rolle: null, figur: 'b', level: 1 });
+assert.deepEqual({ ...r.daten }, { gefunden: true, haus: 'haus1', rolle: null, figur: 'b', level: 1, aussehen: {} });
 assert.equal((await ruf('/avatare/profil?plattform=twitch&name=MRNIGHTWITHER')).daten.gefunden, true);
 assert.equal((await ruf('/avatare/profil?plattform=twitch&name=niemand')).daten.gefunden, false);
 
@@ -93,6 +93,19 @@ assert.equal((await level({ plattform: 'twitch', name: 'mrnightwither', anzahl: 
 assert.equal((await level({ plattform: 'twitch', name: 'niemand' })).daten.grund, 'unbekannt');
 assert.equal((await level({ plattform: 'twitch', name: 'mrnightwither', anzahl: 500 })).status, 400);
 assert.equal((await ruf('/avatare/profil?plattform=twitch&id=111')).daten.level, 1);
+
+// Haarfarbe per !haare: erst ab Level 5, nur bekannte Farben
+const haare = (body, secret = 'sb-geheim-123') => ruf('/avatare/aussehen', { method: 'POST', body: JSON.stringify(body), headers: { Authorization: 'Bearer ' + secret } });
+assert.equal((await haare({ plattform: 'twitch', plattformId: '111', haare: 'rot' }, 'falsch')).status, 401);
+r = await haare({ plattform: 'twitch', plattformId: '111', haare: 'rot' });
+assert.equal(r.daten.grund, 'level'); assert.equal(r.daten.level, 5);
+await level({ plattform: 'twitch', name: 'mrnightwither', anzahl: 4 });
+assert.equal((await haare({ plattform: 'twitch', plattformId: '111', haare: 'regenbogen' })).daten.grund, 'farbe');
+r = await haare({ plattform: 'twitch', plattformId: '111', haare: 'Grün' });
+assert.equal(r.daten.ok, true); assert.equal(r.daten.haare, 'Grün');
+assert.deepEqual({ ...(await ruf('/avatare/profil?plattform=twitch&id=111')).daten.aussehen }, { haare: 'gruen' });
+assert.equal((await haare({ plattform: 'twitch', plattformId: '999', haare: 'rot' })).daten.grund, 'unbekannt');
+await level({ plattform: 'twitch', name: 'mrnightwither', anzahl: -10 });
 
 // Abgelaufener Code
 r = await anmeldung('SpaeterLeser', { ip: '5.5.5.5' });

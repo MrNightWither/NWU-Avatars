@@ -39,12 +39,9 @@ window.NWU_CONFIG = {
   // bild = Stufe 1 (ein Bild). rig = Stufe 2 (Teile mit Gelenken aus rigs.js), wenn vorhanden.
   // Mit ?stufe1 in der Adresse laufen alle als Einzelbild.
   figurHoehe: 56,
-  figuren: [
-    { haus: 'haus1', typ: 'a', bild: 'figuren/haus1-a.webp', rig: 'haus1-a' },
-    { haus: 'haus1', typ: 'b', bild: 'figuren/haus1-b.webp', rig: 'haus1-b' },
-    { haus: 'haus1', typ: 'c', bild: 'figuren/haus1-c.webp', rig: 'haus1-c' },
-    { haus: 'haus1', typ: 'd', bild: 'figuren/haus1-d.webp', rig: 'haus1-d' },
-  ],
+  // Alle 4 Häuser nutzen dieselben 4 Grundfiguren, umgefärbt (tools/umfaerben.py).
+  figuren: ['haus1', 'haus2', 'haus3', 'haus4'].flatMap((haus) => ['a', 'b', 'c', 'd'].map((typ) => (
+    { haus, typ, bild: `figuren/${haus}-${typ}.webp`, rig: `${haus}-${typ}` }))),
 
   // Die 6 Häuser kommen aus data/haeuser.js (eine Quelle für Website und Overlay).
   haeuser: window.NWU_HAEUSER,

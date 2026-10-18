@@ -6,13 +6,14 @@
 //   ERLAUBTE_HERKUNFT   Komma-Liste erlaubter Website-Adressen für CORS
 //   STREAMERBOT_SECRET  Secret für /avatare/bestaetigen (nie in den Code!)
 //   ADMIN_SECRET        Secret für /avatare/rolle
-//   (STREAMERBOT_SECRET gilt auch für /avatare/level, /reise/essenz, /erfolge/plus)
+//   (STREAMERBOT_SECRET gilt auch für /avatare/level, /avatare/aussehen, /reise/essenz, /erfolge/plus)
 
 import '../../data/haeuser.js';
 import '../../data/quiz.js';
 import '../../data/auswertung.js';
 import '../../data/meilensteine.js';
 import '../../data/erfolge.js';
+import '../../data/aussehen.js';
 
 const HAEUSER = globalThis.NWU_HAEUSER;
 const QUIZ = globalThis.NWU_QUIZ;
@@ -176,11 +177,13 @@ async function profil(url, env, cors) {
   const id = url.searchParams.get('id');
   const name = (url.searchParams.get('name') || '').toLowerCase();
   if (!PLATTFORMEN.includes(plattform) || (!id && !name)) return fehler('Ungültige Anfrage', 400, cors);
-  const sql = `SELECT p.haus, p.rolle, p.figur, p.level FROM konto k JOIN profil p ON p.id = k.profil_id
+  const sql = `SELECT p.haus, p.rolle, p.figur, p.level, p.aussehen FROM konto k JOIN profil p ON p.id = k.profil_id
                WHERE k.plattform = ? AND ${id ? 'k.plattform_id = ?' : 'k.name_klein = ?'} AND p.gesperrt = 0`;
   const p = await env.DB.prepare(sql).bind(plattform, id || name).first();
   if (!p) return antwort({ gefunden: false }, 200, { ...cors, 'Cache-Control': 'max-age=60' });
-  return antwort({ gefunden: true, ...p }, 200, { ...cors, 'Cache-Control': 'max-age=60' });
+  let aussehen = {};
+  try { aussehen = p.aussehen ? JSON.parse(p.aussehen) : {}; } catch (e) { /* kaputt = Standard */ }
+  return antwort({ gefunden: true, ...p, aussehen }, 200, { ...cors, 'Cache-Control': 'max-age=60' });
 }
 
 // Admin: Rolle setzen (z. B. aus Streamer.bot-Gruppen oder per Hand)
@@ -210,6 +213,26 @@ async function levelAendern(req, env) {
   const p = await env.DB.prepare('UPDATE profil SET level = MAX(1, MIN(999, level + ?)) WHERE id = ? RETURNING level')
     .bind(anzahl, k.profil_id).first();
   return antwort({ ok: true, name: k.name, level: p.level });
+}
+
+// Von Streamer.bot: Chat-Befehl !haare <farbe> – jeder für sich selbst, erst ab dem freigeschalteten Level
+async function aussehenSetzen(req, env) {
+  const auth = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+  if (!env.STREAMERBOT_SECRET || !gleich(auth, env.STREAMERBOT_SECRET)) return fehler('Nicht erlaubt', 401);
+  const d = await jsonLesen(req);
+  if (!d || !PLATTFORMEN.includes(d.plattform) || typeof d.plattformId !== 'string' || !d.plattformId) return antwort({ ok: false, grund: 'ungueltig' }, 400);
+  const haare = typeof d.haare === 'string' ? d.haare.trim().toLowerCase().replace('ü', 'ue').replace('ß', 'ss') : '';
+  if (!globalThis.NWU_HAARFARBEN[haare]) return antwort({ ok: false, grund: 'farbe', farben: Object.keys(globalThis.NWU_HAARFARBEN) });
+  const p = await env.DB.prepare('SELECT p.id, p.level, p.aussehen FROM konto k JOIN profil p ON p.id = k.profil_id WHERE k.plattform = ? AND k.plattform_id = ?')
+    .bind(d.plattform, d.plattformId).first();
+  if (!p) return antwort({ ok: false, grund: 'unbekannt' });
+  const frei = globalThis.NWU_FREISCHALTUNGEN.find((f) => f.id === 'haare');
+  if (!globalThis.NWU_FREI(p.level, 'haare')) return antwort({ ok: false, grund: 'level', level: frei.level });
+  let aussehen = {};
+  try { aussehen = p.aussehen ? JSON.parse(p.aussehen) : {}; } catch (e) { /* neu anfangen */ }
+  aussehen.haare = haare;
+  await env.DB.prepare('UPDATE profil SET aussehen = ? WHERE id = ?').bind(JSON.stringify(aussehen), p.id).run();
+  return antwort({ ok: true, haare: globalThis.NWU_HAARFARBEN[haare].name });
 }
 
 // ---------- Meilensteinkarte (vier Pfade, einer pro Plattform) ----------
@@ -335,6 +358,7 @@ export default {
       if (req.method === 'GET' && url.pathname === '/avatare/profil') return await profil(url, env, cors);
       if (req.method === 'POST' && url.pathname === '/avatare/rolle') return await rolleSetzen(req, env);
       if (req.method === 'POST' && url.pathname === '/avatare/level') return await levelAendern(req, env);
+      if (req.method === 'POST' && url.pathname === '/avatare/aussehen') return await aussehenSetzen(req, env);
       if (req.method === 'GET' && url.pathname === '/reise') return await reiseLesen(env, cors);
       if (req.method === 'POST' && url.pathname === '/reise/essenz') return await essenzMelden(req, env);
       if (req.method === 'POST' && url.pathname === '/reise/hand') return await essenzHand(req, env);

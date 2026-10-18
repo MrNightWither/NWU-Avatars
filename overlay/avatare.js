@@ -136,6 +136,30 @@
     effekt(t, { vx: 8, vy: -14, leben: 2.2, max: 2.2, wachsen: true });
   }
 
+  // Staub (ab Level 3) und Funken in Hausfarbe (ab Level 10) an den Füßen beim Laufen
+  const staubFarbe = 0x9a948c;
+  function spur(fi, dt) {
+    if (S.sparmodus || (!fi.staub && !fi.funkenSpur) || fi.g.laufen < 0.6 || fi.root.alpha < 0.5) return;
+    fi.spurZeit -= dt * fi.g.laufen * (fi.eile || 1);
+    if (fi.spurZeit > 0 || effekte.length >= PARTIKEL_MAX) return;
+    fi.spurZeit = fi.funkenSpur ? 0.12 : 0.22;
+    const a = fi.winkel, hinten = -fi.richtung;
+    const fx = fi.root.x + Math.cos(a) * hinten * S.hoehe * 0.12, fy = fi.root.y + Math.sin(a) * hinten * S.hoehe * 0.12;
+    const p = new PIXI.Sprite(T.punkt);
+    p.anchor.set(0.5);
+    // nach "oben" relativ zum Rahmen-Rand aufsteigen und nach hinten wegtreiben
+    const hoch = { x: Math.sin(a), y: -Math.cos(a) };
+    if (fi.funkenSpur) {
+      p.tint = fi.farbe; p.scale.set(0.18 + Math.random() * 0.12); p.blendMode = 'add';
+      p.position.set(fx, fy - 2);
+      effekt(p, { vx: hoch.x * 18 + Math.cos(a) * hinten * 10, vy: hoch.y * 18 + Math.sin(a) * hinten * 10, leben: 0.7, max: 0.7 });
+    } else {
+      p.tint = staubFarbe; p.scale.set(0.35 + Math.random() * 0.25);
+      p.position.set(fx, fy);
+      effekt(p, { vx: hoch.x * 8 + Math.cos(a) * hinten * 14, vy: hoch.y * 8 + Math.sin(a) * hinten * 14, leben: 0.6, max: 0.6, wachsen: true, deckkraft: 0.45 });
+    }
+  }
+
   // ---------- Portale (aufrechte Tore) ----------
   function portalBauen(groesse) {
     const root = new PIXI.Container();
@@ -216,10 +240,16 @@
     koerper.scale.set(basis);
     root.addChild(schatten, koerper);
     root.alpha = 0;
+    // Aussehen: Haarfarbe (eigene Wahl ab Level, sonst Standard des Hauses), Staub- und Funkenspur nach Level
+    const level = info.level || 1, aus = info.aussehen || {};
+    const FARBEN = window.NWU_HAARFARBEN || {}, FREI = window.NWU_FREI || (() => false);
+    const haarId = (FREI(level, 'haare') && FARBEN[aus.haare]) ? aus.haare : (window.NWU_HAARE_STANDARD || {})[vorlage.haus];
+    if (rig && rig.teile.haare && FARBEN[haarId]) rig.teile.haare.sprite.tint = FARBEN[haarId].farbe;
     figurenEbene.addChild(root);
     const fi = {
       root, koerper, rig, schatten, basis, vorlage, jubel: 0, winken: 0, farbe: HAUSFARBE[vorlage.haus] || 0xc9a84c,
       id: info.id || null, name: info.name || '', mod: !!info.mod, demo: !!info.demo,
+      level, staub: FREI(level, 'staub'), funkenSpur: FREI(level, 'funken'), spurZeit: 0,
       s: info.s ?? Math.random() * umfang,
       richtung: Math.random() < 0.5 ? 1 : -1,
       tempo: 22 + Math.random() * 16,
@@ -327,7 +357,8 @@
     nachId.set(u.id, { entfernen: false, letzte: zeit });   // Platzhalter gegen doppeltes Anlegen
     const profil = await profilLaden(u);
     const vorlage = profil ? vorlageFuer(profil.haus, profil.figur, u.id) : vorlageFuer(null, null, u.id);
-    fi = figurErzeugen(vorlage, { id: u.id, name: u.name, mod: u.mod || (profil && profil.rolle === 'waechter'), lurker: text.startsWith('!lurk') });
+    fi = figurErzeugen(vorlage, { id: u.id, name: u.name, mod: u.mod || (profil && profil.rolle === 'waechter'), lurker: text.startsWith('!lurk'),
+      level: profil ? profil.level : 1, aussehen: profil ? profil.aussehen : null });
   }
 
   function leuchten(fi) {
@@ -510,6 +541,7 @@
       fi.root.scale.set(0.6 + 0.4 * Math.max(0, Math.min(1, fi.einblenden)) * (0.7 + 0.3 * fi.modusAlpha));
       fi.root.rotation = fi.winkel;
       animieren(fi, dt, zeit);
+      spur(fi, dt);
 
       if (fi.g.schlafen > 0.8 && !S.sparmodus) {
         fi.zTimer -= dt;
@@ -523,7 +555,7 @@
       if (e.leben <= 0) { e.obj.destroy(); effekte.splice(i, 1); continue; }
       e.obj.x += e.vx * dt; e.obj.y += e.vy * dt;
       const rest = e.leben / e.max;
-      e.obj.alpha = Math.min(1, rest * 1.5);
+      e.obj.alpha = Math.min(1, rest * 1.5) * (e.deckkraft ?? 1);
       if (e.wachsen) e.obj.scale.set(1 + (1 - rest) * 0.6);
       if (e.ring) e.obj.scale.set(1 + (1 - rest) * 4);
     }
@@ -561,7 +593,14 @@
   const zufallsFigur = () => { const da = figuren.filter((f) => !f.entfernen && !f.versteckt && f.root); return da[Math.floor(Math.random() * da.length)]; };
   function demoSetzen(n) {
     const demo = figuren.filter((f) => f.demo && !f.entfernen);
-    for (let i = demo.length; i < n; i++) figurErzeugen(vorlageFuer(null, null, 'demo' + Math.random()), { demo: true, lurker: Math.random() < 0.25 });
+    const farben = Object.keys(window.NWU_HAARFARBEN || {});
+    for (let i = demo.length; i < n; i++) {
+      figurErzeugen(vorlageFuer(null, null, 'demo' + Math.random()), {
+        demo: true, lurker: Math.random() < 0.25,
+        level: [1, 1, 3, 5, 5, 10][Math.floor(Math.random() * 6)],
+        aussehen: { haare: farben[Math.floor(Math.random() * farben.length)] },
+      });
+    }
     for (let i = n; i < demo.length; i++) demo[i].entfernen = true;
   }
 
@@ -583,5 +622,5 @@
   });
 
   demoSetzen(S.demo);
-  window.NWU = { S, figuren, chatter, formation, portalStarten, portalBeenden, levelUp, EV, demoSetzen };
+  window.NWU = { S, figuren, chatter, formation, portalStarten, portalBeenden, levelUp, EV, demoSetzen, figurErzeugen, VORLAGEN };
 })();
