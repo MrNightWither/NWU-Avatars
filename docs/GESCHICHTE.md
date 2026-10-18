@@ -35,7 +35,7 @@ der vier Häuser an und ruft alle zusammen. Er vergibt Ruhm (`!levelup`).
 alles gesehen, was geschah, und was noch kommen wird. Sie spricht im Ritual, teilt die Häuser zu und stellt
 ihre Prüfungen. Sie kämpft nicht, sie sieht und erzählt.
 
-**Deine Partnerin** ❓ Vorschläge, sie sucht sich eins aus:
+**Deine Partnerin** (ist auch Mod, also zugleich Wächterin der Zitadelle) ❓ Vorschläge für ihre Rolle, sie sucht sich eins aus:
 - **Die Schattenkönigin**: herrscht an der Seite des Königs, eigene Figur, eigene Krone.
 - **Die Hüterin der Kugel**: bewahrt die Kugel, in der Morrígan sieht. Ohne sie bleibt die Kugel dunkel.
 - **Die Stimme des Westens**: die Einzige, die je aus dem Nebel zurückkam. Was sie dort gesehen hat ❓

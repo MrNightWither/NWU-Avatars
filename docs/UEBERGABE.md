@@ -21,7 +21,12 @@ Erst `README.md`, `docs/GESCHICHTE.md`, `docs/FORTSCHRITT.md` lesen.
      (schon gebaut), erste Reihe bei Kreaturen-Kämpfen.
    - Partnerin: eigene Rolle (Vorschläge in `GESCHICHTE.md`: Schattenkönigin, Hüterin der Kugel, Stimme des
      Westens), z. B. eigene Krone oder Aura. Sie entscheidet.
-   - Technisch: `profil.rolle` gibt es schon (`waechter`, `koenigskreis`, …), Aussehen pro Rolle fehlt noch.
+   - **Die Partnerin ist auch Mod.** Sie bekommt also alles, was Wächter haben (bleibt länger sichtbar, erste
+     Reihe bei Kreaturen, Wächter-Ruhm), **und zusätzlich** ihr eigenes Zeichen. Ihr eigenes Aussehen geht vor
+     dem Wächter-Aussehen, die Wächter-Rechte bleiben.
+   - Technisch: Mod-Verhalten im Overlay kommt vom Twitch-Abzeichen im Chat (`u.mod`), gilt also automatisch.
+     Das Aussehen kommt aus `profil.rolle` (`waechter`, `koenigskreis`, …). Für die Partnerin eine eigene Rolle
+     (z. B. `koenigin`) anlegen, die Wächter-Rechte **mit einschließt**. Aussehen pro Rolle fehlt noch.
 2. **Ruhm ohne viel zu schreiben**: Wer still zuschaut (Mods, Partnerin, Lurker), soll trotzdem leveln.
    Vorschlag: Ruhm vor allem für **Anwesenheit** (Streamer.bot „Present Viewers“, z. B. alle 10 Minuten),
    Chatten nur als kleiner Bonus. Mods bekommen zusätzlich **Wächter-Dienst** (Ruhm für Moderations-Aktionen
