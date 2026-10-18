@@ -8,6 +8,9 @@
   const warte = (ms) => new Promise((r) => setTimeout(r, ms));
   const $ = (id) => document.getElementById(id);
   const SPEICHER = 'nwu-ritual-v1';
+  // Nur zum Testen im Demo-Modus: index.html?haus=1 landet immer in Haus 1
+  const TEST_NR = new URLSearchParams(location.search).get('haus');
+  const TEST_HAUS = !SEITE.api && TEST_NR && HAEUSER.some((h) => h.id === 'haus' + TEST_NR) ? 'haus' + TEST_NR : null;
 
   // ---------- Fortschritt merken (überlebt Neuladen, z. B. beim Wechsel in den Chat) ----------
   let st = laden() || {};
@@ -114,6 +117,7 @@
       try { belegung = await api('/avatare/belegung'); } catch (e) { /* ohne Belegung weiter */ }
     }
     st.haus = window.NWU_AUSWERTEN(QUIZ, st.antworten, belegung).haus;
+    if (TEST_HAUS) st.haus = TEST_HAUS;
     st.spruch = Math.floor(Math.random() * 3);
     sichern();
     await hausZeigen(true);
