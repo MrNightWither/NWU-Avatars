@@ -210,45 +210,51 @@ Erst dann mit den anderen Häusern weitermachen.
 
 ---
 
-## 4. Zerlegen fürs Overlay (Teile-Bögen)
+## 4. Zerlegen fürs Overlay (Teile-Bögen) – Stand 18.10.2026
 
-Damit eine Figur im Stream laufen, klettern und kämpfen kann, braucht sie **getrennte Teile**.
-Ein normales Bild kann man zwar ausschneiden, aber was hinter dem Arm liegt, fehlt dann.
-Deshalb lassen wir Gemini die Teile **einzeln nebeneinander** zeichnen.
+Nur für Stufe 2 (Arme und Beine bewegen sich einzeln). Stufe 1 läuft schon mit der Seitenansicht.
+Wir testen das zuerst mit **einem Haus (Mond)**, erst danach die anderen.
 
-Pro Figur zwei Bilder. Dafür das fertige Charakter-Bild aus Schritt 3 **hochladen** und dazu schreiben:
+**Immer seitlich, Blick nach rechts**, genau wie die Seitenansicht fürs Overlay.
 
-**a) Seitenansicht** · Datei `seite-haus1-a.png` · Format **1:1**
-
-```
-Same character as in the uploaded image, exact same design, colors and art style.
-Pure side view, facing right, neutral standing pose, arms hanging down slightly away
-from the body, legs slightly apart so nothing overlaps.
-Plain flat solid #00FF00 green background, no shadow, no text.
-```
-
-**b) Teile-Bogen** · Datei `teile-haus1-a.png` · Format **1:1**
+Pro Figur **ein** Bild · Datei `teile-haus1-a.png` · Format **1:1**.
+**Die Seitenansicht der Figur hochladen** (nicht die Vorderansicht) und dazu schreiben:
 
 ```
-Same character as in the uploaded image, exact same design, colors and art style.
-Create a 2D animation parts sheet for a puppet rig, side view facing right.
-Draw each body part SEPARATELY with clear space between them, nothing overlapping:
-head (without hair), hair (front and back as two pieces), torso, front upper arm,
-front forearm with hand, back upper arm, back forearm with hand, front thigh,
-front lower leg with foot, back thigh, back lower leg with foot, cape/cloak,
-weapon or held item.
-Each part complete, including the areas that are normally hidden by other parts.
-Plain flat solid #00FF00 green background, no labels, no text.
+Use the uploaded character as exact reference: same design, colors, line art and art style.
+Create a 2D puppet parts sheet of this character, pure side view facing right, same scale
+as the reference.
+Draw these 9 parts SEPARATELY, arranged in a loose grid with wide empty space between them,
+no part touching another:
+1. head with all hair attached (one piece)
+2. torso with belt, without arms and without legs
+3. front arm (upper arm, forearm and hand as one piece, hanging straight down)
+4. back arm (same, one piece, hanging straight down)
+5. front leg with boot (one piece, straight)
+6. back leg with boot (one piece, straight)
+7. cape or cloak alone (if the character has one, otherwise skip)
+8. weapon or held item alone, without the hand
+9. second weapon or item alone (only if the character has one)
+Each part complete and fully drawn, including areas normally hidden behind other parts
+(for example the shoulder under the hair, the top of the leg under the tunic).
+Do NOT draw the assembled character. Do NOT add labels, numbers, arrows or text.
+Thick dark outline on every part, but NO white sticker border around the parts.
+Plain flat solid #00FF00 green background, no shadows, no gradients.
 ```
+
+Wenn Gemini trotzdem die ganze Figur dazumalt oder Teile zusammenklebt: nochmal schreiben
+**„Only the separate parts, no assembled character, more space between the parts.“**
+
+Warum **kein weißer Sticker-Rand** bei den Teilen: Der Rand käme sonst an jedem Gelenk mitten
+in die Figur. Den weißen Rand um die ganze Figur setze ich im Overlay selbst wieder drum.
 
 Was ich danach mache:
 - Hintergrund entfernen und jedes Teil ausschneiden
-- Teile an das gemeinsame Skelett anpassen (Gelenkpunkte für Schulter, Hüfte, Knie usw.)
-- In OBS testen
+- Gelenkpunkte setzen (Hals, Schultern, Hüfte) und die Figur im Overlay zusammenbauen
+- Laufen, Winken, Jubeln, Sitzen testen
 
 **Ehrlich gesagt:** Gemini hält Details zwischen zwei Bildern nicht immer exakt gleich.
-Bei manchen Teilen wird man nachbessern müssen. Plane das ein, oder lass am Ende die
-wichtigsten Figuren von einem Zeichner sauber zerlegen.
+Wenn ein Teil nicht passt, lieber diesen einen Bogen neu machen lassen.
 
 ---
 
