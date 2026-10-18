@@ -15,6 +15,7 @@ import '../../data/meilensteine.js';
 import '../../data/erfolge.js';
 import '../../data/aussehen.js';
 import '../../data/ruhm.js';
+import '../../data/pruefung.js';
 
 const HAEUSER = globalThis.NWU_HAEUSER;
 const QUIZ = globalThis.NWU_QUIZ;
@@ -326,6 +327,73 @@ async function chronik(env, cors) {
   return antwort({ pokal: await pokalDaten(env), listen }, 200, { ...cors, 'Cache-Control': 'max-age=60' });
 }
 
+// ---------- Morrígans Prüfung ----------
+const PRUEFUNG = globalThis.NWU_PRUEFUNG;
+const BUCHSTABEN = 'abcd';
+const sbErlaubt = (req, env) => {
+  const auth = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+  return !!env.STREAMERBOT_SECRET && gleich(auth, env.STREAMERBOT_SECRET);
+};
+const offenePruefung = (env) => env.DB.prepare('SELECT * FROM pruefung WHERE geschlossen = 0 ORDER BY start DESC LIMIT 1').first();
+function pruefungText(p) {
+  const f = PRUEFUNG.fragen.find((x) => x[0] === p.frage_id);
+  const reihe = JSON.parse(p.reihenfolge);
+  return { id: p.id, frage: f[1], antworten: reihe.map((i, n) => ({ buchstabe: BUCHSTABEN[n], text: f[2][i] })) };
+}
+
+// Von Streamer.bot: neue Frage stellen (zufällig, nicht eine der letzten 10)
+async function pruefungStarten(req, env) {
+  if (!sbErlaubt(req, env)) return fehler('Nicht erlaubt', 401);
+  const offen = await offenePruefung(env);
+  if (offen && offen.ende > jetzt()) return antwort({ ok: false, grund: 'laeuft', ...pruefungText(offen) });
+  if (offen) await env.DB.prepare('UPDATE pruefung SET geschlossen = 1 WHERE id = ?').bind(offen.id).run();
+  const { results } = await env.DB.prepare('SELECT frage_id FROM pruefung ORDER BY start DESC LIMIT 10').all();
+  const zuletzt = new Set(results.map((r) => r.frage_id));
+  const auswahl = PRUEFUNG.fragen.filter((f) => !zuletzt.has(f[0]));
+  const f = (auswahl.length ? auswahl : PRUEFUNG.fragen)[crypto.getRandomValues(new Uint32Array(1))[0] % (auswahl.length || PRUEFUNG.fragen.length)];
+  const reihe = f[2].map((_, i) => i);
+  for (let i = reihe.length - 1; i > 0; i--) { const j = crypto.getRandomValues(new Uint32Array(1))[0] % (i + 1); [reihe[i], reihe[j]] = [reihe[j], reihe[i]]; }
+  const p = { id: zufallsId(9), frage_id: f[0], reihenfolge: JSON.stringify(reihe), richtig: BUCHSTABEN[reihe.indexOf(0)],
+    start: jetzt(), ende: new Date(Date.now() + PRUEFUNG.sekunden * 1000).toISOString() };
+  await env.DB.prepare('INSERT INTO pruefung (id, frage_id, reihenfolge, richtig, start, ende) VALUES (?, ?, ?, ?, ?, ?)')
+    .bind(p.id, p.frage_id, p.reihenfolge, p.richtig, p.start, p.ende).run();
+  return antwort({ ok: true, sekunden: PRUEFUNG.sekunden, ...pruefungText(p) });
+}
+
+// Von Streamer.bot: !a / !b / !c / !d
+async function pruefungAntwort(req, env) {
+  if (!sbErlaubt(req, env)) return fehler('Nicht erlaubt', 401);
+  const d = await jsonLesen(req);
+  const wahl = typeof d?.antwort === 'string' ? d.antwort.trim().toLowerCase().replace(/^!/, '') : '';
+  if (!d || !PLATTFORMEN.includes(d.plattform) || typeof d.plattformId !== 'string' || !BUCHSTABEN.includes(wahl) || wahl.length !== 1)
+    return antwort({ ok: false, grund: 'ungueltig' }, 400);
+  const p = await offenePruefung(env);
+  if (!p || p.ende < jetzt()) return antwort({ ok: false, grund: 'keine' });
+  const [ich] = await profileZu(env, d.plattform, [d.plattformId]);
+  if (!ich) return antwort({ ok: false, grund: 'unbekannt' });
+  const neu = await env.DB.prepare('INSERT OR IGNORE INTO pruefung_antwort (pruefung_id, profil_id) VALUES (?, ?)').bind(p.id, ich.id).run();
+  if (!neu.meta.changes) return antwort({ ok: false, grund: 'schon' });
+  if (wahl !== p.richtig) return antwort({ ok: true, richtig: false });
+  // Nur der Erste gewinnt (atomar: nur wenn noch kein Gewinner eingetragen ist)
+  const sieg = await env.DB.prepare('UPDATE pruefung SET gewinner_id = ?, gewinner_name = ?, gewinner_haus = ?, geschlossen = 1 WHERE id = ? AND gewinner_id IS NULL')
+    .bind(ich.id, ich.name, ich.haus, p.id).run();
+  if (!sieg.meta.changes) return antwort({ ok: true, richtig: true, gewinner: false });
+  const aufstiege = await ruhmBuchen(env, [{ ...ich, menge: PRUEFUNG.ruhm }], true);
+  const haus = HAEUSER.find((h) => h.id === ich.haus);
+  return antwort({ ok: true, richtig: true, gewinner: true, name: ich.name, haus: haus ? haus.name : null, ruhm: PRUEFUNG.ruhm, aufstiege });
+}
+
+// Von Streamer.bot: Zeit ist um – Prüfung schließen und Auflösung holen
+async function pruefungEnde(req, env) {
+  if (!sbErlaubt(req, env)) return fehler('Nicht erlaubt', 401);
+  const p = await env.DB.prepare('SELECT * FROM pruefung ORDER BY start DESC LIMIT 1').first();
+  if (!p) return antwort({ ok: false, grund: 'keine' });
+  await env.DB.prepare('UPDATE pruefung SET geschlossen = 1 WHERE id = ?').bind(p.id).run();
+  const t = pruefungText(p);
+  const richtig = t.antworten.find((a) => a.buchstabe === p.richtig);
+  return antwort({ ok: true, id: p.id, richtig: p.richtig, richtigText: richtig.text, gewinner: p.gewinner_name || null });
+}
+
 // ---------- Meilensteinkarte (vier Pfade, einer pro Plattform) ----------
 const PFADE = REISE.pfade.map((p) => p.id);
 
@@ -453,6 +521,9 @@ export default {
       if (req.method === 'POST' && url.pathname === '/ruhm') return await ruhmMelden(req, env);
       if (req.method === 'GET' && url.pathname === '/pokal') return antwort(await pokalDaten(env), 200, { ...cors, 'Cache-Control': 'max-age=30' });
       if (req.method === 'GET' && url.pathname === '/chronik') return await chronik(env, cors);
+      if (req.method === 'POST' && url.pathname === '/pruefung/start') return await pruefungStarten(req, env);
+      if (req.method === 'POST' && url.pathname === '/pruefung/antwort') return await pruefungAntwort(req, env);
+      if (req.method === 'POST' && url.pathname === '/pruefung/ende') return await pruefungEnde(req, env);
       if (req.method === 'GET' && url.pathname === '/reise') return await reiseLesen(env, cors);
       if (req.method === 'POST' && url.pathname === '/reise/essenz') return await essenzMelden(req, env);
       if (req.method === 'POST' && url.pathname === '/reise/hand') return await essenzHand(req, env);

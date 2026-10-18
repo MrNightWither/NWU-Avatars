@@ -142,6 +142,37 @@ assert.equal(r.daten.listen.haus2.length, 0);
 r = await level({ plattform: 'twitch', name: 'mrnightwither', anzahl: -10 });
 assert.equal(r.daten.level, 1, 'herabsetzen landet wirklich auf dem Ziel-Level'); assert.ok(r.daten.ruhm < 100);
 
+// Morrígans Prüfung
+const sb = (pfad, body, secret = 'sb-geheim-123') => ruf(pfad, { method: 'POST', body: JSON.stringify(body || {}), headers: { Authorization: 'Bearer ' + secret } });
+assert.equal((await sb('/pruefung/start', {}, 'falsch')).status, 401);
+assert.equal((await sb('/pruefung/antwort', { plattform: 'twitch', plattformId: '111', antwort: 'a' })).daten.grund, 'keine');
+r = await sb('/pruefung/start');
+assert.equal(r.daten.ok, true); assert.equal(r.daten.antworten.length, 3); assert.equal(r.daten.sekunden, 45);
+const pid = r.daten.id;
+assert.equal((await sb('/pruefung/start')).daten.grund, 'laeuft', 'nur eine Prüfung gleichzeitig');
+const richtig = env.DB.roh.prepare('SELECT richtig FROM pruefung WHERE id = ?').get(pid).richtig;
+const falsch = 'abc'.split('').find((x) => x !== richtig);
+assert.equal((await sb('/pruefung/antwort', { plattform: 'twitch', plattformId: 'fremd', antwort: richtig })).daten.grund, 'unbekannt');
+const ruhmVorher = (await ruf('/avatare/profil?plattform=twitch&id=111')).daten.ruhm;
+const pokalVorher = (await ruf('/pokal')).daten.haeuser.haus1;
+r = await sb('/pruefung/antwort', { plattform: 'twitch', plattformId: '111', antwort: '!' + falsch.toUpperCase() });
+assert.equal(r.daten.richtig, false);
+assert.equal((await sb('/pruefung/antwort', { plattform: 'twitch', plattformId: '111', antwort: richtig })).daten.grund, 'schon', 'nur ein Versuch');
+// zweite Person bindet sich und gewinnt
+r = await anmeldung('Rätselfreund'.replace('ä', 'ae'), { ip: '7.7.7.7' });
+await bestaetigen({ plattform: 'twitch', plattformId: '222', name: 'Raetselfreund', code: r.daten.code });
+r = await sb('/pruefung/antwort', { plattform: 'twitch', plattformId: '222', antwort: richtig });
+assert.equal(r.daten.gewinner, true); assert.equal(r.daten.name, 'Raetselfreund'); assert.equal(r.daten.haus, 'Haus des Mondes');
+assert.deepEqual(r.daten.aufstiege.map((a) => a.level), [2], '100 Ruhm = Level 2');
+assert.equal((await ruf('/avatare/profil?plattform=twitch&id=111')).daten.ruhm, ruhmVorher, 'Falsche Antwort gibt nichts');
+assert.equal((await ruf('/pokal')).daten.haeuser.haus1, pokalVorher + 100, 'Prüfung zählt fürs Haus');
+r = await sb('/pruefung/ende');
+assert.equal(r.daten.richtig, richtig); assert.equal(r.daten.gewinner, 'Raetselfreund');
+assert.equal((await sb('/pruefung/antwort', { plattform: 'twitch', plattformId: '222', antwort: richtig })).daten.grund, 'keine');
+r = await sb('/pruefung/start');
+assert.equal(r.daten.ok, true); assert.notEqual(r.daten.id, pid);
+await sb('/pruefung/ende');
+
 // Abgelaufener Code
 r = await anmeldung('SpaeterLeser', { ip: '5.5.5.5' });
 env.DB.roh.prepare("UPDATE anmeldung SET gueltig_bis = '2000-01-01T00:00:00.000Z' WHERE id = ?").run(r.daten.id);

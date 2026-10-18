@@ -17,10 +17,26 @@
   #hud b { color: #e8c96d; }
   #hud .klein { color: #8f8a80; font-size: 11px; margin-top: 4px; }
   #hud.aus { display: none; }
+  /* Morrígans Prüfung */
+  #pruefung {
+    position: fixed; left: 50%; top: 4%; translate: -50% 0; z-index: 3; width: min(560px, 90vw);
+    background: linear-gradient(rgba(14,10,22,0.94), rgba(8,6,12,0.94)); border: 2px solid #c9a84c; border-radius: 12px;
+    padding: 12px 18px 14px; color: #f1e9d6; font: 15px/1.4 Georgia, 'Times New Roman', serif; text-align: center;
+    box-shadow: 0 0 24px rgba(122,92,255,0.45); opacity: 0; transition: opacity 0.8s ease, translate 0.8s ease; pointer-events: none;
+  }
+  #pruefung.an { opacity: 1; translate: -50% 6px; }
+  #pruefung .kopf { font: 700 12px/1 'Arial Narrow', Arial, sans-serif; letter-spacing: 0.3em; color: #e8c96d; text-transform: uppercase; }
+  #pruefung .frage { font-size: 18px; font-style: italic; margin: 6px 0 8px; }
+  #pruefung .antworten { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  #pruefung .antworten span { border: 1px solid rgba(201,168,76,0.5); border-radius: 6px; padding: 3px 9px; font-size: 14px; }
+  #pruefung .antworten span.richtig { background: #c9a84c; color: #17120a; border-color: #e8c96d; }
+  #pruefung .fuss { margin-top: 8px; font-size: 13px; color: #b9b0c9; }
+  #pruefung .zeit { height: 3px; background: #7a5cff; margin-top: 8px; border-radius: 2px; transform-origin: left; }
 </style>
 </head>
 <body>
 <div id="hud"></div>
+<div id="pruefung" aria-live="polite"><div class="kopf">Morrígans Prüfung</div><div class="frage"></div><div class="antworten"></div><div class="fuss"></div><div class="zeit"></div></div>
 <script src="lib/pixi.min.js"></script>
 <script src="../data/haeuser.js"></script>
 <script src="../data/aussehen.js"></script>

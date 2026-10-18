@@ -77,3 +77,22 @@ CREATE TABLE IF NOT EXISTS haus_ruhm (
   PRIMARY KEY (monat, haus)
 );
 CREATE INDEX IF NOT EXISTS profil_ruhm ON profil (haus, ruhm);
+
+-- Morrígans Prüfung: immer höchstens eine offene Frage
+CREATE TABLE IF NOT EXISTS pruefung (
+  id            TEXT PRIMARY KEY,
+  frage_id      TEXT NOT NULL,
+  reihenfolge   TEXT NOT NULL,              -- JSON: gemischte Antwort-Indizes, z. B. [2,0,1]
+  richtig       TEXT NOT NULL,              -- Buchstabe der richtigen Antwort ('a' …)
+  start         TEXT NOT NULL,
+  ende          TEXT NOT NULL,
+  geschlossen   INTEGER NOT NULL DEFAULT 0,
+  gewinner_id   TEXT,                       -- profil.id
+  gewinner_name TEXT,
+  gewinner_haus TEXT
+);
+CREATE TABLE IF NOT EXISTS pruefung_antwort (
+  pruefung_id   TEXT NOT NULL,
+  profil_id     TEXT NOT NULL,
+  PRIMARY KEY (pruefung_id, profil_id)      -- jede Person antwortet nur einmal
+);

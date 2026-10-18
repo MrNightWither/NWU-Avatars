@@ -296,6 +296,93 @@ public class CPHInline
 
 Wie viel Ruhm es wofür gibt und ab wann welches Level erreicht ist: `data/ruhm.js`.
 
+## Streamer.bot: Morrígans Prüfung
+
+Morrígan stellt eine Frage zur Geschichte, drei Antworten, 45 Sekunden Zeit. Wer zuerst richtig antwortet,
+bekommt 100 Ruhm für sich und sein Haus. Jede Person hat nur einen Versuch. Fragen: `data/pruefung.js`.
+Das Overlay liest die Bot-Nachrichten mit und zeigt die Frage als Karte, der Gewinner jubelt.
+
+**Action „NWU Prüfung“** – Trigger: Command `!pruefung` / `!prüfung` (nur Broadcaster) und/oder eine
+**Timed Action** (z. B. alle 30 Minuten, nur wenn live):
+
+```csharp
+using System;
+using System.Linq;
+using System.Net.Http;
+using System.Text;
+using Newtonsoft.Json.Linq;
+
+public class CPHInline
+{
+    static readonly HttpClient http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+    const string BASIS = "https://nwu-avatare.DEIN-NAME.workers.dev";
+
+    JObject Post(string pfad)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Post, BASIS + pfad);
+        req.Headers.Add("Authorization", "Bearer " + CPH.GetGlobalVar<string>("nwuAvatarSecret", true));
+        req.Content = new StringContent("{}", Encoding.UTF8, "application/json");
+        return JObject.Parse(http.SendAsync(req).Result.Content.ReadAsStringAsync().Result);
+    }
+
+    public bool Execute()
+    {
+        try
+        {
+            var p = Post("/pruefung/start");
+            if ((bool?)p["ok"] != true) return true;
+            string antworten = string.Join(" · ", p["antworten"].Select(a => $"{a["buchstabe"].ToString().ToUpper()}) {a["text"]}"));
+            CPH.SendMessage($"🔮 Morrígans Prüfung: {p["frage"]} — {antworten} — Antworte mit !a, !b oder !c ({p["sekunden"]} Sekunden)");
+            CPH.Wait(((int)p["sekunden"] + 1) * 1000);
+            var e = Post("/pruefung/ende");
+            if (e["gewinner"] == null || e["gewinner"].Type == JTokenType.Null)
+                CPH.SendMessage($"🔮 Die Zeit ist um. Niemand hat Morrígans Prüfung bestanden. Richtig war {e["richtig"].ToString().ToUpper()}) {e["richtigText"]}.");
+        }
+        catch (Exception ex) { CPH.LogWarn("NWU Prüfung: " + ex.Message); }
+        return true;
+    }
+}
+```
+
+**Action „NWU Prüfung Antwort“** – Trigger: Commands `!a`, `!b`, `!c`, `!d` (Everyone):
+
+```csharp
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Text;
+using Newtonsoft.Json.Linq;
+
+public class CPHInline
+{
+    static readonly HttpClient http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+    const string URL = "https://nwu-avatare.DEIN-NAME.workers.dev/pruefung/antwort";
+    static readonly HashSet<string> schonErinnert = new HashSet<string>();
+
+    public bool Execute()
+    {
+        string user = args["user"].ToString();
+        var daten = new JObject { ["plattform"] = "twitch", ["plattformId"] = args["userId"].ToString(), ["antwort"] = args["command"].ToString() };
+        var req = new HttpRequestMessage(HttpMethod.Post, URL);
+        req.Headers.Add("Authorization", "Bearer " + CPH.GetGlobalVar<string>("nwuAvatarSecret", true));
+        req.Content = new StringContent(daten.ToString(), Encoding.UTF8, "application/json");
+        try
+        {
+            var a = JObject.Parse(http.SendAsync(req).Result.Content.ReadAsStringAsync().Result);
+            if ((bool?)a["gewinner"] == true)
+            {
+                CPH.SendMessage($"🔮 @{a["name"]} hat Morrígans Prüfung bestanden! +{a["ruhm"]} Ruhm für sich und das {a["haus"]}.");
+                foreach (var s in a["aufstiege"] ?? new JArray()) CPH.SendMessage($"✨ @{s["name"]} steigt auf: jetzt Level {s["level"]}!");
+            }
+            else if ((string)a["grund"] == "unbekannt" && schonErinnert.Add(user))
+                CPH.SendMessage($"@{user} Nur wer einem Haus angehört, kann Morrígans Prüfung ablegen. Vollende zuerst das Ritual.");
+        }
+        catch (Exception e) { CPH.LogWarn("NWU Prüfung Antwort: " + e.Message); }
+        return true;
+    }
+}
+```
+
 ## Streamer.bot: Schatten-Essenz für die Meilensteinkarte
 
 Jede Plattform hat ihren eigenen Pfad und ihre eigene Essenz. Eine Action **„NWU Essenz“** mit einer

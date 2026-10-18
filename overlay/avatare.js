@@ -383,6 +383,7 @@
       }
       if (lv || !u.broadcaster) return;
     }
+    if (vomBot && pruefungNachricht(u.text || '')) return;
     if (vomBot && !u.broadcaster) return;                // Bot-Nachrichten erzeugen keine Figur
     if (!u.id || u.broadcaster) return;                 // Schattenkönig bekommt später eine eigene Figur
     let fi = nachId.get(u.id);
@@ -437,6 +438,48 @@
     fi.level = level;
     fi.staub = FREI(level, 'staub');
     fi.funkenSpur = FREI(level, 'funken');
+  }
+
+  // ---------- Morrígans Prüfung (aus den Bot-Nachrichten von Streamer.bot) ----------
+  // „🔮 Morrígans Prüfung: Frage — A) … · B) … · C) … — Antworte mit !a … (45 Sekunden)“
+  // „🔮 @Name hat Morrígans Prüfung bestanden! …“ · „🔮 Die Zeit ist um. Niemand … Richtig war B) …“
+  const karte = document.getElementById('pruefung');
+  let karteZu = null, zeitAnim = null;
+  function karteZeigen(frage, antworten, fuss, sekunden) {
+    karte.querySelector('.frage').textContent = frage;
+    karte.querySelector('.antworten').replaceChildren(...antworten.map((a) => { const s = document.createElement('span'); s.textContent = a; return s; }));
+    karte.querySelector('.fuss').textContent = fuss;
+    const zeit = karte.querySelector('.zeit');
+    if (zeitAnim) zeitAnim.cancel();
+    zeit.hidden = !sekunden;
+    if (sekunden) zeitAnim = zeit.animate([{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], { duration: sekunden * 1000, fill: 'forwards' });
+    karte.classList.add('an');
+    clearTimeout(karteZu);
+    karteZu = setTimeout(() => karte.classList.remove('an'), ((sekunden || 0) + 8) * 1000);
+  }
+  function pruefungNachricht(text) {
+    const start = text.match(/Morrígans Prüfung:\s*(.+?)\s+—\s+(.+?)\s+—\s+.*?\((\d+) Sekunden\)/i);
+    if (start) { karteZeigen(start[1], start[2].split(' · '), 'Antworte im Chat mit !a, !b oder !c', Number(start[3])); return true; }
+    const sieg = text.match(/@([A-Za-z0-9_]{2,25}) hat Morrígans Prüfung bestanden/i);
+    if (sieg) {
+      const name = sieg[1].toLowerCase();
+      karte.querySelector('.fuss').textContent = `✦ ${sieg[1]} hat bestanden ✦`;
+      if (zeitAnim) zeitAnim.finish();
+      clearTimeout(karteZu); karteZu = setTimeout(() => karte.classList.remove('an'), 7000);
+      const fi = figuren.find((f) => !f.entfernen && f.name === name);
+      if (fi && fi.root) { fi.jubelBis = zeit + 4; leuchten(fi); huepfen(fi); }
+      return true;
+    }
+    const keiner = text.match(/Niemand hat Morrígans Prüfung bestanden\.\s*Richtig war ([A-D])\)/i);
+    if (keiner) {
+      const b = keiner[1].toUpperCase();
+      karte.querySelectorAll('.antworten span').forEach((s) => s.classList.toggle('richtig', s.textContent.startsWith(b + ')')));
+      karte.querySelector('.fuss').textContent = 'Niemand hat bestanden.';
+      if (zeitAnim) zeitAnim.finish();
+      clearTimeout(karteZu); karteZu = setTimeout(() => karte.classList.remove('an'), 7000);
+      return true;
+    }
+    return false;
   }
 
   // ---------- Haus-Pokal: das Siegerhaus des letzten Monats trägt eine Krone ----------

@@ -107,6 +107,10 @@ es eine Funkenspur in Hausfarbe, ab Level 25 seltene Haarfarben. Stufen und Farb
 `data/aussehen.js`, der ganze Plan bis Level 100 (und Aufstieg danach) in `docs/FORTSCHRITT.md`.
 Andere Häuser umfärben: Farben in `tools/umfaerben.py` anpassen und `python tools/umfaerben.py` ausführen.
 
+**Morrígans Prüfung:** Startet Streamer.bot eine Prüfung (`!pruefung` oder Timer), zeigt das Overlay die Frage
+als Karte oben in der Mitte; der Gewinner jubelt, ohne Gewinner wird die richtige Antwort markiert.
+Fragen in `data/pruefung.js`, Streamer.bot-Code in `worker/README.md`.
+
 **Level-Up:** Nur du (nicht die Mods) schreibst `!levelup @Name` (oder `!levelup @Name 5`). Die Figur bekommt
 Lichtstrahl, Funken und „LEVEL UP!“ und jubelt. Gespeichert wird das Level über Streamer.bot im Worker
 (Anleitung in `worker/README.md`).
