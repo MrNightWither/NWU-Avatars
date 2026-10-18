@@ -79,6 +79,8 @@
     punkt: textur((g) => g.circle(8, 8, 8).fill({ color: 0xffffff, alpha: 0.3 }).circle(8, 8, 4).fill(0xffffff)),
     glanz: textur((g) => { for (let r = 32; r > 0; r -= 2) g.circle(32, 32, r).fill({ color: 0xffffff, alpha: 0.035 }); }),
     strahl: textur((g) => { for (let i = 0; i < 12; i++) g.rect(i, 0, 24 - 2 * i, 160).fill({ color: 0xffffff, alpha: 0.06 }); }),
+    krone: textur((g) => g.poly([1, 15, 1, 4, 6, 9, 11, 1, 16, 9, 21, 4, 21, 15]).fill(0xe8c96d).stroke({ width: 1.6, color: 0x2a1d08 })
+      .circle(11, 2, 1.6).fill(0xfff0b8).rect(1, 15, 20, 3).fill(0xc9a84c).stroke({ width: 1.2, color: 0x2a1d08 })),
   };
 
   const lerp = (a, b, t) => a + (b - a) * t;
@@ -255,8 +257,12 @@
       schimmer.scale.set(S.hoehe / 40, S.hoehe / 30); schimmer.y = -S.hoehe * 0.5;
       root.addChildAt(schimmer, 1);
     }
+    const krone = new PIXI.Sprite(T.krone);
+    krone.anchor.set(0.5, 1); krone.scale.set(S.hoehe / 70); krone.y = -S.hoehe * 1.04; krone.visible = false;
+    root.addChild(krone);
     figurenEbene.addChild(root);
     const fi = {
+      krone,
       root, koerper, rig, schatten, basis, vorlage, jubel: 0, winken: 0, farbe: HAUSFARBE[vorlage.haus] || 0xc9a84c,
       id: info.id || null, name: info.name || '', mod: !!info.mod, demo: !!info.demo,
       level, staub: !info.silhouette && FREI(level, 'staub'), funkenSpur: !info.silhouette && FREI(level, 'funken'), spurZeit: 0,
@@ -433,6 +439,19 @@
     fi.funkenSpur = FREI(level, 'funken');
   }
 
+  // ---------- Haus-Pokal: das Siegerhaus des letzten Monats trägt eine Krone ----------
+  // Ohne Worker zum Testen: ?sieger=haus2
+  let siegerHaus = q.get('sieger') || null;
+  async function pokalLaden() {
+    if (!S.api) return;
+    try {
+      const d = await (await fetch(`${S.api.replace(/\/$/, '')}/pokal`, { credentials: 'omit' })).json();
+      siegerHaus = (d.vormonat && d.vormonat.sieger) || null;
+    } catch (e) { /* nächstes Mal */ }
+  }
+  pokalLaden();
+  setInterval(pokalLaden, 10 * 60 * 1000);
+
   // ---------- Level-Up ----------
   const lvStil = new PIXI.TextStyle({ fontFamily: 'Georgia, serif', fontSize: 15, fontWeight: 'bold', fill: 0xe8c96d, stroke: { color: 0x1a1208, width: 3 }, letterSpacing: 1 });
   function levelUp(fi) {
@@ -586,6 +605,8 @@
       fi.root.alpha = Math.max(0, fi.einblenden) * fi.modusAlpha;
       fi.root.scale.set(0.6 + 0.4 * Math.max(0, Math.min(1, fi.einblenden)) * (0.7 + 0.3 * fi.modusAlpha));
       fi.root.rotation = fi.winkel;
+      fi.krone.visible = !fi.ungebunden && fi.vorlage.haus === siegerHaus;
+      if (fi.krone.visible) fi.krone.y = fi.koerper.y - S.hoehe * 0.95 + (fi.koerper.pivot.y || 0) * fi.basis;
       animieren(fi, dt, zeit);
       spur(fi, dt);
 

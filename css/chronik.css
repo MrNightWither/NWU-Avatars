@@ -1,0 +1,29 @@
+/* Chronik-Seite: baut auf css/stufen.css auf */
+.beispiel { text-align: center; font-size: 0.82rem; color: var(--gold); border: 1px dashed rgba(201,168,76,0.4); border-radius: 8px; padding: 6px 10px; }
+
+.pokal { display: grid; gap: 10px; margin-top: 4px; }
+.pokal-zeile { display: grid; grid-template-columns: 40px 72px 1fr auto; align-items: center; gap: 10px; }
+.pokal-zeile img { width: 40px; height: 40px; object-fit: contain; }
+.pokal-zeile b { font-family: var(--kopf); letter-spacing: 0.1em; text-transform: uppercase; color: var(--haus); }
+.pokal-zeile .balken { height: 10px; margin: 0; }
+.pokal-zeile .wert { font-family: var(--kopf); font-weight: 700; min-width: 64px; text-align: right; }
+.pokal-zeile.vorne b::after { content: ' ♛'; color: var(--gold-hi); }
+
+.listen { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.liste h3 { font-family: var(--kopf); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--haus); margin-bottom: 8px; font-size: 1rem; }
+.liste ol { list-style: none; display: grid; gap: 4px; }
+.liste li { display: grid; grid-template-columns: 22px 34px 1fr auto; align-items: center; gap: 8px; padding: 3px 4px; border-radius: 6px; }
+.liste li:nth-child(-n+3) { background: color-mix(in srgb, var(--haus) 12%, transparent); }
+.liste .platz { font-family: var(--kopf); font-weight: 700; color: var(--gold); text-align: center; }
+.liste img { width: 34px; height: 40px; object-fit: contain; }
+.liste .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.92rem; }
+.liste .lv { font-family: var(--kopf); font-weight: 700; color: var(--gold-hi); font-size: 0.9rem; }
+.liste .leer { color: var(--muted); font-size: 0.88rem; }
+.links { text-align: center; font-size: 0.9rem; }
+.links a { color: var(--gold); text-decoration: none; }
+
+@media (max-width: 640px) {
+  .listen { grid-template-columns: 1fr; }
+  .pokal-zeile { grid-template-columns: 32px 60px 1fr auto; }
+  .pokal-zeile img { width: 32px; height: 32px; }
+}

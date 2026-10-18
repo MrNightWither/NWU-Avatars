@@ -32,6 +32,8 @@ index.html            Die Ritual-Seite (Quiz → Haus → Gestalt → Bindung)
 reise.html            Meilensteinkarte (Website; ?szene=1 als OBS-Szene; Test: ?twitch=5200&kick=9000 …)
 erfolge.html          Erfolgskarte Follower/Unterstützer (?szene=1 für OBS; Test: ?f_twitch=640&u_twitch=13)
 stufen.html           Alle Stufen bis Level 100 und „Dein Stand“ per Chat-Name (Test: ?level=12&haus=haus2&figur=c)
+chronik.html          Haus-Pokal (Kampf um das Banner) und die zehn Ruhmreichsten jedes Hauses
+prolog.html           Prolog „Die Spaltung“: Morrígan erzählt die Geschichte (Stimme: assets/stimme/)
 worker/               Eigener Cloudflare Worker nwu-avatare (D1), Anleitung + Streamer.bot-Code
 css/ritual.css        Aussehen (NWU-Look: Schwarz, Gold, Rajdhani/Inter)
 js/ritual.js          Ablauf der Seite
@@ -81,6 +83,7 @@ Oder per Adresse mit Einstellungen, z. B. `…/overlay/avatare.html?n=12&szene=s
 | `bg=1` | dunkler Hintergrund mit Rahmen zum Ansehen im Browser |
 | `hud=0` | Anzeige oben links aus |
 | `stufe1` | alle Figuren als Einzelbild statt aus Teilen (zum Vergleichen) |
+| `sieger` | Haus mit Krone zum Testen, z. B. `sieger=haus2` (mit Worker kommt es aus `/pokal`) |
 
 **Chat:** In `overlay/config.js` bei `kanal` deinen Twitch-Namen eintragen (oder `?kanal=…`).
 Das Overlay liest den Chat anonym mit, ohne Login. Wer schreibt, tritt aus einem kleinen Portal

@@ -28,7 +28,7 @@
   },
   {
     id: 'haus3', name: 'Haus des Nebels', kurz: 'Nebel', symbol: 'nebel', wappenBild: 'assets/wappen-haus3.webp', figurBilder: true,
-    farbe: 0x9aa3b0, css: '#9aa3b0',
+    farbe: 0x5fb0a4, css: '#6fbcb0',
     wesen: 'Ungreifbar und listig. Ihr seid überall und nirgends.',
     sprueche: [
       'Niemand hat dich kommen sehen. Genau deshalb bist du hier.',

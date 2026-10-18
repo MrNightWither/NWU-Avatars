@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Die Chronik — NightWither Unity</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self' https://*.workers.dev; base-uri 'none'; form-action 'none'">
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="preload" href="fonts/rajdhani-700.woff" as="font" type="font/woff" crossorigin>
+<link rel="stylesheet" href="css/stufen.css">
+<link rel="stylesheet" href="css/chronik.css">
+</head>
+<body>
+<div class="hintergrund" aria-hidden="true"></div>
+
+<header class="kopf">
+  <a class="zurueck" href="./">← Zum Ritual</a>
+  <h1>Die Chronik</h1>
+  <p class="unter">Morrígan schreibt die Namen der Ruhmreichen auf</p>
+</header>
+
+<main class="inhalt">
+  <p class="beispiel" id="beispiel" hidden>Beispiel-Daten: Sobald der Server läuft, steht hier der echte Stand.</p>
+
+  <section class="karte" aria-labelledby="t-banner">
+    <h2 id="t-banner">Der Kampf um das Banner</h2>
+    <p class="erklaerung" id="banner-text"></p>
+    <div class="pokal" id="pokal"></div>
+    <p class="erklaerung klein" id="vormonat"></p>
+  </section>
+
+  <section aria-labelledby="t-chronik">
+    <h2 class="weg-titel" id="t-chronik">Die Ruhmreichsten jedes Hauses</h2>
+    <div class="listen" id="listen"></div>
+  </section>
+
+  <p class="links"><a href="stufen.html">Die Stufen →</a> · <a href="prolog.html">Die Geschichte →</a></p>
+</main>
+
+<script src="data/haeuser.js"></script>
+<script src="js/einstellungen.js"></script>
+<script src="js/chronik.js"></script>
+</body>
+</html>
