@@ -283,3 +283,22 @@ Night, atmospheric, dark gothic fantasy, gold accents. No text, no labels, no le
 
 Danach setze ich die Orte genau auf die Landmarken. Namen, Texte und Essenz-Schwellen
 stehen in `data/meilensteine.js` und lassen sich jederzeit ändern.
+
+---
+
+## 7. Erfolgs-Karte (Follower und Unterstützer)
+
+**Datei:** `erfolge-karte.png` · Format **16:9**, so groß wie möglich
+
+```
+Same art style and world as the uploaded map. A NEW map with TWO long separate roads.
+Road 1 (golden): starts small at the bottom-left as a humble dirt path and climbs in ten
+clear stages up to a huge golden crown monument at the top-right. Each stage has a landmark
+that grows grander: a campfire, a camp, a watchtower, a big gate, a stone bridge, a fortress,
+a silver hall, a moon tower, a golden banner on a mountain, the crown monument.
+Road 2 (blood red): starts at the bottom-right and winds through eight stages to a red
+sanctum in the middle: an oath stone, a circle of torches, a blood altar, a barracks,
+an honor guard hall, an oath temple, a great red hall, the red sanctum.
+The two roads never cross and are clearly readable. Night, dark gothic fantasy, gold accents.
+No text, no labels, no numbers, no letters.
+```

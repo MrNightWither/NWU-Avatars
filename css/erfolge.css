@@ -1,0 +1,22 @@
+/* Erfolgskarte – ergänzt css/reise.css */
+.weg-linie { fill: none; stroke-width: 4; stroke-linecap: round; stroke-opacity: 0.55; filter: drop-shadow(0 0 4px rgba(0,0,0,0.9)); }
+.stufe circle { fill: #0b0b0e; stroke: var(--wegfarbe); stroke-width: 2.5; }
+.stufe.erreicht circle { fill: var(--wegfarbe); }
+.stufe .wert { font-family: var(--kopf); font-weight: 700; font-size: 15px; fill: #fff4d6; text-anchor: middle; paint-order: stroke; stroke: rgba(0,0,0,0.9); stroke-width: 4px; }
+.stufe .titel { font-family: var(--kopf); font-weight: 500; font-size: 11px; fill: rgba(244,234,208,0.7); text-anchor: middle; paint-order: stroke; stroke: rgba(0,0,0,0.9); stroke-width: 3px; }
+.wegname { font-family: var(--kopf); font-weight: 700; font-size: 20px; letter-spacing: 0.12em; text-transform: uppercase; text-anchor: middle; paint-order: stroke; stroke: rgba(0,0,0,0.9); stroke-width: 5px; }
+
+.wege { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; text-align: left; }
+.weg-block h3 { font-family: var(--kopf); letter-spacing: 0.12em; text-transform: uppercase; font-size: 0.95rem; color: var(--wegfarbe); margin-bottom: 6px; }
+.e-zeile { display: grid; grid-template-columns: 62px 1fr; gap: 2px 8px; align-items: center; margin-bottom: 6px; }
+.e-zeile b { font-family: var(--kopf); color: var(--farbe); font-size: 0.85rem; letter-spacing: 0.06em; text-transform: uppercase; }
+.e-zahl { font-size: 0.8rem; text-align: right; }
+.e-zeile .balken { grid-column: 1 / -1; margin: 0; height: 5px; }
+.e-zeile .balken span { background: var(--farbe); box-shadow: 0 0 6px var(--farbe); }
+.e-ziel { grid-column: 1 / -1; font-size: 0.7rem; color: var(--muted); }
+body.szene .tafel { width: 1000px; }
+body.szene .weg-block h3 { font-size: 1.2rem; }
+body.szene .e-zeile b, body.szene .e-zahl { font-size: 1rem; }
+body.szene .e-ziel { font-size: 0.85rem; }
+body.szene[data-fokus="follower"] .weg-block:nth-child(2), body.szene[data-fokus="unterstuetzer"] .weg-block:nth-child(1) { opacity: 0.45; transition: opacity 0.8s ease; }
+@media (max-width: 560px) { .wege { grid-template-columns: 1fr; gap: 10px; } .tafel { max-height: 46vh; overflow: auto; } }

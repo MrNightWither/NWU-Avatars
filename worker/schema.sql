@@ -59,3 +59,10 @@ CREATE TABLE IF NOT EXISTS essenz_log (
   quelle        TEXT NOT NULL,
   menge         INTEGER NOT NULL
 );
+
+-- Erfolgskarte: echte Zahlen pro Plattform (Schlüssel z. B. 'follower:twitch', 'unterstuetzer:kick')
+CREATE TABLE IF NOT EXISTS erfolg (
+  schluessel    TEXT PRIMARY KEY,
+  wert          INTEGER NOT NULL,
+  aktualisiert  TEXT NOT NULL
+);

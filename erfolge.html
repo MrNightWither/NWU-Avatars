@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meilensteine — NightWither Unity</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self' https://*.workers.dev; base-uri 'none'; form-action 'none'">
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="preload" href="fonts/rajdhani-700.woff" as="font" type="font/woff" crossorigin>
+<link rel="stylesheet" href="css/reise.css">
+<link rel="stylesheet" href="css/erfolge.css">
+</head>
+<body class="erfolge">
+<div id="kamera" aria-hidden="true">
+  <div id="welt">
+    <img id="karte" alt="">
+    <svg id="pfad" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+</div>
+<div class="schleier" aria-hidden="true"></div>
+
+<header class="kopf">
+  <h1>Meilensteine</h1>
+  <p class="unter">Gefolgschaft · Treue</p>
+</header>
+
+<section class="tafel" aria-live="polite">
+  <div class="wege" id="wege"></div>
+</section>
+
+<div class="feier" id="feier" aria-live="assertive">
+  <p class="klein" id="feier-klein">Meilenstein erreicht</p>
+  <p class="name" id="feier-name"></p>
+</div>
+
+<script src="data/erfolge.js"></script>
+<script src="js/einstellungen.js"></script>
+<script src="js/erfolge.js"></script>
+</body>
+</html>

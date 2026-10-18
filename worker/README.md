@@ -161,6 +161,63 @@ Invoke-RestMethod -Method Post -Uri "https://nwu-avatare.DEIN-NAME.workers.dev/r
 ```
 Negative Menge zieht ab. `plattform` ist Pflicht.
 
+## Erfolgskarte: Follower und Unterstützer (echte Zahlen)
+
+Eigene Karte `erfolge.html`, unabhängig von Avataren und Essenz. Pro Plattform eigene Zähler.
+
+**1. Einmal deinen heutigen Stand eintragen** (PowerShell, je Plattform und Weg):
+```powershell
+$h = @{ Authorization = "Bearer DEIN_ADMIN_SECRET" }
+$u = "https://nwu-avatare.DEIN-NAME.workers.dev/erfolge/setzen"
+Invoke-RestMethod -Method Post -Uri $u -Headers $h -ContentType "application/json" -Body '{"weg":"follower","plattform":"twitch","wert":640}'
+Invoke-RestMethod -Method Post -Uri $u -Headers $h -ContentType "application/json" -Body '{"weg":"unterstuetzer","plattform":"twitch","wert":13}'
+# … genauso für youtube, kick und (nur follower) tiktok
+```
+Damit kannst du später auch korrigieren (z. B. wenn Leute entfolgen).
+
+**2. Streamer.bot zählt automatisch weiter.** Eine Action „NWU Erfolg“ mit diesem C#-Code;
+die Auslöser setzen vorher `nwuWeg` (`follower` oder `unterstuetzer`), `nwuPlattform` und bei
+Gift-Bombs `nwuAnzahl`:
+
+| Auslöser | `nwuWeg` | `nwuAnzahl` |
+|---|---|---|
+| Follow (Twitch, Kick) · Abo (YouTube) · Follow über Tikory (TikTok) | `follower` | – |
+| Sub, Resub, Gift-Sub (Twitch, Kick) · Mitgliedschaft (YouTube) | `unterstuetzer` | – |
+| Gift-Bomb | `unterstuetzer` | Anzahl der Gifts |
+
+```csharp
+using System;
+using System.Net.Http;
+using System.Text;
+using Newtonsoft.Json.Linq;
+
+public class CPHInline
+{
+    static readonly HttpClient http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+    const string URL = "https://nwu-avatare.DEIN-NAME.workers.dev/erfolge/plus";
+
+    public bool Execute()
+    {
+        var daten = new JObject {
+            ["weg"] = args["nwuWeg"].ToString(),
+            ["plattform"] = args.ContainsKey("nwuPlattform") ? args["nwuPlattform"].ToString() : "twitch"
+        };
+        if (args.ContainsKey("nwuAnzahl") && int.TryParse(args["nwuAnzahl"].ToString(), out int n)) daten["anzahl"] = n;
+        var req = new HttpRequestMessage(HttpMethod.Post, URL);
+        req.Headers.Add("Authorization", "Bearer " + CPH.GetGlobalVar<string>("nwuAvatarSecret", true));
+        req.Content = new StringContent(daten.ToString(), Encoding.UTF8, "application/json");
+        try
+        {
+            var antwort = JObject.Parse(http.SendAsync(req).Result.Content.ReadAsStringAsync().Result);
+            foreach (var m in antwort["neu"] ?? new JArray())
+                CPH.SendMessage($"🏆 {daten["plattform"]}: {m["wert"]} {(daten["weg"].ToString() == "follower" ? "Follower" : "Unterstützer")} erreicht – {m["name"]}!");
+        }
+        catch (Exception e) { CPH.LogWarn("NWU Erfolg: " + e.Message); }
+        return true;
+    }
+}
+```
+
 ## Testen
 
 ```bash

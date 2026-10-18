@@ -11,6 +11,7 @@ import '../../data/haeuser.js';
 import '../../data/quiz.js';
 import '../../data/auswertung.js';
 import '../../data/meilensteine.js';
+import '../../data/erfolge.js';
 
 const HAEUSER = globalThis.NWU_HAEUSER;
 const QUIZ = globalThis.NWU_QUIZ;
@@ -249,6 +250,57 @@ async function essenzHand(req, env) {
   return antwort(await essenzAddieren(env, d.plattform, menge, 'hand'));
 }
 
+// ---------- Erfolgskarte (Follower und Unterstützer, echte Zahlen) ----------
+const ERFOLGE = globalThis.NWU_ERFOLGE;
+const erfolgStand = globalThis.NWU_ERFOLG_STAND;
+const wegErlaubt = (weg, plattform) => {
+  const w = ERFOLGE.wege.find((x) => x.id === weg);
+  return !!w && w.plattformen.includes(plattform);
+};
+
+async function erfolgeLesen(env, cors) {
+  const { results } = await env.DB.prepare('SELECT schluessel, wert FROM erfolg').all();
+  const werte = Object.fromEntries(results.map((r) => [r.schluessel, r.wert]));
+  const daten = {};
+  for (const w of ERFOLGE.wege) {
+    daten[w.id] = {};
+    for (const p of w.plattformen) daten[w.id][p] = werte[w.id + ':' + p] || 0;
+  }
+  return antwort(daten, 200, { ...cors, 'Cache-Control': 'max-age=15' });
+}
+
+async function erfolgAendern(env, weg, plattform, neuWert) {
+  const schluessel = weg + ':' + plattform;
+  const alt = (await env.DB.prepare('SELECT wert FROM erfolg WHERE schluessel = ?').bind(schluessel).first() || { wert: 0 }).wert;
+  const wert = Math.max(0, neuWert(alt));
+  await env.DB.prepare('INSERT INTO erfolg (schluessel, wert, aktualisiert) VALUES (?, ?, ?) ON CONFLICT(schluessel) DO UPDATE SET wert = excluded.wert, aktualisiert = excluded.aktualisiert')
+    .bind(schluessel, wert, jetzt()).run();
+  const stufen = ERFOLGE.wege.find((w) => w.id === weg).stufen;
+  const neu = stufen.filter((s) => s.wert > alt && s.wert <= wert).map((s) => ({ wert: s.wert, name: s.name }));
+  return { ok: true, weg, plattform, wert, neu };
+}
+
+// Von Streamer.bot: ein Follow / Sub dazu (Gift-Bomb: anzahl)
+async function erfolgPlus(req, env) {
+  const auth = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+  if (!env.STREAMERBOT_SECRET || !gleich(auth, env.STREAMERBOT_SECRET)) return fehler('Nicht erlaubt', 401);
+  const d = await jsonLesen(req);
+  if (!d || !wegErlaubt(d.weg, d.plattform)) return fehler('Unbekannter Weg oder Plattform', 400);
+  const anzahl = Math.min(1000, Math.max(1, Math.floor(Number(d.anzahl) || 1)));
+  return antwort(await erfolgAendern(env, d.weg, d.plattform, (alt) => alt + anzahl));
+}
+
+// Von Hand (Admin): Startwert eintragen oder korrigieren
+async function erfolgSetzen(req, env) {
+  const auth = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+  if (!env.ADMIN_SECRET || !gleich(auth, env.ADMIN_SECRET)) return fehler('Nicht erlaubt', 401);
+  const d = await jsonLesen(req);
+  if (!d || !wegErlaubt(d.weg, d.plattform)) return fehler('Unbekannter Weg oder Plattform', 400);
+  const wert = Math.trunc(Number(d.wert));
+  if (!Number.isFinite(wert) || wert < 0 || wert > 100000000) return fehler('Ungültiger Wert', 400);
+  return antwort(await erfolgAendern(env, d.weg, d.plattform, () => wert));
+}
+
 // ---------- Router ----------
 export default {
   async fetch(req, env) {
@@ -267,6 +319,9 @@ export default {
       if (req.method === 'GET' && url.pathname === '/reise') return await reiseLesen(env, cors);
       if (req.method === 'POST' && url.pathname === '/reise/essenz') return await essenzMelden(req, env);
       if (req.method === 'POST' && url.pathname === '/reise/hand') return await essenzHand(req, env);
+      if (req.method === 'GET' && url.pathname === '/erfolge') return await erfolgeLesen(env, cors);
+      if (req.method === 'POST' && url.pathname === '/erfolge/plus') return await erfolgPlus(req, env);
+      if (req.method === 'POST' && url.pathname === '/erfolge/setzen') return await erfolgSetzen(req, env);
       return fehler('Nicht gefunden', 404, cors);
     } catch (e) {
       console.error(e);

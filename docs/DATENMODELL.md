@@ -155,3 +155,11 @@ Daten und Regeln: `data/meilensteine.js`. Jede Plattform hat einen eigenen Pfad 
 - `POST /reise/hand` (Admin-Secret) `{ plattform, menge }` – negativ zieht ab, nie unter 0
 
 Die Zitadelle öffnet sich, wenn alle vier Pfade ihren letzten Meilenstein erreicht haben.
+
+## Erfolgskarte (Follower und Unterstützer, echte Zahlen)
+
+Daten: `data/erfolge.js`. Zwei Wege, Zähler pro Plattform (TikTok nur Follower).
+
+- `GET /erfolge` → `{ follower: { twitch, youtube, kick, tiktok }, unterstuetzer: { twitch, youtube, kick } }`
+- `POST /erfolge/plus` (Streamer.bot-Secret) `{ weg, plattform, anzahl? }` → `{ ok, wert, neu: [{ wert, name }] }`
+- `POST /erfolge/setzen` (Admin-Secret) `{ weg, plattform, wert }` – Startwert oder Korrektur

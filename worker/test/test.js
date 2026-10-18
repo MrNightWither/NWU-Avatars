@@ -144,6 +144,28 @@ r = await hand('kick', -999999); assert.equal(r.daten.essenz, 0, 'nie unter 0');
 assert.equal((await ruf('/reise')).daten.zitadelleOffen, false);
 assert.ok(env.DB.roh.prepare("SELECT COUNT(*) AS n FROM essenz_log WHERE pfad = 'kick'").get().n === 3);
 
+// Erfolgskarte: Follower und Unterstützer pro Plattform
+r = await ruf('/erfolge');
+assert.deepEqual(r.daten.follower, { twitch: 0, youtube: 0, kick: 0, tiktok: 0 });
+assert.deepEqual(Object.keys(r.daten.unterstuetzer).sort(), ['kick', 'twitch', 'youtube'], 'TikTok ohne Unterstützer');
+const setzen = (body, secret = 'admin-geheim-456') => ruf('/erfolge/setzen', { method: 'POST', body: JSON.stringify(body), headers: { Authorization: 'Bearer ' + secret } });
+const plus = (body, secret = 'sb-geheim-123') => ruf('/erfolge/plus', { method: 'POST', body: JSON.stringify(body), headers: { Authorization: 'Bearer ' + secret } });
+assert.equal((await setzen({ weg: 'follower', plattform: 'twitch', wert: 640 }, 'sb-geheim-123')).status, 401, 'Startwert nur mit Admin');
+assert.equal((await setzen({ weg: 'unterstuetzer', plattform: 'tiktok', wert: 5 })).status, 400, 'kein TikTok-Unterstützer');
+assert.equal((await setzen({ weg: 'follower', plattform: 'twitch', wert: -3 })).status, 400);
+r = await setzen({ weg: 'follower', plattform: 'twitch', wert: 640 });     // Startwert: heutiger Stand
+assert.deepEqual(r.daten.neu.map((x) => x.wert), [100, 250, 500]);
+r = await plus({ weg: 'follower', plattform: 'twitch' });
+assert.equal(r.daten.wert, 641); assert.deepEqual(r.daten.neu, []);
+assert.equal((await plus({ weg: 'follower', plattform: 'twitch' }, 'falsch')).status, 401);
+r = await setzen({ weg: 'unterstuetzer', plattform: 'twitch', wert: 8 });
+r = await plus({ weg: 'unterstuetzer', plattform: 'twitch', anzahl: 5 });   // Gift-Bomb
+assert.equal(r.daten.wert, 13); assert.deepEqual(r.daten.neu.map((x) => x.name), ['Der erste Schwur']);
+r = await plus({ weg: 'unterstuetzer', plattform: 'kick', anzahl: 99999 }); // gedeckelt auf 1000 pro Meldung
+assert.equal(r.daten.wert, 1000);
+r = await ruf('/erfolge');
+assert.equal(r.daten.follower.twitch, 641); assert.equal(r.daten.unterstuetzer.twitch, 13); assert.equal(r.daten.follower.youtube, 0);
+
 // Unbekannter Pfad
 assert.equal((await ruf('/gibtsnicht')).status, 404);
 
