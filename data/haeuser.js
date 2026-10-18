@@ -2,9 +2,10 @@
 // Namen, Farben, Wappen und Sprüche sind ARBEITSTITEL (Plan 15.1) und werden später ersetzt.
 // Die ids (haus1 … haus6) bleiben fest, darauf verweist die Datenbank.
 // wappenBild: fertiges Wappen aus assets/ – fehlt es, wird ein Platzhalter gezeichnet.
+// figurBilder: true = assets/figur-hausX-a … -d.webp sind da, sonst Platzhalter-Figuren.
 window.NWU_HAEUSER = [
   {
-    id: 'haus1', name: 'Haus des Mondes', kurz: 'Mond', symbol: 'mond', wappenBild: 'assets/wappen-haus1.webp',
+    id: 'haus1', name: 'Haus des Mondes', kurz: 'Mond', symbol: 'mond', wappenBild: 'assets/wappen-haus1.webp', figurBilder: true,
     farbe: 0x8fa8d8, css: '#8fa8d8',
     wesen: 'Still, wachsam und klar. Ihr seht, was anderen in der Dunkelheit verborgen bleibt.',
     sprueche: [

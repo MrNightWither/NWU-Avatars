@@ -201,7 +201,7 @@ body.unterwegs .buehne { opacity: 0; pointer-events: none; }
 /* Verkündung */
 .wappen { width: 170px; animation: erscheinen 2.2s var(--ease) both; filter: drop-shadow(0 0 30px color-mix(in srgb, var(--haus) 40%, transparent)); }
 .wappen.klein { width: 96px; }
-.wappen svg, .wappen img, .figur svg, .figur-gross svg { display: block; width: 100%; height: auto; }
+.wappen svg, .wappen img, .figur svg, .figur img, .figur-gross svg, .figur-gross img { display: block; width: 100%; height: auto; }
 @keyframes erscheinen { from { opacity: 0; transform: scale(0.9); filter: blur(8px); } to { opacity: 1; transform: none; } }
 .wesen { color: var(--text); max-width: 34em; }
 .spruch {
@@ -221,13 +221,14 @@ body.unterwegs .buehne { opacity: 0; pointer-events: none; }
   display: flex; flex-direction: column; align-items: center; gap: 6px;
   transition: border-color 0.2s ease, transform 0.2s var(--ease), box-shadow 0.2s ease;
 }
-.figur > div { width: 76px; }
+.figur > div { width: 110px; }
+.figur img { filter: drop-shadow(0 6px 10px rgba(0,0,0,0.6)); }
 .figur:hover { border-color: rgba(201,168,76,0.45); }
 .figur:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 .figur[aria-checked="true"] { border-color: var(--haus); box-shadow: 0 0 0 1px var(--haus), 0 0 24px color-mix(in srgb, var(--haus) 25%, transparent); transform: translateY(-2px); }
 .figur b { font-family: var(--kopf); letter-spacing: 0.1em; text-transform: uppercase; }
 .figur small { color: var(--muted); font-size: 0.78rem; line-height: 1.35; }
-.figur-gross { width: 120px; }
+.figur-gross { width: 190px; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.7)); }
 
 /* Formular */
 .feld { display: flex; flex-direction: column; gap: 6px; text-align: left; }

@@ -136,6 +136,7 @@
   function figurenZeigen() {
     const h = haus();
     $('figur-haus').textContent = h.name;
+    document.querySelector('#s-figur .hinweis').hidden = !!h.figurBilder;
     $('figuren').replaceChildren(...FIGUREN.map((f) => {
       const b = document.createElement('button');
       b.type = 'button';

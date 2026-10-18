@@ -47,6 +47,13 @@
 
   // Einfache Figur, Blick nach vorne. typ: a Klinge, b Seher, c Schatten, d Hüter
   function figur(haus, typ) {
+    if (haus.figurBilder) {
+      const img = new Image();
+      img.src = `assets/figur-${haus.id}-${typ}.webp`;
+      img.alt = '';
+      img.decoding = 'async';
+      return img;
+    }
     const f = haus.css, haut = '#f2d7c4', dunkel = '#16141c';
     const extra = {
       a: `<path d="M74 66 L90 30 L93 32 L78 68Z" fill="#cfd3da"/><rect x="71" y="64" width="12" height="4" rx="2" fill="#c9a84c" transform="rotate(-25 77 66)"/>`,

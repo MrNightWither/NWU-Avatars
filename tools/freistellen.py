@@ -12,7 +12,11 @@ def freistellen(ein, aus, farbe='gruen', rand=10):
         staerke = g - np.maximum(r, b)          # wie "grün" ein Pixel ist
     else:
         staerke = np.minimum(r, b) - g          # wie "magenta" ein Pixel ist
-    alpha = np.clip(1 - (staerke - 35) / 90, 0, 1)
+    # Hintergrundstärke an den Bildrändern messen, damit auch dunkleres Grün sauber verschwindet
+    rand_px = np.concatenate([staerke[:8].ravel(), staerke[-8:].ravel(), staerke[:, :8].ravel(), staerke[:, -8:].ravel()])
+    bg = max(60.0, float(np.median(rand_px)))
+    voll, weg = 0.30 * bg, 0.75 * bg       # darunter deckend, darüber durchsichtig
+    alpha = np.clip(1 - (staerke - voll) / (weg - voll), 0, 1)
     # Farbsaum an den Kanten entfernen (Despill)
     halb = (alpha < 1) & (staerke > 0)
     if farbe == 'gruen':
