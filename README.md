@@ -16,7 +16,7 @@ Der vollständige Plan steht in [`docs/PLAN.md`](docs/PLAN.md).
 | **0** | Performance-Test | ✅ Prototyp fertig, **Messung auf deinem PC offen** |
 | 1 | Fundament (Datenbank, Chat-Bestätigung, Anwesenheit, Punkte) | 📝 Datenmodell entworfen ([`docs/DATENMODELL.md`](docs/DATENMODELL.md)) |
 | **2** | Website | 🟡 Ritual als Film über die Karte (Quiz, Haus, Gestalt, Bindung per Code, Ton), Demo-Modus bis der Worker steht |
-| 3 | Figuren-Overlay | – |
+| **3** | Figuren-Overlay | 🟡 Stufe 1: Einzelbild-Figuren mit Programm-Animation (`overlay/avatare.html`), Stufe 2 (Ebenen) später |
 | 4 | Level und Items | – |
 | 5 | Portal und Terrain | – |
 | 6 | Haus-Duelle | – |
@@ -36,7 +36,7 @@ assets/               Karte und Gebiete (WebP), Originale in assets/roh/
 data/haeuser.js       Die 6 Häuser – EINE Quelle für Seite und Overlay
 data/quiz.js          24 Fragen, pro Durchgang 12 zufällig
 data/auswertung.js    Quiz-Auswertung (gleich für Seite und Worker)
-overlay/              OBS-Browserquelle (Paket 0: perf-test.html)
+overlay/              OBS-Browserquellen: avatare.html (Figuren, Stufe 1), perf-test.html (Paket 0)
 docs/                 Plan, Engine-Prüfung, Datenmodell, Gemini-Prompts, Anleitung Paket 0
 ```
 
@@ -49,6 +49,25 @@ docs/                 Plan, Engine-Prüfung, Datenmodell, Gemini-Prompts, Anleit
   gleich viele Punkte über alle Fragen. Wenn du etwas änderst, das Gleichgewicht halten.
 - Das Quiz zieht pro Durchgang 12 von 24 Fragen. Bei knappem Ergebnis gewinnt das Haus
   mit weniger Mitgliedern (sobald der Worker die Belegung liefert).
+
+## Overlay Stufe 1 in OBS
+
+Browserquelle → **Lokale Datei** → `overlay/avatare.html`, 1920 × 1080.
+Oder per Adresse mit Einstellungen, z. B. `…/overlay/avatare.html?n=12&szene=standard`.
+
+| Parameter | Bedeutung |
+|---|---|
+| `n` | Anzahl Figuren (Standard 8) |
+| `groesse` | Figurhöhe in Pixeln (Standard 56) |
+| `szene` / `cam` | Kamera-Rahmen aus `overlay/config.js` oder eigener `x,y,w,h` |
+| `bg=1` | dunkler Hintergrund mit Rahmen zum Ansehen im Browser |
+| `hud=0` | Anzeige oben links aus |
+
+Tasten (OBS: Rechtsklick → Interagieren): `1/2/3` = 4/12/30 Figuren, `N` neue Figur, `X` eine weg,
+`J` alle jubeln, `L` alle Lurker an/aus, `H` Anzeige.
+
+Neue Figuren: Seitenansicht freistellen (`tools/figur.py`), auf 120 px Höhe verkleinern,
+nach `overlay/figuren/` legen und in `overlay/config.js` unter `figuren` eintragen.
 
 ## Ansehen
 

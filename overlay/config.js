@@ -22,6 +22,15 @@ window.NWU_CONFIG = {
     unten:    { x: 0.03, y: 0.62, w: 0.25, h: 0.30 },
   },
 
+  // Stufe 1: fertige Figurenbilder (Seitenansicht, Blick nach rechts), Größe im Stream in Pixeln
+  figurHoehe: 56,
+  figuren: [
+    { haus: 'haus1', typ: 'a', bild: 'figuren/haus1-a.webp' },
+    { haus: 'haus1', typ: 'b', bild: 'figuren/haus1-b.webp' },
+    { haus: 'haus1', typ: 'c', bild: 'figuren/haus1-c.webp' },
+    { haus: 'haus1', typ: 'd', bild: 'figuren/haus1-d.webp' },
+  ],
+
   // Die 6 Häuser kommen aus data/haeuser.js (eine Quelle für Website und Overlay).
   haeuser: window.NWU_HAEUSER,
 };
