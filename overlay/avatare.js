@@ -243,7 +243,8 @@
     // Aussehen: Haarfarbe (eigene Wahl ab Level, sonst Standard des Hauses), Staub- und Funkenspur nach Level
     const level = info.level || 1, aus = info.aussehen || {};
     const FARBEN = window.NWU_HAARFARBEN || {}, FREI = window.NWU_FREI || (() => false);
-    const haarId = (FREI(level, 'haare') && FARBEN[aus.haare]) ? aus.haare : (window.NWU_HAARE_STANDARD || {})[vorlage.haus];
+    const erlaubt = window.NWU_HAARFARBE_FREI || (() => false);
+    const haarId = erlaubt(level, aus.haare) ? aus.haare : (window.NWU_HAARE_STANDARD || {})[vorlage.haus];
     if (rig && rig.teile.haare && FARBEN[haarId]) rig.teile.haare.sprite.tint = FARBEN[haarId].farbe;
     figurenEbene.addChild(root);
     const fi = {

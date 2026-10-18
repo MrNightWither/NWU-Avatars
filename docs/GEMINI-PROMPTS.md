@@ -310,3 +310,124 @@ an honor guard hall, an oath temple, a great red hall, the red sanctum.
 The two roads never cross and are clearly readable. Night, dark gothic fantasy, gold accents.
 No text, no labels, no numbers, no letters.
 ```
+
+---
+
+## 8. Haus-Symbole zum Drübersetzen (Stand 18.10.2026)
+
+Die Figuren aller Häuser sind umgefärbte Mond-Figuren, darauf sind noch Mond-Symbole. Ich setze
+die Haus-Symbole **als eigene kleine Bilder darüber** (Gürtelschnalle, Schulter, Umhang, Schild).
+Dafür pro Haus **ein Bogen** mit demselben Symbol in vier Formen.
+
+Für jeden Bogen: neuen Chat, die **Seitenansicht der Klinge** hochladen (als Stil-Vorlage), dann:
+
+```
+Use the uploaded character only as STYLE reference (thick dark outline, flat cartoon shading,
+sticker look). Do not draw the character.
+Draw the emblem of a fantasy house as small metal badges, four separate versions with wide
+empty space between them, nothing touching:
+1. a small ROUND belt-buckle badge with the emblem in the middle
+2. a small round shoulder stud with the emblem
+3. a large flat SHIELD emblem (just the emblem shape, no shield around it)
+4. the emblem as a flat fabric print for a cape (no metal, flat color)
+The emblem: [EMBLEM]
+Metal color: [FARBE]. Simple, bold, readable at very small size, no fine details.
+Thick dark outline on every badge, NO white sticker border.
+Plain flat solid #00FF00 green background, no shadows, no text, no letters.
+```
+
+Für `[EMBLEM]` und `[FARBE]` einsetzen:
+
+| Haus | [EMBLEM] | [FARBE] |
+|---|---|---|
+| Blut | `a single drop of blood with a small thorn crown around it` | `dark crimson red and blackened silver` |
+| Nebel | `a swirl of mist forming a spiral, like a closed eye of fog` | `smoky teal green and pale silver` |
+| Flamme | `a single stylised flame with three tongues` | `bright bronze gold with orange glow` |
+| Mond (optional, falls neu) | `a crescent moon` | `silver with pale blue` |
+
+Datei-Namen: `symbole-haus2.png`, `symbole-haus3.png`, `symbole-haus4.png`.
+
+---
+
+## 9. Frisuren (für Haarschnitt-Freischaltungen)
+
+Die Haare sind im Overlay schon eine eigene Ebene und lassen sich einfärben. Für **andere Frisuren**
+brauche ich einen **Kopf ohne Haare** und dazu **mehrere Frisuren einzeln**, alle von der Seite.
+
+### 9a) Kopf ohne Haare (einmal)
+
+Neuer Chat, **Seitenansicht der Klinge** hochladen:
+
+```
+Use the uploaded character as exact reference: same face, same art style, same line art.
+Draw ONLY her head in pure side view facing right, same size as in the reference,
+but completely WITHOUT hair: smooth bald head with ears, neck stump at the bottom.
+Then next to it, with wide space, the same bald head again but as a young man
+(slightly stronger jaw, thicker eyebrows, same art style).
+Thick dark outline, NO white sticker border.
+Plain flat solid #00FF00 green background, no shadows, no text.
+```
+
+### 9b) Frisuren-Bögen (gern mehrmals, je 6 Frisuren)
+
+**Im selben Chat** weiter (damit Größe und Kopfform gleich bleiben):
+
+```
+Now draw 6 different HAIRSTYLES that fit exactly on this bald head, pure side view facing
+right, same scale. Draw ONLY the hair, no head, no face, each hairstyle as one separate piece,
+arranged in a loose grid with wide empty space between them, nothing touching.
+All hair in light neutral SILVER GREY (it will be recolored later).
+Hairstyles: [LISTE]
+Thick dark outline, NO white sticker border.
+Plain flat solid #00FF00 green background, no shadows, no text.
+```
+
+Für `[LISTE]` nacheinander (jeweils ein Bogen):
+
+1. `short pixie cut, chin-length bob, high ponytail, long single braid, messy shoulder-length, twin buns`
+2. `short spiky hair, undercut with long top, slicked back, mohawk, long straight hair to the waist, curly afro`
+3. `half-shaved side cut, wolf cut, hime cut with straight bangs, low tied ponytail, wild mane, top knot`
+
+Datei-Namen: `frisuren-1.png`, `frisuren-2.png`, …  Der Kopf ohne Haare: `kopf-ohne-haare.png`.
+
+---
+
+## 10. Kopfschmuck (hohe Level)
+
+Neuer Chat, **Seitenansicht der Klinge** hochladen:
+
+```
+Use the uploaded character only as STYLE reference. Draw 6 separate HEAD ACCESSORIES that fit on
+her head in pure side view facing right, same scale as the reference head, without the head itself.
+Wide empty space between them, nothing touching:
+1. a thin silver circlet with a small gem
+2. small curved demon horns
+3. a dark iron crown with spikes
+4. a hood of a dark cloak (just the hood)
+5. a half mask covering the eyes
+6. a floating halo ring of pale light
+Thick dark outline, NO white sticker border, flat cartoon shading.
+Plain flat solid #00FF00 green background, no shadows, no text.
+```
+
+Weitere Bögen später: `flower crown, feather headband, raven skull helmet, witch hat, eye patch, glowing antlers`.
+
+---
+
+## 11. Begleiter (laufen neben der Figur)
+
+Neuer Chat, **Seitenansicht der Klinge** hochladen:
+
+```
+Use the uploaded character only as STYLE reference. Draw 6 small COMPANION creatures, each about
+as tall as the character's knee, pure side view facing right, walking pose,
+each separate with wide empty space between them:
+1. a black raven (standing)
+2. a small black cat
+3. a wolf pup
+4. a tiny floating ghost wisp
+5. a little bat (flying)
+6. a small fire salamander
+Same thick dark outline, chibi cartoon style, NO white sticker border.
+Plain flat solid #00FF00 green background, no shadows, no text.
+```

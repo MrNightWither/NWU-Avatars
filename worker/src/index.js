@@ -228,6 +228,10 @@ async function aussehenSetzen(req, env) {
   if (!p) return antwort({ ok: false, grund: 'unbekannt' });
   const frei = globalThis.NWU_FREISCHALTUNGEN.find((f) => f.id === 'haare');
   if (!globalThis.NWU_FREI(p.level, 'haare')) return antwort({ ok: false, grund: 'level', level: frei.level });
+  if (!globalThis.NWU_HAARFARBE_FREI(p.level, haare)) {
+    const selten = globalThis.NWU_FREISCHALTUNGEN.find((f) => f.id === 'haare_selten');
+    return antwort({ ok: false, grund: 'level', level: selten.level });
+  }
   let aussehen = {};
   try { aussehen = p.aussehen ? JSON.parse(p.aussehen) : {}; } catch (e) { /* neu anfangen */ }
   aussehen.haare = haare;

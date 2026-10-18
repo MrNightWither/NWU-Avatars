@@ -44,7 +44,7 @@ data/auswertung.js    Quiz-Auswertung (gleich für Seite und Worker)
 data/erfolge.js       Erfolgskarte: Stufen der beiden Wege, Plattformen
 data/meilensteine.js  Reise: vier Pfade, Meilensteine, Essenz-Regeln, Orte auf der Karte
 overlay/              OBS-Browserquellen: avatare.html (Figuren), rig-test.html (Teil-Figuren prüfen), perf-test.html (Paket 0)
-docs/                 Plan, Engine-Prüfung, Datenmodell, Gemini-Prompts, Anleitung Paket 0
+docs/                 Plan, Fortschritt (Level 1–100), Engine-Prüfung, Datenmodell, Gemini-Prompts, Anleitung Paket 0
 ```
 
 ## Häuser und Quiz anpassen
@@ -95,7 +95,8 @@ Tasten (OBS: Rechtsklick → Interagieren): `T` Test-Chatter, `M` Nachricht, `K`
 **Aussehen und Freischaltungen:** Die Haare jeder Figur sind eine eigene Ebene und werden pro Person
 eingefärbt. Standard je Haus: Mond Silber, Blut Schwarz, Nebel Weiß, Flamme Rot. Ab Level 3 zieht die Figur
 beim Laufen eine Staubspur, ab Level 5 kann man mit `!haare <farbe>` die Haarfarbe wählen, ab Level 10 gibt
-es eine Funkenspur in Hausfarbe. Stufen und Farben stehen in `data/aussehen.js`.
+es eine Funkenspur in Hausfarbe, ab Level 25 seltene Haarfarben. Stufen und Farben stehen in
+`data/aussehen.js`, der ganze Plan bis Level 100 (und Aufstieg danach) in `docs/FORTSCHRITT.md`.
 Andere Häuser umfärben: Farben in `tools/umfaerben.py` anpassen und `python tools/umfaerben.py` ausführen.
 
 **Level-Up:** Nur du (nicht die Mods) schreibst `!levelup @Name` (oder `!levelup @Name 5`). Die Figur bekommt

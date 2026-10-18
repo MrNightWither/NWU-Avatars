@@ -102,8 +102,14 @@ assert.equal(r.daten.grund, 'level'); assert.equal(r.daten.level, 5);
 await level({ plattform: 'twitch', name: 'mrnightwither', anzahl: 4 });
 assert.equal((await haare({ plattform: 'twitch', plattformId: '111', haare: 'regenbogen' })).daten.grund, 'farbe');
 r = await haare({ plattform: 'twitch', plattformId: '111', haare: 'Grün' });
+assert.equal(r.daten.grund, 'level', 'Grün ist selten'); assert.equal(r.daten.level, 25);
+r = await haare({ plattform: 'twitch', plattformId: '111', haare: 'Blond' });
+assert.equal(r.daten.ok, true); assert.equal(r.daten.haare, 'Blond');
+await level({ plattform: 'twitch', name: 'mrnightwither', anzahl: 20 });
+r = await haare({ plattform: 'twitch', plattformId: '111', haare: 'Grün' });
 assert.equal(r.daten.ok, true); assert.equal(r.daten.haare, 'Grün');
 assert.deepEqual({ ...(await ruf('/avatare/profil?plattform=twitch&id=111')).daten.aussehen }, { haare: 'gruen' });
+await level({ plattform: 'twitch', name: 'mrnightwither', anzahl: -20 });
 assert.equal((await haare({ plattform: 'twitch', plattformId: '999', haare: 'rot' })).daten.grund, 'unbekannt');
 await level({ plattform: 'twitch', name: 'mrnightwither', anzahl: -10 });
 

@@ -137,8 +137,8 @@ public class CPHInline
 
 ## Streamer.bot: Befehl `!haare <farbe>`
 
-Jeder ändert seine eigene Haarfarbe, sobald das Level reicht (Level 5, steht in `data/aussehen.js`).
-Farben: silber, weiss, schwarz, braun, blond, rot, kupfer, blau, lila, gruen, rosa.
+Jeder ändert seine eigene Haarfarbe, sobald das Level reicht (steht in `data/aussehen.js`):
+ab Level 5 silber, weiss, schwarz, braun, blond, rot, kupfer · ab Level 25 auch blau, lila, gruen, rosa.
 
 1. **Commands → Add:** Name `Haare`, Commands `!haare` und `!haarfarbe`, Location *Start*, Permissions: *Everyone*,
    Cooldown pro Nutzer z. B. 30 Sekunden.
