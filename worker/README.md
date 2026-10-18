@@ -169,9 +169,13 @@ Eigene Karte `erfolge.html`, unabhängig von Avataren und Essenz. Pro Plattform 
 ```powershell
 $h = @{ Authorization = "Bearer DEIN_ADMIN_SECRET" }
 $u = "https://nwu-avatare.DEIN-NAME.workers.dev/erfolge/setzen"
-Invoke-RestMethod -Method Post -Uri $u -Headers $h -ContentType "application/json" -Body '{"weg":"follower","plattform":"twitch","wert":640}'
-Invoke-RestMethod -Method Post -Uri $u -Headers $h -ContentType "application/json" -Body '{"weg":"unterstuetzer","plattform":"twitch","wert":13}'
-# … genauso für youtube, kick und (nur follower) tiktok
+# Follower, Stand 18.10.2026
+Invoke-RestMethod -Method Post -Uri $u -Headers $h -ContentType "application/json" -Body '{"weg":"follower","plattform":"tiktok","wert":782}'
+Invoke-RestMethod -Method Post -Uri $u -Headers $h -ContentType "application/json" -Body '{"weg":"follower","plattform":"twitch","wert":91}'
+Invoke-RestMethod -Method Post -Uri $u -Headers $h -ContentType "application/json" -Body '{"weg":"follower","plattform":"youtube","wert":16}'
+Invoke-RestMethod -Method Post -Uri $u -Headers $h -ContentType "application/json" -Body '{"weg":"follower","plattform":"kick","wert":2}'
+# Unterstützer: Zahlen vor dem Absenden anpassen
+Invoke-RestMethod -Method Post -Uri $u -Headers $h -ContentType "application/json" -Body '{"weg":"unterstuetzer","plattform":"twitch","wert":0}'
 ```
 Damit kannst du später auch korrigieren (z. B. wenn Leute entfolgen).
 

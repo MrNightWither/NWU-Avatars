@@ -12,7 +12,8 @@
   const ruhig = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const NS = 'http://www.w3.org/2000/svg';
   const KURZ = { follower: 'f', unterstuetzer: 'u' };
-  const DEMO = { follower: { twitch: 640, youtube: 180, kick: 45, tiktok: 3200 }, unterstuetzer: { twitch: 13, youtube: 2, kick: 0 } };
+  // Stand vom 18.10.2026 – wird angezeigt, solange kein Worker eingetragen ist
+  const DEMO = { follower: { twitch: 91, youtube: 16, kick: 2, tiktok: 782 }, unterstuetzer: { twitch: 0, youtube: 0, kick: 0 } };
   if (szene) document.body.classList.add('szene');
 
   const welt = $('welt'), karte = $('karte'), svg = $('pfad');
