@@ -78,3 +78,10 @@ Plan:
    (Prompt steht im Chat-Verlauf; als Test zuerst die Klinge).
 3. Mipmaps für die Figuren-Texturen aktivieren (weicheres Verkleinern ohne Flimmern), in OBS prüfen.
 4. Erst wenn das nicht reicht: echte Pixel-Art mit Laufbildern (größter Umbau, eher mit Zeichner).
+
+## Prolog vorlesen (offen)
+
+`prolog.html` spielt Sprachdateien `assets/stimme/prolog-01.mp3` … `prolog-13.mp3` ab, wenn sie da sind
+(Texte: `docs/PROLOG-TEXT.md`). Stimme: die eigene KI-Stimme. Sie klingt jung – entweder älter machen
+(Tonhöhe −2 bis −4 Halbtöne, langsamer, etwas Hall, Höhen absenken, z. B. in Audacity) oder bewusst jung
+lassen (Idee für die Geschichte: Morrígan ist uralt, die Kugel hält sie jung).
