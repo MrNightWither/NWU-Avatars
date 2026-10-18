@@ -17,7 +17,7 @@ Der vollständige Plan steht in [`docs/PLAN.md`](docs/PLAN.md).
 | **1** | Fundament (Datenbank, Chat-Bestätigung, Anwesenheit, Punkte) | 🟡 Worker `nwu-avatare` fertig und getestet (`worker/`), muss noch hochgeladen werden; Anwesenheit im Overlay |
 | **2** | Website | 🟡 Ritual als Film über die Karte (Quiz, Haus, Gestalt, Bindung per Code, Ton), Demo-Modus bis der Worker steht |
 | **3** | Figuren-Overlay | 🟡 Stufe 2 für Mond-Seher, -Schatten, -Hüter: Figuren aus Teilen mit Gelenken (laufen, sitzen, jubeln, winken); die übrigen laufen als Einzelbild (Stufe 1) |
-| 4 | Level und Items | 🟡 `!levelup @Name [Anzahl]` für Streamer/Mods: Effekt im Overlay, Level im Worker; Items fehlen noch |
+| 4 | Level und Items | 🟡 `!levelup @Name [Anzahl]` nur für den Streamer: Effekt im Overlay, Level im Worker; Items fehlen noch |
 | 5 | Portal und Terrain | 🟡 aufrechtes Portal, Figuren laufen aufs Terrain; Kämpfe und Terrain-Bilder fehlen noch |
 | ➕ | Meilensteinkarte | 🟡 vier Pfade (Twitch, YouTube, Kick, TikTok) zur Zitadelle, `reise.html` (Website) und `reise.html?szene=1` (OBS), Essenz pro Plattform im Worker; eigene Reise-Karte fehlt noch |
 | ➕ | Erfolgskarte | 🟡 `erfolge.html`: Follower-Weg bis 100.000 und Unterstützer-Weg bis 2.000, pro Plattform; eigene Karte fehlt noch |
@@ -92,7 +92,7 @@ Tasten (OBS: Rechtsklick → Interagieren): `T` Test-Chatter, `M` Nachricht, `K`
 `P` Portal auf/zu, `U` Level-Up (zufällige Figur), `G` Gruppenbild, `J` alle jubeln, `S` Sparmodus,
 `1/2/3` = 4/12/30 Demo-Figuren, `H` Anzeige.
 
-**Level-Up:** Du oder ein Mod schreibt `!levelup @Name` (oder `!levelup @Name 5`). Die Figur bekommt
+**Level-Up:** Nur du (nicht die Mods) schreibst `!levelup @Name` (oder `!levelup @Name 5`). Die Figur bekommt
 Lichtstrahl, Funken und „LEVEL UP!“ und jubelt. Gespeichert wird das Level über Streamer.bot im Worker
 (Anleitung in `worker/README.md`).
 

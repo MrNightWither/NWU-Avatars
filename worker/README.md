@@ -86,12 +86,13 @@ Für Kick/YouTube später: `"twitch"` durch die Plattform ersetzen und eine eige
 
 ## Streamer.bot: Befehl `!levelup @Name`
 
-Du oder deine Mods geben jemandem ein Level: `!levelup @Name` (1 Level) oder `!levelup @Name 5`.
+Nur du (nicht die Mods) gibst jemandem ein Level: `!levelup @Name` (1 Level) oder `!levelup @Name 5`.
 Das Overlay zeigt den Effekt sofort (liest den Chat selbst mit), Streamer.bot speichert das Level im Worker.
 Minus geht auch zum Korrigieren: `!levelup @Name -1`. Level bleibt immer zwischen 1 und 999.
 
 1. **Commands → Add:** Name `Level Up`, Commands `!levelup`, `!lvlup` und `!lvl` (je eine Zeile), Location *Start*,
-   **Permissions:** nur *Moderators* und *Broadcaster*.
+   **Permissions:** nur *Broadcaster* (Haken bei Moderators/VIPs/Subscribers/Everyone raus).
+   Zusätzlich prüft der Code unten selbst, ob du es bist.
 2. **Action** anlegen, Trigger = dieser Command, Sub-Action **Execute C# Code** (wie oben, mit `Newtonsoft.Json.dll`):
 
 ```csharp
@@ -108,6 +109,7 @@ public class CPHInline
     public bool Execute()
     {
         string user = args["user"].ToString();
+        if (args.ContainsKey("broadcastUser") && !user.Equals(args["broadcastUser"].ToString(), StringComparison.OrdinalIgnoreCase)) return true;   // nur der Streamer
         string ziel = args.ContainsKey("input0") ? args["input0"].ToString().TrimStart('@') : "";
         int anzahl = 1;
         if (args.ContainsKey("input1")) int.TryParse(args["input1"].ToString(), out anzahl);

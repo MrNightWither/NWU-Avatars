@@ -307,9 +307,9 @@
 
   async function chatter(u, art) {
     const text = (u.text || '').trim().toLowerCase();
-    // !levelup @Name (Streamer und Mods): Effekt sofort hier, gespeichert wird über Streamer.bot im Worker
+    // !levelup @Name (nur der Streamer selbst): Effekt sofort hier, gespeichert wird über Streamer.bot im Worker
     const lv = text.match(/^!(?:levelup|lvlup|lvl)\s+@?([a-z0-9_]{2,25})/);
-    if (lv && (u.broadcaster || u.mod)) {
+    if (lv && u.broadcaster) {
       const ziel = figuren.find((f) => !f.entfernen && f.name === lv[1]);
       if (ziel && ziel.root) { ziel.letzte = zeit; levelUp(ziel); }
       return;

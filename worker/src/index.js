@@ -195,7 +195,7 @@ async function rolleSetzen(req, env) {
   return antwort({ ok: r.meta.changes > 0 });
 }
 
-// Von Streamer.bot: Chat-Befehl !levelup @Name [Anzahl] (nur Mods/Streamer, prüft Streamer.bot)
+// Von Streamer.bot: Chat-Befehl !levelup @Name [Anzahl] (nur der Streamer, prüft Streamer.bot)
 async function levelAendern(req, env) {
   const auth = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
   if (!env.STREAMERBOT_SECRET || !gleich(auth, env.STREAMERBOT_SECRET)) return fehler('Nicht erlaubt', 401);
