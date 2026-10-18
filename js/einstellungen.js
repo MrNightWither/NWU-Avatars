@@ -12,8 +12,8 @@ window.NWU_SEITE = {
   codeGueltig: 15,
 
   // Links zu Impressum und Datenschutz (auf deiner Hauptseite), erscheinen unten auf jeder Seite. Leer = keine Links.
-  impressum: '',
-  datenschutz: '',
+  impressum: 'https://impressum.nightwither.de',
+  datenschutz: 'https://datenschutz.nightwither.de',
 
   plattformen: [
     { id: 'twitch',  name: 'Twitch' },
