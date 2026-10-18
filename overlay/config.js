@@ -40,7 +40,7 @@ window.NWU_CONFIG = {
   // Mit ?stufe1 in der Adresse laufen alle als Einzelbild.
   figurHoehe: 56,
   figuren: [
-    { haus: 'haus1', typ: 'a', bild: 'figuren/haus1-a.webp' },
+    { haus: 'haus1', typ: 'a', bild: 'figuren/haus1-a.webp', rig: 'haus1-a' },
     { haus: 'haus1', typ: 'b', bild: 'figuren/haus1-b.webp', rig: 'haus1-b' },
     { haus: 'haus1', typ: 'c', bild: 'figuren/haus1-c.webp', rig: 'haus1-c' },
     { haus: 'haus1', typ: 'd', bild: 'figuren/haus1-d.webp', rig: 'haus1-d' },

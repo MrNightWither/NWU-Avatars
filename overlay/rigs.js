@@ -7,6 +7,20 @@
 //   haengt: zeigt immer nach unten und pendelt (Kette) · senkrecht: bleibt aufrecht (Stab) · s: Größe
 // Reihenfolge der Teile = Zeichenreihenfolge (erstes ganz hinten).
 window.NWU_RIGS = {
+  // Haus des Mondes · Klinge (gebogener Säbel, blauer Umhang)
+  'haus1-a': {
+    hoehe: 403, huefte: [0, -145],
+    teile: [
+      { id: 'umhang', bild: 'umhang', anker: [140, 8], pos: [-8, -240], art: 'umhang', oben: true },
+      { id: 'armH', bild: 'armH', anker: [27, 15], pos: [-10, -232], art: 'armH', oben: true, dunkel: true },
+      { id: 'beinH', bild: 'beinH', anker: [23, 5], pos: [-8, -145], art: 'beinH', dunkel: true },
+      { id: 'beinV', bild: 'beinV', anker: [21, 5], pos: [6, -145], art: 'beinV' },
+      { id: 'rumpf', bild: 'rumpf', anker: [62, 120], pos: [0, -145], art: 'rumpf', oben: true },
+      { id: 'kopf', bild: 'kopf', anker: [112, 150], pos: [4, -253], art: 'kopf', oben: true },
+      { id: 'armV', bild: 'armV', anker: [29, 15], pos: [8, -232], art: 'armV', oben: true },
+      { id: 'waffeV', bild: 'waffeV', anker: [27, 23], an: 'armV', pos: [0, 138], dreh: 0.05 },
+    ],
+  },
   // Haus des Mondes · Schatten (Kapuze, zwei Dolche)
   'haus1-c': {
     hoehe: 381, huefte: [0, -150],

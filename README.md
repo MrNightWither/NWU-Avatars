@@ -16,7 +16,7 @@ Der vollständige Plan steht in [`docs/PLAN.md`](docs/PLAN.md).
 | **0** | Performance-Test | ✅ Prototyp fertig, **Messung auf deinem PC offen** |
 | **1** | Fundament (Datenbank, Chat-Bestätigung, Anwesenheit, Punkte) | 🟡 Worker `nwu-avatare` fertig und getestet (`worker/`), muss noch hochgeladen werden; Anwesenheit im Overlay |
 | **2** | Website | 🟡 Ritual als Film über die Karte (Quiz, Haus, Gestalt, Bindung per Code, Ton), Demo-Modus bis der Worker steht |
-| **3** | Figuren-Overlay | 🟡 Stufe 2 für Mond-Seher, -Schatten, -Hüter: Figuren aus Teilen mit Gelenken (laufen, sitzen, jubeln, winken); die übrigen laufen als Einzelbild (Stufe 1) |
+| **3** | Figuren-Overlay | 🟡 Haus des Mondes komplett in Stufe 2: alle 4 Figuren aus Teilen mit Gelenken (laufen, sitzen, jubeln, winken). Blut, Nebel, Flamme fehlen noch |
 | 4 | Level und Items | 🟡 `!levelup @Name [Anzahl]` nur für den Streamer: Effekt im Overlay, Level im Worker; Items fehlen noch |
 | 5 | Portal und Terrain | 🟡 aufrechtes Portal, Figuren laufen aufs Terrain; Kämpfe und Terrain-Bilder fehlen noch |
 | ➕ | Meilensteinkarte | 🟡 vier Pfade (Twitch, YouTube, Kick, TikTok) zur Zitadelle, `reise.html` (Website) und `reise.html?szene=1` (OBS), Essenz pro Plattform im Worker; eigene Reise-Karte fehlt noch |
