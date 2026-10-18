@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Die Reise — NightWither Unity</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self' https://*.workers.dev; base-uri 'none'; form-action 'none'">
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="preload" href="fonts/rajdhani-700.woff" as="font" type="font/woff" crossorigin>
+<link rel="stylesheet" href="css/reise.css">
+</head>
+<body>
+<div id="kamera" aria-hidden="true">
+  <div id="welt">
+    <img id="karte" alt="">
+    <svg id="pfad" xmlns="http://www.w3.org/2000/svg"></svg>
+    <img id="krone" src="crown.webp" alt="">
+  </div>
+</div>
+<div class="schleier" aria-hidden="true"></div>
+
+<header class="kopf">
+  <a class="zurueck" href="./">← Zum Ritual</a>
+  <h1>Die Reise</h1>
+  <p class="unter">Gemeinsam zur Zitadelle</p>
+</header>
+
+<section class="tafel" aria-live="polite">
+  <p class="klein" id="t-erreicht"></p>
+  <h2 id="t-ziel"></h2>
+  <p class="text" id="t-text"></p>
+  <div class="balken" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="balken"><span id="fuellung"></span></div>
+  <p class="zahlen" id="t-zahlen"></p>
+</section>
+
+<div class="feier" id="feier" aria-live="assertive">
+  <p class="klein">Meilenstein erreicht</p>
+  <p class="name" id="feier-name"></p>
+</div>
+
+<script src="data/meilensteine.js"></script>
+<script src="js/einstellungen.js"></script>
+<script src="js/reise.js"></script>
+</body>
+</html>

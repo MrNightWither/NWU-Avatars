@@ -1,0 +1,64 @@
+@font-face { font-family: 'Rajdhani'; font-weight: 500; font-display: swap; src: url('../fonts/rajdhani-500.woff') format('woff'); }
+@font-face { font-family: 'Rajdhani'; font-weight: 700; font-display: swap; src: url('../fonts/rajdhani-700.woff') format('woff'); }
+@font-face { font-family: 'Inter'; font-weight: 400; font-display: swap; src: url('../fonts/inter-400.woff') format('woff'); }
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --gold: #c9a84c; --gold-hi: #e8c96d; --text: #e8e8e8; --muted: #8f8a80; --kopf: Rajdhani, 'Arial Narrow', system-ui, sans-serif; }
+html, body { height: 100%; overflow: hidden; }
+body { background: #000; color: var(--text); font-family: Inter, system-ui, sans-serif; }
+
+#kamera { position: fixed; inset: 0; overflow: hidden; }
+#welt { position: absolute; top: 0; left: 0; transform-origin: 0 0; will-change: transform; }
+#karte { display: block; user-select: none; }
+#pfad { position: absolute; inset: 0; overflow: visible; }
+#krone { position: absolute; width: 46px; height: 46px; margin: -52px 0 0 -23px; filter: drop-shadow(0 0 10px rgba(232,201,109,0.8)); animation: schweben 3s ease-in-out infinite; }
+@keyframes schweben { 50% { transform: translateY(-6px); } }
+
+.schleier { position: fixed; inset: 0; pointer-events: none;
+  background: radial-gradient(120% 90% at 50% 45%, transparent 40%, rgba(0,0,0,0.8) 100%), linear-gradient(transparent 55%, rgba(0,0,0,0.85)); }
+
+/* Pfad und Orte */
+.weg { fill: none; stroke: rgba(232,201,109,0.35); stroke-width: 3; stroke-dasharray: 2 9; stroke-linecap: round; }
+.weg-fertig { fill: none; stroke: var(--gold-hi); stroke-width: 5; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(232,201,109,0.9)); }
+.ort circle { fill: #0b0b0e; stroke: rgba(232,201,109,0.5); stroke-width: 2.5; }
+.ort.erreicht circle { fill: var(--gold); stroke: var(--gold-hi); }
+.ort.naechster circle { stroke: var(--gold-hi); stroke-width: 3; animation: pulsieren 2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes pulsieren { 50% { transform: scale(1.35); } }
+.ort text { font-family: var(--kopf); font-weight: 700; font-size: 15px; letter-spacing: 0.06em; fill: #f4ead0;
+  paint-order: stroke; stroke: rgba(0,0,0,0.85); stroke-width: 4px; text-anchor: middle; }
+.ort.zukunft text { fill: rgba(244,234,208,0.55); }
+
+/* Oberfläche */
+.kopf { position: fixed; top: 16px; left: 0; right: 0; text-align: center; pointer-events: none; }
+.kopf h1 { font-family: var(--kopf); font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; font-size: clamp(1.4rem, 5vw, 2rem); text-shadow: 0 2px 16px #000; }
+.kopf .unter { font-family: var(--kopf); color: var(--muted); letter-spacing: 0.25em; text-transform: uppercase; font-size: 0.78rem; text-shadow: 0 2px 10px #000; }
+.zurueck { pointer-events: auto; position: absolute; left: 16px; top: 4px; color: var(--gold); text-decoration: none; font-size: 0.9rem; }
+.zurueck:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 3px; }
+
+.tafel {
+  position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
+  width: min(560px, calc(100% - 32px));
+  background: rgba(10,10,13,0.78); border: 1px solid rgba(201,168,76,0.35); border-radius: 12px;
+  padding: 14px 18px; backdrop-filter: blur(6px); text-align: center;
+}
+.tafel .klein { color: var(--muted); font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; }
+.tafel h2 { font-family: var(--kopf); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold-hi); font-size: 1.4rem; margin: 2px 0 4px; }
+.tafel .text { font-style: italic; font-size: 0.92rem; margin-bottom: 10px; }
+.balken { height: 8px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; }
+.balken span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--gold), var(--gold-hi)); transition: width 1.5s ease; }
+.zahlen { margin-top: 6px; font-size: 0.82rem; color: var(--muted); }
+
+.feier { position: fixed; inset: 0; display: grid; place-content: center; text-align: center; pointer-events: none; opacity: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(232,201,109,0.25), transparent 60%); transition: opacity 1.2s ease; }
+.feier.an { opacity: 1; }
+.feier .klein { font-family: var(--kopf); letter-spacing: 0.4em; text-transform: uppercase; color: var(--gold); text-shadow: 0 2px 16px #000; }
+.feier .name { font-family: var(--kopf); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; font-size: clamp(2rem, 7vw, 4rem); color: #fff4d6;
+  text-shadow: 0 0 30px rgba(232,201,109,0.8), 0 2px 20px #000; }
+
+/* Stream-Szene (?szene=1): keine Bedienelemente, größere Schrift */
+body.szene .kopf .zurueck { display: none; }
+body.szene .tafel { width: 620px; bottom: 48px; padding: 18px 24px; }
+body.szene .tafel h2 { font-size: 2rem; }
+body.szene .tafel .text { font-size: 1.1rem; }
+
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }

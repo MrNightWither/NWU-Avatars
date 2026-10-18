@@ -10,10 +10,13 @@
 import '../../data/haeuser.js';
 import '../../data/quiz.js';
 import '../../data/auswertung.js';
+import '../../data/meilensteine.js';
 
 const HAEUSER = globalThis.NWU_HAEUSER;
 const QUIZ = globalThis.NWU_QUIZ;
 const auswerten = globalThis.NWU_AUSWERTEN;
+const REISE = globalThis.NWU_REISE;
+const reiseStand = globalThis.NWU_REISE_STAND;
 
 const PLATTFORMEN = ['twitch', 'kick', 'youtube', 'tiktok'];
 const FIGUREN = ['a', 'b', 'c', 'd'];
@@ -190,6 +193,55 @@ async function rolleSetzen(req, env) {
   return antwort({ ok: r.meta.changes > 0 });
 }
 
+// ---------- Meilensteinkarte ----------
+async function reiseLesen(env, cors) {
+  const r = await env.DB.prepare("SELECT wert FROM reise WHERE schluessel = 'essenz'").first();
+  const essenz = r ? r.wert : 0;
+  const st = reiseStand(essenz);
+  return antwort({ essenz, erreicht: st.erreicht.id, naechster: st.naechster ? st.naechster.id : null, anteil: st.anteil },
+    200, { ...cors, 'Cache-Control': 'max-age=15' });
+}
+
+async function essenzAddieren(env, menge, quelle) {
+  const vorher = (await env.DB.prepare("SELECT wert FROM reise WHERE schluessel = 'essenz'").first() || { wert: 0 }).wert;
+  const nachher = Math.max(0, vorher + menge);
+  await env.DB.batch([
+    env.DB.prepare("INSERT INTO reise (schluessel, wert) VALUES ('essenz', ?) ON CONFLICT(schluessel) DO UPDATE SET wert = MAX(0, wert + ?)").bind(nachher, menge),
+    env.DB.prepare('INSERT INTO essenz_log (zeit, quelle, menge) VALUES (?, ?, ?)').bind(jetzt(), quelle, menge),
+  ]);
+  const neu = REISE.meilensteine.filter((m) => m.essenz > vorher && m.essenz <= nachher).map((m) => ({ id: m.id, name: m.name }));
+  return { ok: true, essenz: nachher, neu };
+}
+
+// Von Streamer.bot: Ereignisse in Essenz umrechnen
+async function essenzMelden(req, env) {
+  const auth = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+  if (!env.STREAMERBOT_SECRET || !gleich(auth, env.STREAMERBOT_SECRET)) return fehler('Nicht erlaubt', 401);
+  const d = await jsonLesen(req);
+  const E = REISE.essenz;
+  const anzahl = Math.max(0, Math.floor(Number(d && d.anzahl) || 1));
+  const menge = {
+    chat: Math.min(anzahl, E.chatMaxProPaket) * E.chatNachricht,
+    follow: E.follow,
+    sub: Math.min(anzahl, 100) * E.sub,
+    bits: Math.floor(Math.min(anzahl, 1000000) / 100) * E.bitsPro100,
+    raid: E.raid,
+    stunde: E.streamStunde,
+  }[d && d.quelle];
+  if (menge === undefined) return fehler('Unbekannte Quelle', 400);
+  return antwort(await essenzAddieren(env, menge, d.quelle));
+}
+
+// Von Hand (Admin): beliebig dazugeben oder abziehen
+async function essenzHand(req, env) {
+  const auth = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+  if (!env.ADMIN_SECRET || !gleich(auth, env.ADMIN_SECRET)) return fehler('Nicht erlaubt', 401);
+  const d = await jsonLesen(req);
+  const menge = Math.trunc(Number(d && d.menge));
+  if (!Number.isFinite(menge) || Math.abs(menge) > 1000000) return fehler('Ungültige Menge', 400);
+  return antwort(await essenzAddieren(env, menge, 'hand'));
+}
+
 // ---------- Router ----------
 export default {
   async fetch(req, env) {
@@ -205,6 +257,9 @@ export default {
       if (req.method === 'POST' && url.pathname === '/avatare/bestaetigen') return await bestaetigen(req, env);
       if (req.method === 'GET' && url.pathname === '/avatare/profil') return await profil(url, env, cors);
       if (req.method === 'POST' && url.pathname === '/avatare/rolle') return await rolleSetzen(req, env);
+      if (req.method === 'GET' && url.pathname === '/reise') return await reiseLesen(env, cors);
+      if (req.method === 'POST' && url.pathname === '/reise/essenz') return await essenzMelden(req, env);
+      if (req.method === 'POST' && url.pathname === '/reise/hand') return await essenzHand(req, env);
       return fehler('Nicht gefunden', 404, cors);
     } catch (e) {
       console.error(e);

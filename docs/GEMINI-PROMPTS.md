@@ -257,3 +257,32 @@ wichtigsten Figuren von einem Zeichner sauber zerlegen.
 - Schattenkönig und Morrígan als eigene Figuren
 - Kosmetik-Items (Kopfteile, Umhänge, Begleiter) als Teile-Bögen
 - Portal und Terrain-Streifen für das Overlay
+
+---
+
+## 6. Die Reise-Karte (Meilensteinkarte)
+
+**Datei:** `reise-karte.png` · Format **16:9**, so groß wie möglich
+
+Am besten deine Weltkarte (`karte.png`) **hochladen**, damit Stil und Gebiete passen, und dazu:
+
+```
+Same art style and world as the uploaded map, but a NEW map designed as a journey.
+A long winding golden path leads from the bottom-left corner across the whole map
+to a black citadel with golden spires at the top-right.
+Along the path, nine clearly visible landmarks in this order, evenly spaced:
+1. ruined stone arch at the start (bottom-left)
+2. a cursed foggy swamp with dead trees
+3. a circle of ancient glowing rune stones
+4. a narrow path through thick grey mist
+5. a stone bridge over a chasm, with ravens on it
+6. a black forge glowing with lava
+7. a river ford with blood-red water
+8. a silver moonlit lake with towers
+9. the gates of the black citadel (end, top-right)
+The path must be clearly readable and never cross itself.
+Night, atmospheric, dark gothic fantasy, gold accents. No text, no labels, no letters.
+```
+
+Danach setze ich die 9 Orte genau auf die Landmarken. Namen, Texte und Essenz-Schwellen
+stehen in `data/meilensteine.js` und lassen sich jederzeit ändern.

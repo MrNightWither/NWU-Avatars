@@ -43,3 +43,17 @@ CREATE TABLE IF NOT EXISTS anmeldung (
 );
 CREATE INDEX IF NOT EXISTS anmeldung_suche ON anmeldung (plattform, name_klein, status);
 CREATE INDEX IF NOT EXISTS anmeldung_ip ON anmeldung (ip_hash, erstellt_am);
+
+-- Meilensteinkarte: gemeinsame Schatten-Essenz der Community
+CREATE TABLE IF NOT EXISTS reise (
+  schluessel    TEXT PRIMARY KEY,
+  wert          INTEGER NOT NULL
+);
+INSERT OR IGNORE INTO reise (schluessel, wert) VALUES ('essenz', 0);
+
+-- Protokoll, woher die Essenz kam (zum Nachvollziehen)
+CREATE TABLE IF NOT EXISTS essenz_log (
+  zeit          TEXT NOT NULL,
+  quelle        TEXT NOT NULL,
+  menge         INTEGER NOT NULL
+);

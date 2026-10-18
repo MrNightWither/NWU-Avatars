@@ -84,6 +84,64 @@ public class CPHInline
 
 Für Kick/YouTube später: `"twitch"` durch die Plattform ersetzen und eine eigene Action anlegen.
 
+## Streamer.bot: Schatten-Essenz für die Meilensteinkarte
+
+Eine Action **„NWU Essenz“** mit einer C#-Sub-Action. Andere Actions rufen sie auf und setzen
+vorher zwei Argumente: `nwuQuelle` und optional `nwuAnzahl`.
+
+| Auslöser in Streamer.bot | `nwuQuelle` | `nwuAnzahl` |
+|---|---|---|
+| Twitch → Follow | `follow` | – |
+| Twitch → Sub / Resub / Gift Sub | `sub` | Anzahl (bei Gift Bomb) |
+| Twitch → Cheer | `bits` | `%bits%` |
+| Twitch → Raid | `raid` | – |
+| Timed Action alle 60 Min. (nur live) | `stunde` | – |
+| Timed Action alle 5 Min. (Chat-Paket) | `chat` | Zähler (siehe unten) |
+
+**Chat zählen:** Action auf *Twitch → Chat Message* mit Sub-Action *Global Variable → Increment*
+`nwuChatZaehler` (nicht persistiert). Die 5-Minuten-Action setzt `nwuAnzahl` = `~nwuChatZaehler~`,
+ruft „NWU Essenz“ auf und setzt den Zähler danach auf 0.
+
+```csharp
+using System;
+using System.Net.Http;
+using System.Text;
+using Newtonsoft.Json.Linq;
+
+public class CPHInline
+{
+    static readonly HttpClient http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+    const string URL = "https://nwu-avatare.DEIN-NAME.workers.dev/reise/essenz";
+
+    public bool Execute()
+    {
+        var daten = new JObject { ["quelle"] = args["nwuQuelle"].ToString() };
+        if (args.ContainsKey("nwuAnzahl") && int.TryParse(args["nwuAnzahl"].ToString(), out int n)) daten["anzahl"] = n;
+        var req = new HttpRequestMessage(HttpMethod.Post, URL);
+        req.Headers.Add("Authorization", "Bearer " + CPH.GetGlobalVar<string>("nwuAvatarSecret", true));
+        req.Content = new StringContent(daten.ToString(), Encoding.UTF8, "application/json");
+        try
+        {
+            var antwort = JObject.Parse(http.SendAsync(req).Result.Content.ReadAsStringAsync().Result);
+            foreach (var m in antwort["neu"] ?? new JArray())
+            {
+                CPH.SendMessage($"🗺️ Meilenstein erreicht: {m["name"]}! Die Reise geht weiter.");
+                // Optional: hier auf die OBS-Szene mit der Reise-Karte umschalten
+            }
+        }
+        catch (Exception e) { CPH.LogWarn("NWU Essenz: " + e.Message); }
+        return true;
+    }
+}
+```
+
+**Von Hand** (z. B. nach einem Event), PowerShell:
+```powershell
+Invoke-RestMethod -Method Post -Uri "https://nwu-avatare.DEIN-NAME.workers.dev/reise/hand" `
+  -Headers @{ Authorization = "Bearer DEIN_ADMIN_SECRET" } -ContentType "application/json" -Body '{"menge": 500}'
+```
+Negative Menge zieht ab.
+
 ## Testen
 
 ```bash

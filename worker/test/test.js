@@ -93,6 +93,27 @@ assert.equal((await ruf('/avatare/anmeldung/' + r.daten.id)).daten.status, 'abge
 for (let i = 0; i < 5; i++) await anmeldung('Spammer' + i, { ip: '9.9.9.9' });
 assert.equal((await anmeldung('Spammer9', { ip: '9.9.9.9' })).status, 429);
 
+// Meilensteinkarte
+r = await ruf('/reise'); assert.equal(r.daten.essenz, 0); assert.equal(r.daten.erreicht, 'm01'); assert.equal(r.daten.naechster, 'm02');
+const essenz = (body, secret = 'sb-geheim-123') => ruf('/reise/essenz', { method: 'POST', body: JSON.stringify(body), headers: { Authorization: 'Bearer ' + secret } });
+assert.equal((await essenz({ quelle: 'sub' }, 'falsch')).status, 401);
+assert.equal((await essenz({ quelle: 'quatsch' })).status, 400);
+r = await essenz({ quelle: 'chat', anzahl: 500 });                   // gedeckelt auf 120
+assert.equal(r.daten.essenz, 120);
+r = await essenz({ quelle: 'bits', anzahl: 250 });                   // 2 × 10
+assert.equal(r.daten.essenz, 140);
+for (let i = 0; i < 14; i++) r = await essenz({ quelle: 'sub' });   // 14 × 60 = 840 → 980
+assert.equal(r.daten.essenz, 980); assert.deepEqual(r.daten.neu, []);
+r = await essenz({ quelle: 'follow' });                               // 995
+r = await essenz({ quelle: 'stunde' });                               // 1095 → Sumpf erreicht
+assert.equal(r.daten.essenz, 1095); assert.deepEqual(r.daten.neu.map((m) => m.id), ['m02']);
+r = await ruf('/reise'); assert.equal(r.daten.erreicht, 'm02'); assert.ok(r.daten.anteil > 0 && r.daten.anteil < 0.1);
+const hand = (menge, secret = 'admin-geheim-456') => ruf('/reise/hand', { method: 'POST', body: JSON.stringify({ menge }), headers: { Authorization: 'Bearer ' + secret } });
+assert.equal((await hand(5000, 'sb-geheim-123')).status, 401, 'Streamer.bot-Secret darf nicht von Hand setzen');
+r = await hand(6000); assert.deepEqual(r.daten.neu.map((m) => m.id), ['m03', 'm04', 'm05']);
+r = await hand(-999999); assert.equal(r.daten.essenz, 0, 'nie unter 0');
+assert.equal(env.DB.roh.prepare('SELECT COUNT(*) AS n FROM essenz_log').get().n, 20);
+
 // Unbekannter Pfad
 assert.equal((await ruf('/gibtsnicht')).status, 404);
 
