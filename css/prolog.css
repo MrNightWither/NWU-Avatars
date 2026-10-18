@@ -1,0 +1,81 @@
+@font-face { font-family: 'Rajdhani'; font-weight: 500; font-display: swap; src: url('../fonts/rajdhani-500.woff') format('woff'); }
+@font-face { font-family: 'Rajdhani'; font-weight: 700; font-display: swap; src: url('../fonts/rajdhani-700.woff') format('woff'); }
+@font-face { font-family: 'Inter'; font-weight: 400; font-display: swap; src: url('../fonts/inter-400.woff') format('woff'); }
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --gold: #c9a84c; --gold-hi: #e8c96d; --text: #ece6d8; --muted: #8f8a80;
+  --kopf: Rajdhani, 'Arial Narrow', system-ui, sans-serif; }
+html, body { height: 100%; overflow: hidden; }
+body { background: #000; color: var(--text); font-family: Inter, system-ui, sans-serif; }
+
+/* Bühne: am Anfang nur ein Kreis (die Kugel), dann öffnet sie sich über den ganzen Bildschirm */
+#buehne { position: fixed; inset: 0; overflow: hidden; clip-path: circle(0vmax at 50% 46%);
+  transition: clip-path 3.5s cubic-bezier(.45,0,.25,1); }
+body.kugel #buehne { clip-path: circle(17vmin at 50% 46%); }
+body.offen #buehne { clip-path: circle(80vmax at 50% 46%); }
+#welt { position: absolute; top: 0; left: 0; transform-origin: 0 0; will-change: transform; }
+#karte { display: block; max-width: none; transition: filter 3s ease; filter: sepia(0.35) saturate(1.25) brightness(1.08) contrast(1.02); }
+body.gespalten #karte { filter: saturate(0.95) brightness(0.8) contrast(1.08); }
+body.dunkel #karte { filter: sepia(0.25) saturate(0.9) brightness(0.62); }
+#westnebel { position: absolute; inset: 0; opacity: 0; transition: opacity 6s ease; pointer-events: none;
+  background:
+    radial-gradient(30% 40% at 18% 30%, rgba(150,150,165,0.55), transparent 70%),
+    radial-gradient(30% 40% at 16% 72%, rgba(140,140,155,0.55), transparent 70%),
+    linear-gradient(90deg, rgba(8,8,12,0.92) 0%, rgba(8,8,12,0.85) 26%, rgba(8,8,12,0.4) 36%, transparent 42%); }
+body.westen #westnebel { opacity: 1; }
+#risse { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+#risse path { fill: none; stroke: #ffd36a; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round;
+  filter: drop-shadow(0 0 6px #ff9a3c) drop-shadow(0 0 14px #b3122e); opacity: 0; transition: stroke-dashoffset 2.6s cubic-bezier(.6,0,.3,1), opacity 1.2s ease; }
+body.reisst #risse path { opacity: 1; stroke-dashoffset: 0 !important; }
+body.verglueht #risse path { opacity: 0.25; stroke: #a8402c; }
+
+.vignette { position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(110% 85% at 50% 46%, transparent 45%, rgba(0,0,0,0.85) 100%); }
+.blitz { position: absolute; inset: 0; background: #fff3dd; opacity: 0; pointer-events: none; }
+body.blitzt .blitz { animation: blitz 1.6s ease-out; }
+@keyframes blitz { 0% { opacity: 0; } 6% { opacity: 0.85; } 14% { opacity: 0.1; } 20% { opacity: 0.6; } 100% { opacity: 0; } }
+body.bebt #welt { animation: beben 1.2s linear; }
+@keyframes beben { 10%, 50%, 90% { translate: -6px 3px; } 30%, 70% { translate: 7px -4px; } }
+
+/* Glanz um die Kugel */
+.kugelglanz { position: fixed; left: 50%; top: 46%; width: 36vmin; height: 36vmin; translate: -50% -50%; border-radius: 50%;
+  pointer-events: none; opacity: 0; transition: opacity 2s ease, width 3.5s cubic-bezier(.45,0,.25,1), height 3.5s cubic-bezier(.45,0,.25,1);
+  box-shadow: 0 0 40px 8px rgba(160,190,255,0.35), inset 0 0 50px 10px rgba(200,220,255,0.35); border: 2px solid rgba(220,230,255,0.35); }
+body.kugel .kugelglanz { opacity: 1; }
+body.offen .kugelglanz { opacity: 0; width: 160vmax; height: 160vmax; }
+
+/* Erzählung */
+.erzaehlung { position: fixed; left: 50%; bottom: 9vh; translate: -50% 0; width: min(760px, calc(100% - 32px));
+  text-align: center; font-size: clamp(1.05rem, 2.6vw, 1.45rem); line-height: 1.55; font-style: italic;
+  color: #f4ecd6; text-shadow: 0 2px 4px #000, 0 0 24px #000, 0 0 40px #000; opacity: 0; transition: opacity 1.4s ease; }
+.erzaehlung.an { opacity: 1; }
+.erzaehlung::before { content: 'Morrígan'; display: block; font-style: normal; font-family: var(--kopf); font-weight: 700;
+  letter-spacing: 0.3em; text-transform: uppercase; font-size: 0.72rem; color: var(--gold); margin-bottom: 6px; }
+
+.wappen { position: fixed; left: 50%; top: 20vh; width: min(150px, 28vw); translate: -50% 0; opacity: 0; transition: opacity 1.4s ease;
+  filter: drop-shadow(0 6px 20px rgba(0,0,0,0.8)); pointer-events: none; }
+.wappen.an { opacity: 1; }
+
+/* Vorhang und Ende */
+.vorhang, .ende { position: fixed; inset: 0; display: grid; place-content: center; justify-items: center; gap: 14px; text-align: center;
+  background: radial-gradient(60% 60% at 50% 45%, rgba(20,16,10,0.6), #000 80%); transition: opacity 1.6s ease; padding: 16px; }
+.ende { background: none; inset: auto 0 6vh 0; }
+.vorhang.weg { opacity: 0; pointer-events: none; }
+.vorhang .klein { font-family: var(--kopf); color: var(--gold); letter-spacing: 0.35em; text-transform: uppercase; font-size: 0.78rem; }
+.vorhang h1 { font-family: var(--kopf); font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; font-size: clamp(2rem, 8vw, 3.4rem); }
+.vorhang .unter { color: var(--muted); }
+.knopf { display: inline-block; background: linear-gradient(#e0c06a, #b8933c); color: #17120a; border: 0; border-radius: 8px; padding: 12px 26px;
+  font-family: var(--kopf); font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; cursor: pointer; text-decoration: none; font-size: 1rem; }
+.leise { background: none; border: 0; color: var(--gold); font: inherit; font-size: 0.9rem; cursor: pointer; text-decoration: none; }
+.ueberspringen { position: fixed; right: 16px; top: 14px; color: rgba(232,201,109,0.75); text-decoration: none; font-size: 0.85rem; }
+.ton { position: fixed; left: 14px; top: 10px; width: 38px; height: 38px; border-radius: 50%; border: 1px solid rgba(201,168,76,0.4);
+  background: rgba(0,0,0,0.5); color: var(--gold); cursor: pointer; font-size: 1rem; }
+.ton[aria-pressed="true"] { opacity: 0.45; text-decoration: line-through; }
+.knopf:focus-visible, .leise:focus-visible, .ueberspringen:focus-visible, .ton:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 3px; }
+[hidden] { display: none !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition-duration: 0.4s !important; }
+}
+body.endet .erzaehlung { bottom: 24vh; }
+.ende { gap: 10px; }

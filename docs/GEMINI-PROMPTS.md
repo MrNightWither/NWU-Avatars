@@ -431,3 +431,40 @@ each separate with wide empty space between them:
 Same thick dark outline, chibi cartoon style, NO white sticker border.
 Plain flat solid #00FF00 green background, no shadows, no text.
 ```
+
+---
+
+## 12. Bilder für den Prolog „Die Spaltung“ (optional, `prolog.html`)
+
+Der Prolog läuft schon mit der Karte. Diese Bilder würden ihn noch stärker machen. Format **16:9**,
+**Weltkarte als Stil-Vorlage hochladen** (gleicher gemalter Stil wie Karte und Gebiete, nicht der Sticker-Stil).
+
+**a) Morrígan mit der Kugel** · `prolog-morrigan.png`
+```
+Same painted dark fantasy style as the uploaded map. An ancient witch, Morrígan, seen from the side
+in a dark stone chamber, hooded, long silver hair, wrinkled hands around a large glowing crystal orb
+on a pedestal. Inside the orb a tiny golden citadel is visible. Pale blue light from the orb on her face,
+everything else in deep shadow. Calm, mysterious, cinematic. No text.
+```
+
+**b) Die Zitadelle zur Zeit von Unity** · `prolog-unity.png`
+```
+Same painted dark fantasy style as the uploaded map. The black citadel with golden spires at its
+height of glory: huge black-and-gold banners with a silver crescent moon, crowds of people in silver armor
+in the courtyard, warm golden light, festive, united. Wide cinematic shot. No text.
+```
+
+**c) Die Nacht der Spaltung** · `prolog-spaltung.png`
+```
+Same painted dark fantasy style as the uploaded map. The same citadel at night during a storm,
+a glowing crack splitting the great hall, the black-and-gold banner torn in half, four groups of
+warriors walking away in four directions, each carrying a torch in a different color
+(pale silver-blue, blood red, teal, orange flame). Dramatic, sad, cinematic. No text.
+```
+
+**d) Der Westen im Nebel** · `prolog-westen.png`
+```
+Same painted dark fantasy style as the uploaded map. A wall of dense grey fog over a dark land, faint
+silhouettes of a raven tower and a thorn forest barely visible inside the fog, two pairs of glowing eyes
+watching from the mist. Eerie, quiet, cinematic. No text.
+```

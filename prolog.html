@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Die Spaltung — NightWither Unity</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="preload" href="fonts/rajdhani-700.woff" as="font" type="font/woff" crossorigin>
+<link rel="stylesheet" href="css/prolog.css">
+</head>
+<body>
+<div id="buehne" aria-hidden="true">
+  <div id="welt">
+    <img id="karte" src="assets/karte-einst.webp" alt="">
+    <div id="westnebel"></div>
+    <svg id="risse" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"></svg>
+  </div>
+  <div class="vignette"></div>
+  <div class="blitz" id="blitz"></div>
+</div>
+<div class="kugelglanz" id="kugelglanz" aria-hidden="true"></div>
+<img class="wappen" id="wappen" alt="">
+
+<p class="erzaehlung" id="erzaehlung" aria-live="polite"></p>
+
+<div class="vorhang" id="vorhang">
+  <p class="klein">Morrígan erzählt</p>
+  <h1>Die Spaltung</h1>
+  <p class="unter">Wie aus einem Haus vier wurden</p>
+  <button class="knopf" id="b-start" type="button">Geschichte ansehen</button>
+  <a class="leise" href="./">Direkt zum Ritual →</a>
+</div>
+
+<div class="ende" id="ende" hidden>
+  <a class="knopf" href="./">Das Ritual beginnen</a>
+  <button class="leise" id="b-nochmal" type="button">Nochmal ansehen</button>
+</div>
+
+<a class="ueberspringen" id="ueberspringen" href="./" hidden>Überspringen →</a>
+<button id="ton" class="ton" type="button" aria-label="Ton aus" aria-pressed="false" hidden>♪</button>
+
+<script src="data/haeuser.js"></script>
+<script src="js/ton.js"></script>
+<script src="js/prolog.js"></script>
+</body>
+</html>
