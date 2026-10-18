@@ -111,7 +111,60 @@ sonst verschwimmt das Grün mit dem Hintergrund.
 
 ---
 
-## 3. Die 24 Charaktere (für die Auswahl auf der Seite)
+## 3. Die 24 Charaktere – NEUER STIL (Stand 18.10.2026)
+
+**Entscheidung:** Alle Figuren bekommen den Stil deines eigenen Avatars (Schattenkönig):
+Cartoon-Sticker, dicker schwarzer Umriss, große klare Farbflächen, wenig Kleinkram.
+So bleiben sie im Stream erkennbar und passen zur NWU-Marke.
+
+**So geht's:** Dein Avatar-Bild in Gemini **hochladen** und dazu schreiben:
+
+**a) Für die Website** · Datei `figur-haus1-a.png` … `figur-haus6-d.png` · Format **3:4**
+
+```
+Use the uploaded image ONLY as an art style reference. Do not copy the person,
+the mask, the glasses or the crown.
+
+Draw a NEW full-body character in exactly this art style: bold thick black outlines,
+flat cel shading with few large color areas, glossy sticker / Twitch emote look,
+expressive face, chibi proportions about 2.5 heads tall, minimal small details.
+
+Character for the [House of the Moon] in a dark fantasy world.
+Archetype: [Blade – a frontline fighter with a curved sword].
+Look: [Character: a young woman with long silver hair] wearing [pale silver-blue
+and black clothing with crescent moon motifs]. The house color must be clearly visible.
+Standing pose, three-quarter view facing right, whole body visible including feet.
+Plain flat solid #00FF00 green background, no shadow, no text, no letters.
+```
+
+**b) Für das Overlay** · Datei `seite-haus1-a.png` … · Format **1:1**
+Das Bild aus a) hochladen und dazu:
+
+```
+Same character as in the uploaded image, exact same design, colors and art style.
+Pure side view facing right, neutral standing pose, holding the weapon.
+Plain flat solid #00FF00 green background, no shadow, no text.
+```
+
+**Abwechslung pro Haus:** Die Zeile `[Character: …]` bei jeder der 4 Figuren anders füllen, z. B.
+`a young man with short messy black hair` · `a girl with a long braid` ·
+`a tall guy with a scar and a calm face` · `a small energetic kid-like mage`.
+Dann erkennt man die Figuren im Stream auch an Haaren und Größe.
+
+Archetypen und Haus-Looks: siehe die Tabellen im alten Abschnitt unten.
+
+**Dazu für dich selbst:** Schattenkönig als Ganzkörper-Figur fürs Overlay
+
+```
+Same person as in the uploaded image (crown, black hoodie, glasses, NWU face mask),
+same art style. Full-body chibi version, about 2.5 heads tall, pure side view facing
+right, neutral standing pose, whole body including feet.
+Plain flat solid #00FF00 green background, no shadow, no extra text except the NWU on the mask.
+```
+
+---
+
+## 3 (alt). Die 24 Charaktere – Anime-Stil (überholt, nur noch für die Tabellen)
 
 **Wichtig vorab:** Die Figuren sind im Stream nur etwa 50 Pixel hoch. Damit man sie dort
 erkennt, empfehle ich **leicht kindliche Proportionen (etwa 3 Köpfe groß)**. Auf der Seite

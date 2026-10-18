@@ -366,3 +366,4 @@ Ein Slot freischalten heißt: er wird nutzbar. Die Auswahl an Items pro Slot wä
 - **Bilder:** Karte, Wappen und Charaktere werden mit **Gemini** erzeugt. Prompts: `docs/GEMINI-PROMPTS.md`.
 - **Overlay-Figuren:** werden aus Gemini-Teile-Bögen **zerlegt** (getrennte Ebenen fürs Puppet-System). Nachbesserung einplanen.
 - **Proportionen (Vorschlag):** leicht kindlich, etwa 3 Köpfe groß, damit die Figuren im Stream bei ca. 50 Pixeln erkennbar bleiben. Noch zu bestätigen.
+- **Figuren-Stil (Entscheidung):** Alle Figuren im **Stil des Schattenkönig-Avatars**: Cartoon-Sticker/Emote-Look, dicker schwarzer Umriss, große klare Farbflächen, wenig Kleinkram, Chibi etwa 2,5 Köpfe hoch. Grund: im Stream bei ca. 56 px gut erkennbar und passend zur bestehenden NWU-Marke. Die Anime-Figuren von Haus 1 sind damit überholt (bleiben als Platzhalter, bis die neuen da sind). Karte, Gebiete und Wappen bleiben.
