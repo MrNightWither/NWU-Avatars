@@ -1,0 +1,19 @@
+<!--
+  Textbaustein für https://datenschutz.nightwither.de (Repo datenschutz-nwu, index.html).
+  Einfügen im Abschnitt „Ergänzende Angaben zu den Diensten auf nightwither.de“, z. B. nach „Turnier- und Event-Anmeldung“.
+  Stand: 18.10.2026, passend zum Code in NWU-Avatars (worker/schema.sql). Keine Rechtsberatung – bei Unsicherheit prüfen lassen.
+  Ändert sich, was gespeichert wird (neue Spalten, neue Spiele mit Daten), diesen Text mit anpassen.
+-->
+    <h3>NWU Avatare: Ritual, Figuren und Ruhm</h3>
+    <p>Auf <a href="https://mrnightwither.github.io/NWU-Avatars/">dem Ritual</a> kannst du freiwillig einem der Häuser von NightWither Unity beitreten. Danach läuft im Stream eine Figur für dich um die Kamera, und du sammelst Ruhm (Erfahrung) und Level.</p>
+    <ul>
+      <li><strong>Anmeldung auf der Website:</strong> dein Benutzername auf der gewählten Plattform (z. B. Twitch), deine Antworten im Ritual, die gewählte Figur und das daraus berechnete Haus. Dazu kommt ein Bestätigungscode, den du im Chat eingibst. Um Missbrauch zu verhindern (höchstens 5 Anmeldungen pro Stunde), wird ein nicht umkehrbarer Hash-Wert deiner IP-Adresse gespeichert, nicht die IP-Adresse selbst. Anmeldungen werden nach spätestens 7 Tagen gelöscht.</li>
+      <li><strong>Bestätigung im Chat:</strong> Schreibst du den Code in meinen Chat, liest mein Programm Streamer.bot (läuft auf meinem eigenen PC) die Nachricht und legt dein Profil an: Plattform, Benutzer-ID und Benutzername, Haus, Figur, Datum der Bindung, deine Antworten im Ritual, Level, Ruhm, gewähltes Aussehen (z. B. Haarfarbe) und eine Rolle, falls du Moderator bist.</li>
+      <li><strong>Ruhm:</strong> Für gebundene Profile meldet Streamer.bot, wenn du im Stream anwesend bist (laut Zuschauerliste der Plattform), im Chat schreibst, folgst, abonnierst, Bits schickst, einen Raid mitbringst oder bei Spielen im Stream gewinnst (z. B. Morrígans Prüfung, Schatzsuche, Würfel). Gespeichert werden nur der neue Stand von Ruhm und Level sowie Zeitpunkte, die für Spielregeln nötig sind (z. B. wann du zuletzt gewürfelt hast). Von Personen ohne Profil wird nichts gespeichert.</li>
+      <li><strong>Öffentlich sichtbar:</strong> Benutzername, Haus, Figur, Level und Ruhm sind auf den Seiten „Chronik“ (Bestenliste) und „Figurenseite“ sichtbar, und deine Figur erscheint mit deinem Namen im Stream.</li>
+      <li><strong>Overlay im Stream:</strong> Das Overlay liest den öffentlichen Chat ohne Anmeldung mit, um Figuren zu zeigen. Es läuft auf meinem PC und speichert dabei nichts.</li>
+      <li><strong>Weg der Daten:</strong> Website (GitHub Pages) → mein Cloudflare Worker → Datenbank bei Cloudflare (Cloudflare D1, Cloudflare Inc.). Streamer.bot spricht mit demselben Worker.</li>
+      <li><strong>Rechtsgrundlage:</strong> Art. 6 Abs. 1 lit. b DSGVO (du nimmst freiwillig am Spiel teil, ohne die Daten kann ich es nicht anbieten) und für den IP-Hash Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse, Schutz vor Missbrauch).</li>
+      <li><strong>Speicherdauer und Löschung:</strong> Dein Profil bleibt gespeichert, solange du teilnimmst. Schreib mir (Kontakt im <a href="https://impressum.nightwither.de">Impressum</a>), dann lösche ich dein Profil vollständig oder gebe dir Auskunft, was gespeichert ist.</li>
+    </ul>
+    <p>Die Ritual-Seite merkt sich außerdem in deinem Browser (Local Storage), wie weit du im Ritual bist und ob der Ton aus ist. Diese Angaben verlassen deinen Browser nicht und lassen sich über die Browser-Einstellungen löschen.</p>

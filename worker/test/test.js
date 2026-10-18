@@ -324,6 +324,11 @@ for (let i = 0; i < 60; i++) {
 }
 assert.equal(wuerfe.size, 6, 'alle Augenzahlen kommen vor');
 
+// Alte Anmeldungen (mit IP-Hash) werden nach 7 Tagen gelöscht
+env.DB.roh.exec("UPDATE anmeldung SET erstellt_am = '2020-01-01T00:00:00.000Z'");
+await anmeldung('Aufraeumtest', { ip: '9.9.9.9' });
+assert.equal(env.DB.roh.prepare("SELECT COUNT(*) AS n FROM anmeldung WHERE erstellt_am < '2021-01-01'").get().n, 0, 'alte Anmeldungen weg');
+
 // Unbekannter Pfad
 assert.equal((await ruf('/gibtsnicht')).status, 404);
 

@@ -128,6 +128,8 @@ async function anmeldungAnlegen(req, env, cors) {
   const bis = new Date(Date.now() + CODE_MINUTEN * 60e3).toISOString();
 
   await env.DB.batch([
+    // Datensparsamkeit: Anmeldungen (mit IP-Hash) nach 7 Tagen löschen, bestätigte stehen dann im Profil
+    env.DB.prepare('DELETE FROM anmeldung WHERE erstellt_am < ?').bind(new Date(Date.now() - 7 * 86400e3).toISOString()),
     // Ältere offene Anmeldungen für denselben Namen verfallen lassen
     env.DB.prepare("UPDATE anmeldung SET status = 'abgelaufen' WHERE plattform = ? AND name_klein = ? AND status = 'offen'").bind(plattform, klein),
     env.DB.prepare(`INSERT INTO anmeldung (id, plattform, name, name_klein, code, haus, figur, quiz, status, ip_hash, gueltig_bis, erstellt_am)
