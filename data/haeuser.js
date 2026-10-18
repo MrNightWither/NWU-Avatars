@@ -4,7 +4,7 @@
 // wappenBild: fertiges Wappen aus assets/ – fehlt es, wird ein Platzhalter gezeichnet.
 window.NWU_HAEUSER = [
   {
-    id: 'haus1', name: 'Haus des Mondes', kurz: 'Mond', symbol: 'mond',
+    id: 'haus1', name: 'Haus des Mondes', kurz: 'Mond', symbol: 'mond', wappenBild: 'assets/wappen-haus1.webp',
     farbe: 0x8fa8d8, css: '#8fa8d8',
     wesen: 'Still, wachsam und klar. Ihr seht, was anderen in der Dunkelheit verborgen bleibt.',
     sprueche: [
@@ -34,7 +34,7 @@ window.NWU_HAEUSER = [
     ],
   },
   {
-    id: 'haus4', name: 'Haus der Flamme', kurz: 'Flamme', symbol: 'flamme',
+    id: 'haus4', name: 'Haus der Flamme', kurz: 'Flamme', symbol: 'flamme', wappenBild: 'assets/wappen-haus4.webp',
     farbe: 0xe0672b, css: '#e8753a',
     wesen: 'Wild, mutig und unaufhaltsam. Wo ihr hingeht, wird es hell und laut.',
     sprueche: [
@@ -44,7 +44,7 @@ window.NWU_HAEUSER = [
     ],
   },
   {
-    id: 'haus5', name: 'Haus der Dornen', kurz: 'Dornen', symbol: 'dornen',
+    id: 'haus5', name: 'Haus der Dornen', kurz: 'Dornen', symbol: 'dornen', wappenBild: 'assets/wappen-haus5.webp',
     farbe: 0x5f9e48, css: '#6fae55',
     wesen: 'Geduldig, standhaft und wehrhaft. Ihr schützt, was euch gehört.',
     sprueche: [
@@ -54,7 +54,7 @@ window.NWU_HAEUSER = [
     ],
   },
   {
-    id: 'haus6', name: 'Haus der Raben', kurz: 'Raben', symbol: 'raben',
+    id: 'haus6', name: 'Haus der Raben', kurz: 'Raben', symbol: 'raben', wappenBild: 'assets/wappen-haus6.webp',
     farbe: 0x7a68b5, css: '#8b79c6',
     wesen: 'Neugierig, klug und unvergessen. Ihr tragt das Wissen und die Botschaften.',
     sprueche: [
