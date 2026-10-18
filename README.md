@@ -85,7 +85,8 @@ Oder per Adresse mit Einstellungen, z. B. `…/overlay/avatare.html?n=12&szene=s
 **Chat:** In `overlay/config.js` bei `kanal` deinen Twitch-Namen eintragen (oder `?kanal=…`).
 Das Overlay liest den Chat anonym mit, ohne Login. Wer schreibt, tritt aus einem kleinen Portal
 am Rahmen. Nach 15 Minuten Stille geht die Figur, `!lurk` = hinsetzen/schlafen,
-Mods bleiben als Wächter 2 Stunden (`!wache` = bis zum Ende). Raid → alle stellen sich oben auf
+Mods bleiben als Wächter 2 Stunden (`!wache` = bis zum Ende). Wer noch kein Ritual gemacht hat (Worker sagt
+„nicht gebunden“), läuft als **Silhouette**; nach dem Ritual tritt beim nächsten Schreiben die echte Gestalt hervor. Raid → alle stellen sich oben auf
 und jubeln. Sub → Level-Up-Effekt bei der Figur. Ist `api` eingetragen, bekommt jeder Chatter
 seine echte Figur aus dem Ritual, sonst eine zufällige.
 

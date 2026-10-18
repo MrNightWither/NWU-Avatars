@@ -178,6 +178,40 @@ public class CPHInline
 }
 ```
 
+## Streamer.bot: Morrígans Hinweis für Ungebundene
+
+Wer im Stream zum ersten Mal schreibt und noch kein Ritual gemacht hat, bekommt **einmal pro Stream** einen Hinweis.
+Im Overlay läuft diese Person als Silhouette, bis sie gebunden ist.
+
+1. **Trigger:** Twitch → Chat → **First Words** (feuert bei der ersten Nachricht jeder Person im Stream).
+2. **Global Variable** `nwuRitualLink` = Adresse der Website (z. B. `https://mrnightwither.github.io/NWU-Avatars/`).
+3. **Execute C# Code:**
+
+```csharp
+using System;
+using System.Net.Http;
+using Newtonsoft.Json.Linq;
+
+public class CPHInline
+{
+    static readonly HttpClient http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+    const string URL = "https://nwu-avatare.DEIN-NAME.workers.dev/avatare/profil?plattform=twitch&id=";
+
+    public bool Execute()
+    {
+        string user = args["user"].ToString();
+        try
+        {
+            var antwort = JObject.Parse(http.GetStringAsync(URL + Uri.EscapeDataString(args["userId"].ToString())).Result);
+            if ((bool?)antwort["gefunden"] == false)
+                CPH.SendMessage($"🜏 Morrígan: Ich sehe dich, @{user}, doch du gehörst noch keinem Haus an. Vollende das Ritual: {CPH.GetGlobalVar<string>("nwuRitualLink", true)}");
+        }
+        catch (Exception e) { CPH.LogWarn("NWU Hinweis: " + e.Message); }
+        return true;
+    }
+}
+```
+
 ## Streamer.bot: Ruhm (Erfahrung) automatisch
 
 Eine Action **„NWU Ruhm“** mit dem Code unten, und mehrere Trigger, die sie auslösen. Bei jedem Trigger eine

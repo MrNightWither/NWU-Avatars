@@ -246,11 +246,21 @@
     const erlaubt = window.NWU_HAARFARBE_FREI || (() => false);
     const haarId = erlaubt(level, aus.haare) ? aus.haare : (window.NWU_HAARE_STANDARD || {})[vorlage.haus];
     if (rig && rig.teile.haare && FARBEN[haarId]) rig.teile.haare.sprite.tint = FARBEN[haarId].farbe;
+    // Silhouette: ganz dunkel, mit einem schwachen violetten Schimmer dahinter
+    if (info.silhouette) {
+      const dunkel = 0x07060a;
+      if (rig) for (const t of Object.values(rig.teile)) t.sprite.tint = dunkel; else koerper.tint = dunkel;
+      const schimmer = new PIXI.Sprite(T.glanz);
+      schimmer.anchor.set(0.5); schimmer.tint = 0x7a5cff; schimmer.alpha = 0.55;
+      schimmer.scale.set(S.hoehe / 40, S.hoehe / 30); schimmer.y = -S.hoehe * 0.5;
+      root.addChildAt(schimmer, 1);
+    }
     figurenEbene.addChild(root);
     const fi = {
       root, koerper, rig, schatten, basis, vorlage, jubel: 0, winken: 0, farbe: HAUSFARBE[vorlage.haus] || 0xc9a84c,
       id: info.id || null, name: info.name || '', mod: !!info.mod, demo: !!info.demo,
-      level, staub: FREI(level, 'staub'), funkenSpur: FREI(level, 'funken'), spurZeit: 0,
+      level, staub: !info.silhouette && FREI(level, 'staub'), funkenSpur: !info.silhouette && FREI(level, 'funken'), spurZeit: 0,
+      ungebunden: !!info.silhouette, pruefeBis: 0,
       s: info.s ?? Math.random() * umfang,
       richtung: Math.random() < 0.5 ? 1 : -1,
       tempo: 22 + Math.random() * 16,
@@ -327,13 +337,28 @@
 
   // ---------- Anwesenheit (Chat) ----------
   let zeit = 0;
+  // Ergebnis: Profil · 'ungebunden' (Worker sagt: noch kein Ritual) · null (kein Worker oder nicht erreichbar)
   async function profilLaden(u) {
     if (!S.api) return null;
     try {
       const r = await fetch(`${S.api.replace(/\/$/, '')}/avatare/profil?plattform=twitch&id=${encodeURIComponent(u.id)}`, { credentials: 'omit' });
       const d = await r.json();
-      return d.gefunden ? d : null;
+      return d.gefunden ? d : d.gefunden === false ? 'ungebunden' : null;
     } catch (e) { return null; }
+  }
+
+  // Wer noch kein Ritual gemacht hat, läuft als Silhouette. Schreibt die Person wieder, wird (höchstens
+  // einmal pro Minute) nachgesehen, ob sie inzwischen gebunden ist – dann tritt ihre echte Gestalt hervor.
+  async function bindungPruefen(fi, u) {
+    if (fi.pruefeBis > zeit) return;
+    fi.pruefeBis = zeit + 60;
+    const profil = await profilLaden(u);
+    if (!profil || profil === 'ungebunden' || fi.entfernen) return;
+    fi.entfernen = true; fi.einblenden = Math.min(fi.einblenden, 0.3);
+    nachId.delete(u.id);
+    const neu = figurErzeugen(vorlageFuer(profil.haus, profil.figur, u.id), { id: u.id, name: u.name, mod: u.mod || ['waechter', 'koenigin'].includes(profil.rolle),
+      level: profil.level, aussehen: profil.aussehen, s: fi.s });
+    setTimeout(() => levelUp(neu), 900);
   }
 
   async function chatter(u, art) {
@@ -361,13 +386,16 @@
       if (text.startsWith('!lurk')) { fi.lurker = true; fi.zustandZeit = 0; }
       else if (text.startsWith('!wache') && fi.mod) { fi.wache = true; }
       else if (art === 'nachricht') { if (fi.lurker && !text.startsWith('!')) { fi.lurker = false; fi.zustandZeit = 0; } leuchten(fi); }
+      if (fi.ungebunden) bindungPruefen(fi, u);
       return;
     }
     nachId.set(u.id, { entfernen: false, letzte: zeit });   // Platzhalter gegen doppeltes Anlegen
-    const profil = await profilLaden(u);
+    const ergebnis = await profilLaden(u);
+    const ungebunden = ergebnis === 'ungebunden', profil = ungebunden ? null : ergebnis;
     const vorlage = profil ? vorlageFuer(profil.haus, profil.figur, u.id) : vorlageFuer(null, null, u.id);
-    fi = figurErzeugen(vorlage, { id: u.id, name: u.name, mod: u.mod || (profil && profil.rolle === 'waechter'), lurker: text.startsWith('!lurk'),
-      level: profil ? profil.level : 1, aussehen: profil ? profil.aussehen : null });
+    fi = figurErzeugen(vorlage, { id: u.id, name: u.name, mod: u.mod || (profil && ['waechter', 'koenigin'].includes(profil.rolle)), lurker: text.startsWith('!lurk'),
+      level: profil ? profil.level : 1, aussehen: profil ? profil.aussehen : null, silhouette: ungebunden });
+    if (ungebunden) fi.pruefeBis = zeit + 60;
   }
 
   function leuchten(fi) {
