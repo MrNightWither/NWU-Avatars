@@ -1,6 +1,7 @@
 // Prolog „Die Spaltung“: Morrígan erzählt, wie aus NightWither Unity vier Häuser wurden.
 // Alles aus vorhandenen Bildern: Karte (ohne Nebel), Wappen, Kamerafahrten, Risse, Nebel, Klang.
-// Texte und Zeiten stehen unten in SZENEN und lassen sich einfach ändern.
+// Texte stehen direkt im Ablauf unten. Vorlesen: Sprachdateien assets/stimme/prolog-01.mp3 … prolog-13.mp3
+// (Reihenfolge und Texte: docs/PROLOG-TEXT.md). Ist eine Datei da, wartet der Film, bis der Satz gesprochen ist.
 'use strict';
 
 (function () {
@@ -67,11 +68,40 @@
     });
   }
 
+  // ---------- Stimme (optional) ----------
+  const SAETZE = 13;
+  const stimmen = [];
+  let satzNr = 0;
+  function stimmenLaden() {
+    if (stimmen.length) return;
+    for (let i = 1; i <= SAETZE; i++) {
+      const a = new Audio(`assets/stimme/prolog-${String(i).padStart(2, '0')}.mp3`);
+      a.preload = 'auto';
+      a.fehlt = false;
+      a.addEventListener('error', () => { a.fehlt = true; });
+      stimmen.push(a);
+    }
+  }
+  // Spielt den nächsten Satz ab. Ergebnis: Promise, das endet, wenn er gesprochen ist (oder sofort, wenn es keine Datei gibt).
+  function sprechen() {
+    const a = stimmen[satzNr++];
+    if (!a || a.fehlt || TON.istStumm()) return null;
+    return new Promise((fertig) => {
+      a.currentTime = 0;
+      a.onended = () => fertig(true);
+      a.onerror = () => { a.fehlt = true; fertig(false); };
+      a.play().catch(() => fertig(false));
+    });
+  }
+
   // ---------- Erzählung ----------
   const text = $('erzaehlung'), wappen = $('wappen');
   async function sag(satz, ms) {
     text.textContent = satz; text.classList.add('an');
-    await warte(ms);
+    const t0 = Date.now(), stimme = sprechen();
+    const gesprochen = stimme ? await stimme : false;
+    // mit Stimme: bis sie fertig ist (+ kurze Pause), ohne Stimme: die geplante Lesezeit
+    await warte(gesprochen ? 600 : Math.max(0, ms - (Date.now() - t0)));
     text.classList.remove('an');
     await warte(1400);
   }
@@ -84,6 +114,8 @@
   async function film() {
     const nr = ++lauf;
     const weiter = () => nr === lauf;
+    stimmen.forEach((a) => a.pause());
+    satzNr = 0;
     body.className = '';
     $('ende').hidden = true; $('ueberspringen').hidden = false;
     risseZeichnen();
@@ -147,6 +179,7 @@
     body.classList.add('endet');
     text.textContent = 'Doch zuerst musst du wissen, wohin du gehörst.';
     text.classList.add('an');
+    sprechen();
     TON.glocke();
     $('ende').hidden = false; $('ueberspringen').hidden = true;
   }
@@ -154,6 +187,7 @@
   // ---------- Start (Ton braucht einen Klick) ----------
   $('b-start').addEventListener('click', () => {
     TON.start();
+    stimmenLaden();
     $('vorhang').classList.add('weg');
     const ton = $('ton');
     ton.hidden = false;
@@ -162,6 +196,7 @@
   });
   $('ton').addEventListener('click', () => {
     TON.stummSchalten();
+    if (TON.istStumm()) stimmen.forEach((a) => a.pause());
     $('ton').setAttribute('aria-pressed', String(TON.istStumm()));
   });
   $('b-nochmal').addEventListener('click', () => { text.classList.remove('an'); film(); });
