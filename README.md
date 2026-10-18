@@ -57,14 +57,28 @@ Oder per Adresse mit Einstellungen, z. B. `…/overlay/avatare.html?n=12&szene=s
 
 | Parameter | Bedeutung |
 |---|---|
-| `n` | Anzahl Figuren (Standard 8) |
+| `n` | Anzahl Demo-Figuren (Standard 8, mit Chat 0) |
+| `kanal` | Twitch-Kanal für den Chat |
+| `max` | höchstens so viele Figuren gleichzeitig sichtbar (Standard 30) |
+| `spar=1` | Sparmodus |
 | `groesse` | Figurhöhe in Pixeln (Standard 56) |
 | `szene` / `cam` | Kamera-Rahmen aus `overlay/config.js` oder eigener `x,y,w,h` |
 | `bg=1` | dunkler Hintergrund mit Rahmen zum Ansehen im Browser |
 | `hud=0` | Anzeige oben links aus |
 
-Tasten (OBS: Rechtsklick → Interagieren): `1/2/3` = 4/12/30 Figuren, `N` neue Figur, `X` eine weg,
-`J` alle jubeln, `L` alle Lurker an/aus, `H` Anzeige.
+**Chat:** In `overlay/config.js` bei `kanal` deinen Twitch-Namen eintragen (oder `?kanal=…`).
+Das Overlay liest den Chat anonym mit, ohne Login. Wer schreibt, tritt aus einem kleinen Portal
+am Rahmen. Nach 15 Minuten Stille geht die Figur, `!lurk` = hinsetzen/schlafen,
+Mods bleiben als Wächter 2 Stunden (`!wache` = bis zum Ende). Raid → alle stellen sich oben auf
+und jubeln. Sub → Level-Up-Effekt bei der Figur. Ist `api` eingetragen, bekommt jeder Chatter
+seine echte Figur aus dem Ritual, sonst eine zufällige.
+
+**Großes Portal:** aufrechtes Tor am Terrain-Streifen unten, die Figuren laufen heraus und nach
+2,5 Minuten wieder hinein. Automatisch alle 20 Minuten (`portal` in `config.js`) oder per Taste.
+
+Tasten (OBS: Rechtsklick → Interagieren): `T` Test-Chatter, `M` Nachricht, `K` !lurk, `R` Raid,
+`P` Portal auf/zu, `U` Level-Up, `G` Gruppenbild, `J` alle jubeln, `S` Sparmodus,
+`1/2/3` = 4/12/30 Demo-Figuren, `H` Anzeige.
 
 Neue Figuren: Seitenansicht freistellen (`tools/figur.py`), auf 120 px Höhe verkleinern,
 nach `overlay/figuren/` legen und in `overlay/config.js` unter `figuren` eintragen.

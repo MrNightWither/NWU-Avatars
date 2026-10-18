@@ -22,6 +22,19 @@ window.NWU_CONFIG = {
     unten:    { x: 0.03, y: 0.62, w: 0.25, h: 0.30 },
   },
 
+  // Twitch-Kanal, dessen Chat mitgelesen wird (leer = Demo-Figuren). Auch per ?kanal=… möglich.
+  kanal: '',
+  // Adresse des Workers nwu-avatare (leer = Chatter bekommen eine zufällige Figur).
+  api: '',
+
+  // Anwesenheit (Plan 6): so lange bleibt eine Figur nach der letzten Nachricht / !lurk
+  anwesenheitMinuten: 15,
+  // Mods (Wächter) bleiben länger; mit !wache bis zum Ende
+  waechterMinuten: 120,
+
+  // Großes Portal: automatisch alle X Minuten (0 = nur per Taste P), Dauer auf dem Terrain
+  portal: { alleMinuten: 20, dauerSekunden: 150 },
+
   // Stufe 1: fertige Figurenbilder (Seitenansicht, Blick nach rechts), Größe im Stream in Pixeln
   figurHoehe: 56,
   figuren: [
