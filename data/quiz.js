@@ -1,7 +1,7 @@
 // Fragenpool fürs Ritual (Plan 3). Pro Durchgang werden zufällig RUNDEN Fragen gezogen.
 // Jede Antwort gibt versteckte Punkte an 1 bis 2 Häuser: 2 = passt stark, 1 = passt etwas.
 // Kürzel: M = Mond (haus1), B = Blut (haus2), N = Nebel (haus3), F = Flamme (haus4)
-// Jede Frage hat genau eine starke Antwort (2) pro Haus, dazu je Haus 5 Nebenpunkte (1) insgesamt.
+// Jede Frage hat genau eine starke Antwort (2) pro Haus, dazu 8–9 Nebenpunkte (1) je Haus.
 // Dornen (haus5) und Raben (haus6) sind "verlorene Häuser" und kommen im Quiz erst später dazu.
 // Der Worker rechnet das Ergebnis später mit derselben Datei nach, damit niemand schummeln kann.
 (function () {
@@ -127,6 +127,86 @@
       ['Die Menschen.', 'B2'],
       ['Den Brief mit meinem größten Geheimnis.', 'N2'],
       ['Die Glut. Aus ihr baue ich alles neu.', 'F2 N1']]],
+    ['q25', 'Ein Fest in der Zitadelle. Wo findet man dich?', [
+      ['Mitten auf der Tanzfläche.', 'F2 B1'],
+      ['Am Tisch bei meinen Freunden.', 'B2'],
+      ['Auf dem Balkon, allein mit dem Himmel.', 'M2'],
+      ['Ich höre, was in den Ecken geflüstert wird.', 'N2']]],
+    ['q26', 'Was würdest du nie verzeihen?', [
+      ['Verrat an der Familie.', 'B2'],
+      ['Eine Lüge, die mir ins Gesicht gesagt wird.', 'M2 F1'],
+      ['Dass man mich unterschätzt.', 'F2'],
+      ['Dass jemand mein Geheimnis verrät.', 'N2']]],
+    ['q27', 'Du darfst ein Zeichen auf deinen Umhang sticken.', [
+      ['Eine Mondsichel.', 'M2'],
+      ['Ein Tropfen Blut.', 'B2'],
+      ['Eine Spirale aus Rauch.', 'N2'],
+      ['Eine Flamme.', 'F2']]],
+    ['q28', 'Was ist die größte Stärke?', [
+      ['Geduld.', 'M2'],
+      ['Zusammenhalt.', 'B2'],
+      ['Nicht gesehen zu werden.', 'N2 M1'],
+      ['Mut.', 'F2']]],
+    ['q29', 'Ein Freund bittet dich mitten in der Nacht um Hilfe.', [
+      ['Ich bin sofort da. Keine Fragen.', 'B2 F1'],
+      ['Ich komme, aber erst will ich wissen, was los ist.', 'M2'],
+      ['Ich helfe, ohne dass jemand erfährt, dass ich es war.', 'N2'],
+      ['Ich renne los, bevor er fertig gesprochen hat.', 'F2']]],
+    ['q30', 'Welches Wetter magst du am liebsten?', [
+      ['Eine klare, kalte Sternennacht.', 'M2'],
+      ['Nebel, der alles verschluckt.', 'N2'],
+      ['Gewitterhitze im Sommer.', 'F2'],
+      ['Regen, wenn man drinnen beisammensitzt.', 'B2 N1']]],
+    ['q31', 'Wie löst du einen Streit?', [
+      ['Ich höre beiden zu und urteile dann.', 'M2'],
+      ['Ich stelle mich auf die Seite meiner Leute.', 'B2'],
+      ['Ich sorge dafür, dass er sich von selbst erledigt.', 'N2'],
+      ['Laut, ehrlich und dann ist es vorbei.', 'F2 B1']]],
+    ['q32', 'Was liegt unter deinem Kissen?', [
+      ['Ein Brief von jemandem, den ich liebe.', 'B2'],
+      ['Ein Messer. Man weiß nie.', 'N2'],
+      ['Ein Stück Mondstein.', 'M2'],
+      ['Nichts. Ich schlafe sowieso kaum.', 'F2 M1']]],
+    ['q33', 'Du stehst vor einer Brücke, die gleich einstürzt.', [
+      ['Ich renne einfach rüber.', 'F2'],
+      ['Ich prüfe jeden Schritt, bevor ich gehe.', 'M2'],
+      ['Ich gehe erst, wenn alle anderen drüben sind.', 'B2'],
+      ['Ich finde einen Weg, den sonst niemand kennt.', 'N2 F1']]],
+    ['q34', 'Wie willst du in Erinnerung bleiben?', [
+      ['Als jemand, der immer da war.', 'B2'],
+      ['Als jemand, der die Welt gesehen hat, wie sie ist.', 'M2'],
+      ['Als Legende, von der man nicht weiß, ob es sie gab.', 'N2'],
+      ['Als jemand, der alles gegeben hat.', 'F2 B1']]],
+    ['q35', 'Welches Geschenk würde dich am meisten freuen?', [
+      ['Ein altes Fernrohr.', 'M2 N1'],
+      ['Ein Ring, den auch meine Liebsten tragen.', 'B2'],
+      ['Eine Karte mit geheimen Wegen.', 'N2'],
+      ['Ein Schwert, frisch aus der Schmiede.', 'F2']]],
+    ['q36', 'Was machst du, wenn du wütend bist?', [
+      ['Ich werde ganz still.', 'M2'],
+      ['Ich suche meine Leute.', 'B2'],
+      ['Ich verschwinde, bis es vorbei ist.', 'N2'],
+      ['Ich lasse es raus. Sofort.', 'F2 N1']]],
+    ['q37', 'Ein Rätsel wird dir gestellt. Du …', [
+      ['… denke lange nach und finde die Lösung.', 'M2'],
+      ['… löse es mit meinen Freunden zusammen.', 'B2 F1'],
+      ['… finde heraus, wer die Lösung schon kennt.', 'N2'],
+      ['… rate einfach mutig drauflos.', 'F2']]],
+    ['q38', 'Was hörst du, wenn du die Augen schließt?', [
+      ['Das leise Rauschen eines Sees.', 'M2'],
+      ['Stimmen, die meinen Namen rufen.', 'B2'],
+      ['Schritte, die niemand sonst hört.', 'N2'],
+      ['Mein eigenes Herz, laut und schnell.', 'F2 M1']]],
+    ['q39', 'Welche Tageszeit ist die gefährlichste?', [
+      ['Die Stunde, in der alle schlafen.', 'N2 B1'],
+      ['Der Mittag, wenn alle unvorsichtig sind.', 'F2'],
+      ['Der Moment, in dem der Mond verschwindet.', 'M2'],
+      ['Wenn man allein ist.', 'B2']]],
+    ['q40', 'Morrígan fragt dich: Was willst du wirklich?', [
+      ['Verstehen.', 'M2'],
+      ['Dazugehören.', 'B2 N1'],
+      ['Frei sein.', 'N2'],
+      ['Brennen.', 'F2']]],
   ];
 
   const ziel = typeof window !== 'undefined' ? window : globalThis;   // Browser und Worker
