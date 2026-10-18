@@ -15,7 +15,7 @@ Der vollständige Plan steht in [`docs/PLAN.md`](docs/PLAN.md).
 |---|---|---|
 | **0** | Performance-Test | ✅ Prototyp fertig, **Messung auf deinem PC offen** |
 | 1 | Fundament (Datenbank, Chat-Bestätigung, Anwesenheit, Punkte) | 📝 Datenmodell entworfen ([`docs/DATENMODELL.md`](docs/DATENMODELL.md)) |
-| **2** | Website | 🟡 Ritual fertig (Quiz, Haus, Gestalt, Bindung per Code), läuft im Demo-Modus bis der Worker steht |
+| **2** | Website | 🟡 Ritual als Film über die Karte (Quiz, Haus, Gestalt, Bindung per Code, Ton), Demo-Modus bis der Worker steht |
 | 3 | Figuren-Overlay | – |
 | 4 | Level und Items | – |
 | 5 | Portal und Terrain | – |
@@ -30,6 +30,9 @@ css/ritual.css        Aussehen (NWU-Look: Schwarz, Gold, Rajdhani/Inter)
 js/ritual.js          Ablauf der Seite
 js/einstellungen.js   Worker-Adresse, Chat-Befehl, Plattformen
 js/grafik.js          Platzhalter-Wappen und -Figuren (SVG)
+js/film.js            Kamera über die Karte, Szenen der Gebiete
+js/ton.js             Klang (im Browser erzeugt), Stumm-Knopf
+assets/               Karte und Gebiete (WebP), Originale in assets/roh/
 data/haeuser.js       Die 6 Häuser – EINE Quelle für Seite und Overlay
 data/quiz.js          24 Fragen, pro Durchgang 12 zufällig
 data/auswertung.js    Quiz-Auswertung (gleich für Seite und Worker)

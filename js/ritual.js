@@ -4,6 +4,8 @@
 (function () {
   const HAEUSER = window.NWU_HAEUSER, FIGUREN = window.NWU_FIGUREN, QUIZ = window.NWU_QUIZ;
   const SEITE = window.NWU_SEITE, GRAFIK = window.NWU_GRAFIK;
+  const FILM = window.NWU_FILM, TON = window.NWU_TON;
+  const warte = (ms) => new Promise((r) => setTimeout(r, ms));
   const $ = (id) => document.getElementById(id);
   const SPEICHER = 'nwu-ritual-v1';
 
@@ -46,13 +48,27 @@
   $('b-start').addEventListener('click', () => {
     st = { fragen: mischen(QUIZ.fragen).slice(0, QUIZ.runden).map((f) => f.id), antworten: [] };
     sichern();
-    frageZeigen();
-    zeige('s-quiz');
+    FILM.vorladen();
+    frageZeigen(true);
   });
 
+  // ---------- Ton: startet beim ersten Klick, Knopf oben rechts ----------
+  const tonKnopf = $('ton');
+  tonKnopf.hidden = false;
+  const tonAnzeigen = () => {
+    tonKnopf.setAttribute('aria-pressed', String(TON.istStumm()));
+    tonKnopf.setAttribute('aria-label', TON.istStumm() ? 'Ton an' : 'Ton aus');
+  };
+  tonAnzeigen();
+  document.addEventListener('pointerdown', () => TON.start(), { once: true });
+  document.addEventListener('keydown', () => TON.start(), { once: true });
+  tonKnopf.addEventListener('click', () => { TON.start(); TON.stummSchalten(); tonAnzeigen(); });
+
   // ---------- 2. Fragen ----------
-  function frageZeigen() {
+  async function frageZeigen(mitFilm) {
     const nr = st.antworten.length;
+    const flug = mitFilm ? FILM.frage(nr) : FILM.imGebiet(FILM.gebietFuerFrage(nr), 2);
+    if (mitFilm) await warte(470);          // Oberfläche ist ausgeblendet, jetzt Inhalt tauschen
     const frage = QUIZ.fragen.find((f) => f.id === st.fragen[nr]);
     $('zaehler').textContent = `Frage ${nr + 1} von ${st.fragen.length}`;
     $('balken').style.width = (100 * nr / st.fragen.length) + '%';
@@ -68,16 +84,19 @@
       b.addEventListener('click', () => antworten(a.id, b));
       return b;
     }));
+    zeige('s-quiz');
+    await flug;
     $('t-frage').focus({ preventScroll: true });
   }
 
   async function antworten(antwortId, knopf) {
     $('antworten').classList.add('gesperrt');
     knopf.classList.add('gewaehlt');
+    TON.klick();
     st.antworten.push(antwortId);
     sichern();
     await new Promise((r) => setTimeout(r, 380));
-    if (st.antworten.length < st.fragen.length) { frageZeigen(); return; }
+    if (st.antworten.length < st.fragen.length) { frageZeigen(true); return; }
     $('balken').style.width = '100%';
     await verkuenden();
   }
@@ -91,12 +110,13 @@
     st.haus = window.NWU_AUSWERTEN(QUIZ, st.antworten, belegung).haus;
     st.spruch = Math.floor(Math.random() * 3);
     sichern();
-    hausZeigen();
+    await hausZeigen(true);
   }
 
-  function hausZeigen() {
+  async function hausZeigen(mitFilm) {
     const h = haus();
     hausfarbeSetzen();
+    if (mitFilm) await FILM.verkuenden(h.id); else await FILM.imGebiet(h.id, 2);
     $('wappen').replaceChildren(GRAFIK.wappen(h));
     $('t-haus').textContent = h.name;
     $('wesen').textContent = h.wesen;
@@ -104,7 +124,7 @@
     zeige('s-haus');
   }
 
-  $('b-zur-figur').addEventListener('click', () => { figurenZeigen(); zeige('s-figur'); });
+  $('b-zur-figur').addEventListener('click', () => { FILM.abdunkeln(3); figurenZeigen(); zeige('s-figur'); });
 
   // ---------- 4. Gestalt ----------
   function figurenZeigen() {
@@ -251,9 +271,11 @@
   }
 
   // ---------- Wiedereinstieg ----------
-  if (st.fertig && st.haus) fertigZeigen();
-  else if (st.anmeldung && st.anmeldung.bis > Date.now()) { hausfarbeSetzen(); codeZeigen(); }
-  else if (st.figur && st.haus) { hausfarbeSetzen(); bindungZeigen(); zeige('s-bindung'); }
-  else if (st.haus) hausZeigen();
-  else if (st.fragen && st.antworten && st.antworten.length < st.fragen.length) { frageZeigen(); zeige('s-quiz'); }
+  const imHaus = () => { hausfarbeSetzen(); FILM.imGebiet(st.haus, 3); };
+  if (st.fertig && st.haus) { imHaus(); fertigZeigen(); }
+  else if (st.anmeldung && st.anmeldung.bis > Date.now()) { imHaus(); codeZeigen(); }
+  else if (st.figur && st.haus) { imHaus(); bindungZeigen(); zeige('s-bindung'); }
+  else if (st.haus) hausZeigen(false);
+  else if (st.fragen && st.antworten && st.antworten.length < st.fragen.length) frageZeigen(false);
+  else FILM.start();
 })();
