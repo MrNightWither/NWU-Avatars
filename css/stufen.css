@@ -71,3 +71,7 @@ h2 { font-family: var(--kopf); font-weight: 700; letter-spacing: 0.14em; text-tr
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; } }
 [hidden] { display: none !important; }
 @media (max-width: 560px) { .kopf { padding-top: 46px; } }
+
+.erklaerung { font-size: 0.92rem; margin-bottom: 10px; color: #d8d2c4; }
+.erklaerung.klein { font-size: 0.8rem; color: var(--muted); margin: 10px 0 0; }
+.ruhm { font-size: 0.82rem; color: var(--muted); }

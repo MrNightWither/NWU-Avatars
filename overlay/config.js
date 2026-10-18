@@ -26,6 +26,9 @@ window.NWU_CONFIG = {
   kanal: '',
   // Adresse des Workers nwu-avatare (leer = Chatter bekommen eine zufällige Figur).
   api: '',
+  // Name(n) des Bot-Kontos, über das Streamer.bot schreibt (klein geschrieben), z. B. ['nwu_bot'].
+  // Deren Nachrichten erzeugen keine Figur, „✨ @Name steigt auf …“ löst den Level-Up-Effekt aus.
+  botNamen: [],
 
   // Anwesenheit (Plan 6): so lange bleibt eine Figur nach der letzten Nachricht / !lurk
   anwesenheitMinuten: 15,

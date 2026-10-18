@@ -73,7 +73,7 @@ assert.equal((await anmeldung('MrNightWither')).status, 409, 'Name schon gebunde
 
 // Profil für das Overlay
 r = await ruf('/avatare/profil?plattform=twitch&id=111');
-assert.deepEqual({ ...r.daten }, { gefunden: true, haus: 'haus1', rolle: null, figur: 'b', level: 1, aussehen: {} });
+assert.deepEqual({ ...r.daten }, { gefunden: true, haus: 'haus1', rolle: null, figur: 'b', level: 1, ruhm: 0, aussehen: {} });
 assert.equal((await ruf('/avatare/profil?plattform=twitch&name=MRNIGHTWITHER')).daten.gefunden, true);
 assert.equal((await ruf('/avatare/profil?plattform=twitch&name=niemand')).daten.gefunden, false);
 
@@ -112,6 +112,35 @@ assert.deepEqual({ ...(await ruf('/avatare/profil?plattform=twitch&id=111')).dat
 await level({ plattform: 'twitch', name: 'mrnightwither', anzahl: -20 });
 assert.equal((await haare({ plattform: 'twitch', plattformId: '999', haare: 'rot' })).daten.grund, 'unbekannt');
 await level({ plattform: 'twitch', name: 'mrnightwither', anzahl: -10 });
+
+// Ruhm: Anwesenheit für viele auf einmal, Wächter bekommen mehr, Ungebundene werden gezählt
+const ruhm = (body, secret = 'sb-geheim-123') => ruf('/ruhm', { method: 'POST', body: JSON.stringify(body), headers: { Authorization: 'Bearer ' + secret } });
+assert.equal((await ruhm({ plattform: 'twitch', quelle: 'anwesenheit', nutzer: ['111'] }, 'falsch')).status, 401);
+assert.equal((await ruhm({ plattform: 'twitch', quelle: 'pruefung', nutzer: ['111'] })).status, 400, 'Prüfung nur intern');
+assert.equal((await ruhm({ plattform: 'twitch', quelle: 'quatsch', nutzer: ['111'] })).status, 400);
+r = await ruhm({ plattform: 'twitch', quelle: 'anwesenheit', nutzer: [{ id: '111' }, { id: 'fremd1' }, 'fremd2'] });
+assert.equal(r.daten.gebunden, 1); assert.equal(r.daten.ungebunden, 2);
+assert.equal((await ruf('/avatare/profil?plattform=twitch&id=111')).daten.ruhm, 15);
+r = await ruhm({ plattform: 'twitch', quelle: 'anwesenheit', nutzer: [{ id: '111', waechter: true }] });
+assert.equal((await ruf('/avatare/profil?plattform=twitch&id=111')).daten.ruhm, 15 + 23, 'Wächter ×1,5 (gerundet)');
+r = await ruhm({ plattform: 'twitch', quelle: 'sub', nutzer: ['111'] });
+assert.deepEqual(r.daten.aufstiege.map((a) => ({ ...a })), [{ name: 'mrnightwither', level: 2, haus: 'haus1' }], 'Aufstieg wird gemeldet');
+r = await ruhm({ plattform: 'twitch', quelle: 'bits', nutzer: ['111'], anzahl: 1000 });
+assert.equal((await ruf('/avatare/profil?plattform=twitch&id=111')).daten.ruhm, 15 + 23 + 200 + 300);
+
+// !levelup behält den Fortschritt im Level
+r = await level({ plattform: 'twitch', name: 'mrnightwither' });
+assert.equal(r.daten.level, 4); assert.equal(r.daten.ruhm, 538 + 300);
+
+// Haus-Pokal und Chronik
+r = await ruf('/pokal');
+assert.equal(r.daten.haeuser.haus1, 538, 'nur gesammelter Ruhm zählt, nicht !levelup'); assert.equal(r.daten.fuehrend, 'haus1');
+assert.equal(r.daten.vormonat.sieger, null);
+r = await ruf('/chronik');
+assert.equal(r.daten.listen.haus1[0].name, 'mrnightwither'); assert.equal(r.daten.listen.haus1[0].ruhm, 838);
+assert.equal(r.daten.listen.haus2.length, 0);
+r = await level({ plattform: 'twitch', name: 'mrnightwither', anzahl: -10 });
+assert.equal(r.daten.level, 1, 'herabsetzen landet wirklich auf dem Ziel-Level'); assert.ok(r.daten.ruhm < 100);
 
 // Abgelaufener Code
 r = await anmeldung('SpaeterLeser', { ip: '5.5.5.5' });

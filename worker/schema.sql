@@ -7,7 +7,8 @@ CREATE TABLE IF NOT EXISTS profil (
   haus          TEXT,                       -- 'haus1' … 'haus6', NULL nur bei Rolle koenig/morrigan
   rolle         TEXT,                       -- NULL | waechter | koenigskreis | verbuendet | koenig | morrigan
   figur         TEXT NOT NULL,              -- 'a' | 'b' | 'c' | 'd'
-  level         INTEGER NOT NULL DEFAULT 1,
+  level         INTEGER NOT NULL DEFAULT 1,   -- folgt immer aus ruhm (data/ruhm.js)
+  ruhm          INTEGER NOT NULL DEFAULT 0,
   aussehen      TEXT,                       -- JSON, z. B. { "haare": "rot" } (freigeschaltet nach Level)
   punkte        INTEGER NOT NULL DEFAULT 0,
   quiz          TEXT NOT NULL,              -- JSON { fragen, antworten }
@@ -67,3 +68,12 @@ CREATE TABLE IF NOT EXISTS erfolg (
   wert          INTEGER NOT NULL,
   aktualisiert  TEXT NOT NULL
 );
+
+-- Haus-Pokal: Ruhm pro Haus und Monat ('2026-10')
+CREATE TABLE IF NOT EXISTS haus_ruhm (
+  monat         TEXT NOT NULL,
+  haus          TEXT NOT NULL,
+  ruhm          INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (monat, haus)
+);
+CREATE INDEX IF NOT EXISTS profil_ruhm ON profil (haus, ruhm);

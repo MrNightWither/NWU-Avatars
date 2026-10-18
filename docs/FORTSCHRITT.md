@@ -36,20 +36,22 @@ Leute sofort etwas merken), später werden die Abstände größer.
 
 Die Werte stehen in `data/aussehen.js` (`NWU_FREISCHALTUNGEN`) und lassen sich jederzeit verschieben.
 
-## Wie man Level bekommt
+## Wie man Level bekommt: Ruhm
 
-Im Moment nur über dich: `!levelup @Name`. Für 100 Level reicht das nicht, deshalb der Vorschlag
-aus dem Plan (Abschnitt Level): **Erfahrung automatisch**, Streamer.bot meldet sie an den Worker.
+Gebaut (Worker `POST /ruhm`, Streamer.bot-Code in `worker/README.md`). Werte in `data/ruhm.js`:
 
-| Quelle | Erfahrung (Vorschlag) |
+| Quelle | Ruhm |
 |---|---|
-| Im Chat dabei (pro 10 Minuten mit Nachricht) | 10 |
+| Dabei sein (pro 10 Minuten, Present Viewers) | 15 – Wächter (Mods, Partnerin) ×1,5 |
+| Im Chat geschrieben (höchstens einmal pro 10 Minuten) | 5 |
 | Follow | 50 |
-| Sub / Mitgliedschaft | 200 |
+| Sub / Mitgliedschaft / verschenktes Abo (pro Abo) | 200 |
 | Raid mitgebracht | 150 |
 | Bits (pro 100) | 30 |
-| `!levelup` von dir | ein ganzes Level |
+| Morrígans Prüfung gewonnen | 100 |
+| `!levelup @Name` vom Streamer | ein ganzes Level (Fortschritt bleibt) |
 
-Level-Kurve: Level n braucht `100 × n` Erfahrung mehr als das vorige. Level 10 nach etwa
-2–3 Wochen regelmäßigem Zuschauen, Level 50 nach vielen Monaten, Level 100 ist etwas für die
-treuesten Leute. Die Zahlen sind ein Startpunkt und werden nach den ersten Wochen angepasst.
+Level n braucht insgesamt `50 × n × (n − 1)` Ruhm: Level 2 = 100, 5 = 1.000, 10 = 4.500, 25 = 30.000,
+50 = 122.500, 100 = 495.000. Wer bei drei Streams à 3 Stunden pro Woche dabei ist und ab und zu schreibt,
+sammelt etwa 1.100 Ruhm pro Woche: Level 5 nach gut einer Woche, Level 10 nach etwa vier Wochen.
+Gesammelter Ruhm zählt außerdem für das eigene Haus im Haus-Pokal (`!levelup` zählt dort nicht).

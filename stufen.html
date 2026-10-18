@@ -36,6 +36,7 @@
         <p class="haus" id="s-haus"></p>
         <p class="level"><span>Level</span> <b id="s-level"></b></p>
         <p class="naechstes" id="s-naechstes"></p>
+        <p class="ruhm" id="s-ruhm"></p>
         <div class="balken" aria-hidden="true"><span id="s-balken"></span></div>
       </div>
     </div>
@@ -43,10 +44,10 @@
 
   <section class="karte" aria-labelledby="t-wie">
     <h2 id="t-wie">So steigst du auf</h2>
-    <ul class="wie">
-      <li><b>Der Schattenkönig</b> erhebt dich: <code>!levelup</code> im Stream.</li>
-      <li class="bald"><b>Dabei sein</b> – Chatten, Folgen, Abonnieren, Raids und Bits bringen Erfahrung. <span class="marke">bald</span></li>
-    </ul>
+    <p class="erklaerung">Für alles, was du für Unity tust, bekommst du <b>Ruhm</b>. Genug Ruhm, und du steigst auf.
+      Dein Ruhm zählt auch für dein Haus im <b>Kampf um das Banner der Zitadelle</b>.</p>
+    <ul class="wie" id="wie"></ul>
+    <p class="erklaerung klein">Wächter der Zitadelle bekommen für ihre Anwesenheit das Anderthalbfache.</p>
   </section>
 
   <section aria-labelledby="t-weg">
@@ -57,6 +58,7 @@
 
 <script src="data/haeuser.js"></script>
 <script src="data/aussehen.js"></script>
+<script src="data/ruhm.js"></script>
 <script src="data/fortschritt.js"></script>
 <script src="js/einstellungen.js"></script>
 <script src="js/stufen.js"></script>

@@ -178,6 +178,90 @@ public class CPHInline
 }
 ```
 
+## Streamer.bot: Ruhm (Erfahrung) automatisch
+
+Eine Action **„NWU Ruhm“** mit dem Code unten, und mehrere Trigger, die sie auslösen. Bei jedem Trigger eine
+Sub-Action **Set Argument** `nwuQuelle` (und bei Kick/YouTube `nwuPlattform`) davor setzen:
+
+| Trigger | `nwuQuelle` | Hinweis |
+|---|---|---|
+| Twitch → **Present Viewers** (Intervall 10 Minuten) | `anwesenheit` | alle, die gerade zuschauen. Mods bekommen ×1,5 |
+| Twitch → **Chat Message** | `chat` | der Code zählt pro Person höchstens einmal in 10 Minuten |
+| Twitch → **Follow** | `follow` | |
+| Twitch → **Subscription / Resubscription** | `sub` | |
+| Twitch → **Gift Subscription / Gift Bomb** | `sub` | bei Gift Bomb zusätzlich `nwuAnzahl` = Anzahl der Gifts |
+| Twitch → **Raid** | `raid` | Ruhm für den, der den Raid bringt |
+| Twitch → **Cheer** | `bits` | Anzahl kommt automatisch aus `bits` |
+
+Steigt jemand ein Level auf, schreibt der Bot `✨ @Name steigt auf: jetzt Level 6!` in den Chat –
+das Overlay liest das mit und zeigt den Level-Up-Effekt an der Figur.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Text;
+using Newtonsoft.Json.Linq;
+
+public class CPHInline
+{
+    static readonly HttpClient http = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
+    const string URL = "https://nwu-avatare.DEIN-NAME.workers.dev/ruhm";
+    static readonly Dictionary<string, DateTime> letzterChat = new Dictionary<string, DateTime>();
+
+    public bool Execute()
+    {
+        string quelle = args["nwuQuelle"].ToString();
+        string plattform = args.ContainsKey("nwuPlattform") ? args["nwuPlattform"].ToString() : "twitch";
+        var nutzer = new JArray();
+
+        if (quelle == "anwesenheit")
+        {
+            // Present Viewers liefert eine Liste aller Zuschauer
+            if (!args.ContainsKey("users")) return true;
+            foreach (var u in (List<Dictionary<string, object>>)args["users"])
+            {
+                string id = u.ContainsKey("id") ? u["id"].ToString() : "";
+                if (id == "") continue;
+                bool mod = (u.ContainsKey("isModerator") && u["isModerator"] is bool b && b)
+                        || (u.ContainsKey("role") && u["role"].ToString() == "3");
+                nutzer.Add(new JObject { ["id"] = id, ["waechter"] = mod });
+            }
+        }
+        else
+        {
+            string id = args.ContainsKey("userId") ? args["userId"].ToString() : "";
+            if (id == "") return true;
+            if (quelle == "chat")
+            {
+                if (letzterChat.TryGetValue(id, out var zuletzt) && (DateTime.UtcNow - zuletzt).TotalMinutes < 10) return true;
+                letzterChat[id] = DateTime.UtcNow;
+            }
+            nutzer.Add(id);
+        }
+        if (nutzer.Count == 0) return true;
+
+        var daten = new JObject { ["plattform"] = plattform, ["quelle"] = quelle, ["nutzer"] = nutzer };
+        if (args.ContainsKey("nwuAnzahl")) daten["anzahl"] = args["nwuAnzahl"].ToString();
+        else if (quelle == "bits" && args.ContainsKey("bits")) daten["anzahl"] = args["bits"].ToString();
+
+        var req = new HttpRequestMessage(HttpMethod.Post, URL);
+        req.Headers.Add("Authorization", "Bearer " + CPH.GetGlobalVar<string>("nwuAvatarSecret", true));
+        req.Content = new StringContent(daten.ToString(), Encoding.UTF8, "application/json");
+        try
+        {
+            var antwort = JObject.Parse(http.SendAsync(req).Result.Content.ReadAsStringAsync().Result);
+            foreach (var a in antwort["aufstiege"] ?? new JArray())
+                CPH.SendMessage($"✨ @{a["name"]} steigt auf: jetzt Level {a["level"]}!");
+        }
+        catch (Exception e) { CPH.LogWarn("NWU Ruhm: " + e.Message); }
+        return true;
+    }
+}
+```
+
+Wie viel Ruhm es wofür gibt und ab wann welches Level erreicht ist: `data/ruhm.js`.
+
 ## Streamer.bot: Schatten-Essenz für die Meilensteinkarte
 
 Jede Plattform hat ihren eigenen Pfad und ihre eigene Essenz. Eine Action **„NWU Essenz“** mit einer

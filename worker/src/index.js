@@ -6,7 +6,7 @@
 //   ERLAUBTE_HERKUNFT   Komma-Liste erlaubter Website-Adressen für CORS
 //   STREAMERBOT_SECRET  Secret für /avatare/bestaetigen (nie in den Code!)
 //   ADMIN_SECRET        Secret für /avatare/rolle
-//   (STREAMERBOT_SECRET gilt auch für /avatare/level, /avatare/aussehen, /reise/essenz, /erfolge/plus)
+//   (STREAMERBOT_SECRET gilt auch für /avatare/level, /avatare/aussehen, /ruhm, /reise/essenz, /erfolge/plus)
 
 import '../../data/haeuser.js';
 import '../../data/quiz.js';
@@ -14,6 +14,7 @@ import '../../data/auswertung.js';
 import '../../data/meilensteine.js';
 import '../../data/erfolge.js';
 import '../../data/aussehen.js';
+import '../../data/ruhm.js';
 
 const HAEUSER = globalThis.NWU_HAEUSER;
 const QUIZ = globalThis.NWU_QUIZ;
@@ -23,7 +24,9 @@ const reiseStand = globalThis.NWU_REISE_STAND;
 
 const PLATTFORMEN = ['twitch', 'kick', 'youtube', 'tiktok'];
 const FIGUREN = ['a', 'b', 'c', 'd'];
-const ROLLEN = ['waechter', 'koenigskreis', 'verbuendet', 'koenig', 'morrigan'];
+const ROLLEN = ['waechter', 'koenigin', 'koenigskreis', 'verbuendet', 'koenig', 'morrigan'];
+const WAECHTER_ROLLEN = ['waechter', 'koenigin'];   // gehören zur Zitadelle (Mods, Partnerin)
+const RUHM = globalThis.NWU_RUHM;
 const CODE_MINUTEN = 15;
 const ANMELDUNGEN_PRO_STUNDE = 5;
 
@@ -177,7 +180,7 @@ async function profil(url, env, cors) {
   const id = url.searchParams.get('id');
   const name = (url.searchParams.get('name') || '').toLowerCase();
   if (!PLATTFORMEN.includes(plattform) || (!id && !name)) return fehler('Ungültige Anfrage', 400, cors);
-  const sql = `SELECT p.haus, p.rolle, p.figur, p.level, p.aussehen FROM konto k JOIN profil p ON p.id = k.profil_id
+  const sql = `SELECT p.haus, p.rolle, p.figur, p.level, p.ruhm, p.aussehen FROM konto k JOIN profil p ON p.id = k.profil_id
                WHERE k.plattform = ? AND ${id ? 'k.plattform_id = ?' : 'k.name_klein = ?'} AND p.gesperrt = 0`;
   const p = await env.DB.prepare(sql).bind(plattform, id || name).first();
   if (!p) return antwort({ gefunden: false }, 200, { ...cors, 'Cache-Control': 'max-age=60' });
@@ -210,9 +213,15 @@ async function levelAendern(req, env) {
   const k = await env.DB.prepare(`SELECT profil_id, name FROM konto WHERE plattform = ? AND ${name ? 'name_klein' : 'plattform_id'} = ?`)
     .bind(d.plattform, name || d.plattformId).first();
   if (!k) return antwort({ ok: false, grund: 'unbekannt' });
-  const p = await env.DB.prepare('UPDATE profil SET level = MAX(1, MIN(999, level + ?)) WHERE id = ? RETURNING level')
-    .bind(anzahl, k.profil_id).first();
-  return antwort({ ok: true, name: k.name, level: p.level });
+  // Fortschritt innerhalb des Levels bleibt erhalten: es wird der Ruhm-Abstand zwischen den Levels addiert
+  const p = await env.DB.prepare('SELECT ruhm, level FROM profil WHERE id = ?').bind(k.profil_id).first();
+  const ziel = Math.max(1, Math.min(RUHM.maxLevel, p.level + anzahl));
+  const fortschritt = Math.max(0, p.ruhm - RUHM.ruhmFuerLevel(p.level));
+  const spanne = RUHM.ruhmFuerLevel(ziel + 1) - RUHM.ruhmFuerLevel(ziel);
+  const ruhm = RUHM.ruhmFuerLevel(ziel) + Math.min(fortschritt, spanne - 1);
+  const level = RUHM.levelFuerRuhm(ruhm);
+  await env.DB.prepare('UPDATE profil SET ruhm = ?, level = ? WHERE id = ?').bind(ruhm, level, k.profil_id).run();
+  return antwort({ ok: true, name: k.name, level, ruhm });
 }
 
 // Von Streamer.bot: Chat-Befehl !haare <farbe> – jeder für sich selbst, erst ab dem freigeschalteten Level
@@ -237,6 +246,84 @@ async function aussehenSetzen(req, env) {
   aussehen.haare = haare;
   await env.DB.prepare('UPDATE profil SET aussehen = ? WHERE id = ?').bind(JSON.stringify(aussehen), p.id).run();
   return antwort({ ok: true, haare: globalThis.NWU_HAARFARBEN[haare].name });
+}
+
+// ---------- Ruhm, Haus-Pokal, Chronik ----------
+const monat = (d = new Date()) => d.toISOString().slice(0, 7);
+const vormonat = () => { const d = new Date(); d.setUTCDate(1); d.setUTCMonth(d.getUTCMonth() - 1); return monat(d); };
+
+// Bucht Ruhm für mehrere Profile auf einmal. eintraege: [{ id, haus, ruhm, level, name, menge }]
+async function ruhmBuchen(env, eintraege, fuerHaus) {
+  const m = monat(), befehle = [], aufstiege = [];
+  for (const e of eintraege) {
+    if (e.menge <= 0) continue;
+    const ruhm = e.ruhm + e.menge, level = RUHM.levelFuerRuhm(ruhm);
+    befehle.push(env.DB.prepare('UPDATE profil SET ruhm = ?, level = ? WHERE id = ?').bind(ruhm, level, e.id));
+    if (fuerHaus && e.haus) {
+      befehle.push(env.DB.prepare('INSERT INTO haus_ruhm (monat, haus, ruhm) VALUES (?, ?, ?) ON CONFLICT(monat, haus) DO UPDATE SET ruhm = ruhm + excluded.ruhm')
+        .bind(m, e.haus, e.menge));
+    }
+    if (level > e.level) aufstiege.push({ name: e.name, level, haus: e.haus });
+  }
+  if (befehle.length) await env.DB.batch(befehle);
+  return aufstiege;
+}
+
+// Profile zu Plattform-IDs (in Blöcken, D1 erlaubt nur begrenzt viele Parameter)
+async function profileZu(env, plattform, ids) {
+  const gefunden = [];
+  for (let i = 0; i < ids.length; i += 80) {
+    const teil = ids.slice(i, i + 80);
+    const { results } = await env.DB.prepare(`SELECT k.plattform_id AS pid, k.name, p.id, p.haus, p.ruhm, p.level, p.rolle
+      FROM konto k JOIN profil p ON p.id = k.profil_id
+      WHERE k.plattform = ? AND p.gesperrt = 0 AND k.plattform_id IN (${teil.map(() => '?').join(',')})`).bind(plattform, ...teil).all();
+    gefunden.push(...results);
+  }
+  return gefunden;
+}
+
+// Von Streamer.bot: Ruhm für eine Quelle, für eine oder viele Personen (Anwesenheit: alle, die gerade zuschauen)
+async function ruhmMelden(req, env) {
+  const auth = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+  if (!env.STREAMERBOT_SECRET || !gleich(auth, env.STREAMERBOT_SECRET)) return fehler('Nicht erlaubt', 401);
+  if (Number(req.headers.get('Content-Length') || 0) > 60000) return fehler('Zu groß', 413);
+  let d;
+  try { d = await req.json(); } catch (e) { d = null; }
+  if (!d || !PLATTFORMEN.includes(d.plattform) || !RUHM.quellen[d.quelle] || d.quelle === 'pruefung'
+      || !Array.isArray(d.nutzer) || d.nutzer.length < 1 || d.nutzer.length > 500) return antwort({ ok: false, grund: 'ungueltig' }, 400);
+  const nutzer = new Map();
+  for (const n of d.nutzer) {
+    const id = typeof n === 'string' ? n : n && typeof n.id === 'string' ? n.id : '';
+    if (id && id.length <= 64) nutzer.set(id, !!(n && n.waechter));
+  }
+  const basis = RUHM.menge(d.quelle, d.anzahl);
+  const profile = await profileZu(env, d.plattform, [...nutzer.keys()]);
+  const eintraege = profile.map((p) => {
+    const waechter = d.quelle === 'anwesenheit' && (nutzer.get(p.pid) || WAECHTER_ROLLEN.includes(p.rolle));
+    return { ...p, menge: Math.round(basis * (waechter ? RUHM.waechterFaktor : 1)) };
+  });
+  const aufstiege = await ruhmBuchen(env, eintraege, true);
+  return antwort({ ok: true, gebunden: profile.length, ungebunden: nutzer.size - profile.length, aufstiege });
+}
+
+async function pokalDaten(env) {
+  const m = monat(), v = vormonat();
+  const { results } = await env.DB.prepare('SELECT monat, haus, ruhm FROM haus_ruhm WHERE monat IN (?, ?)').bind(m, v).all();
+  const leer = () => Object.fromEntries(globalThis.NWU_AKTIVE_HAEUSER.map((h) => [h.id, 0]));
+  const jetzt_ = leer(), vor = leer();
+  for (const r of results) (r.monat === m ? jetzt_ : vor)[r.haus] = r.ruhm;
+  const bester = (o) => { const [h, w] = Object.entries(o).sort((a, b) => b[1] - a[1])[0] || []; return w > 0 ? h : null; };
+  return { monat: m, haeuser: jetzt_, fuehrend: bester(jetzt_), vormonat: { monat: v, haeuser: vor, sieger: bester(vor) } };
+}
+
+async function chronik(env, cors) {
+  const listen = {};
+  for (const h of globalThis.NWU_AKTIVE_HAEUSER) {
+    const { results } = await env.DB.prepare(`SELECT MIN(k.name) AS name, p.figur, p.level, p.ruhm FROM profil p JOIN konto k ON k.profil_id = p.id
+      WHERE p.haus = ? AND p.gesperrt = 0 GROUP BY p.id ORDER BY p.ruhm DESC LIMIT 10`).bind(h.id).all();
+    listen[h.id] = results;
+  }
+  return antwort({ pokal: await pokalDaten(env), listen }, 200, { ...cors, 'Cache-Control': 'max-age=60' });
 }
 
 // ---------- Meilensteinkarte (vier Pfade, einer pro Plattform) ----------
@@ -363,6 +450,9 @@ export default {
       if (req.method === 'POST' && url.pathname === '/avatare/rolle') return await rolleSetzen(req, env);
       if (req.method === 'POST' && url.pathname === '/avatare/level') return await levelAendern(req, env);
       if (req.method === 'POST' && url.pathname === '/avatare/aussehen') return await aussehenSetzen(req, env);
+      if (req.method === 'POST' && url.pathname === '/ruhm') return await ruhmMelden(req, env);
+      if (req.method === 'GET' && url.pathname === '/pokal') return antwort(await pokalDaten(env), 200, { ...cors, 'Cache-Control': 'max-age=30' });
+      if (req.method === 'GET' && url.pathname === '/chronik') return await chronik(env, cors);
       if (req.method === 'GET' && url.pathname === '/reise') return await reiseLesen(env, cors);
       if (req.method === 'POST' && url.pathname === '/reise/essenz') return await essenzMelden(req, env);
       if (req.method === 'POST' && url.pathname === '/reise/hand') return await essenzHand(req, env);

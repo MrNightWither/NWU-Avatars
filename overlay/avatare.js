@@ -338,13 +338,21 @@
 
   async function chatter(u, art) {
     const text = (u.text || '').trim().toLowerCase();
-    // !levelup @Name (nur der Streamer selbst): Effekt sofort hier, gespeichert wird über Streamer.bot im Worker
-    const lv = text.match(/^!(?:levelup|lvlup|lvl)\s+@?([a-z0-9_]{2,25})/);
-    if (lv && u.broadcaster) {
-      const ziel = figuren.find((f) => !f.entfernen && f.name === lv[1]);
-      if (ziel && ziel.root) { ziel.letzte = zeit; levelUp(ziel); }
-      return;
+    // Aufstieg: Mit Worker meldet Streamer.bot „✨ @Name steigt auf: jetzt Level 6!“ (Ruhm oder !levelup).
+    // Ohne Worker (Demo) reagiert das Overlay direkt auf !levelup @Name vom Streamer.
+    const vomBot = u.broadcaster || BOTS.includes(u.name);
+    const auf = vomBot && text.match(/@([a-z0-9_]{2,25}) steigt auf.*?level (\d+)/);
+    const lv = !S.api && u.broadcaster && text.match(/^!(?:levelup|lvlup|lvl)\s+@?([a-z0-9_]{2,25})/);
+    if (auf || lv) {
+      const ziel = figuren.find((f) => !f.entfernen && f.name === (auf || lv)[1]);
+      if (ziel && ziel.root) {
+        ziel.letzte = zeit;
+        if (auf) aufsteigen(ziel, Number(auf[2]));
+        levelUp(ziel);
+      }
+      if (lv || !u.broadcaster) return;
     }
+    if (vomBot && !u.broadcaster) return;                // Bot-Nachrichten erzeugen keine Figur
     if (!u.id || u.broadcaster) return;                 // Schattenkönig bekommt später eine eigene Figur
     let fi = nachId.get(u.id);
     if (fi && !fi.entfernen) {
@@ -386,6 +394,15 @@
       f.formJubel = jubeln;
       f.lurkerVorher = f.lurker; f.lurker = false;
     });
+  }
+
+  // Neues Level übernehmen: Freischaltungen (Staub, Funken, Haarfarbe) sofort aktualisieren
+  const BOTS = (CFG.botNamen || []).map((n) => n.toLowerCase());
+  function aufsteigen(fi, level) {
+    const FREI = window.NWU_FREI || (() => false);
+    fi.level = level;
+    fi.staub = FREI(level, 'staub');
+    fi.funkenSpur = FREI(level, 'funken');
   }
 
   // ---------- Level-Up ----------

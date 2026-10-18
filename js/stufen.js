@@ -8,6 +8,22 @@
   const q = new URLSearchParams(location.search);
   const api = (q.get('api') || SEITE.api || '').replace(/\/$/, '');
 
+  // ---------- So steigst du auf ----------
+  const RUHM = window.NWU_RUHM;
+  const zahl = (n) => n.toLocaleString('de-DE');
+  $('wie').replaceChildren(...Object.values(RUHM.quellen).map((q) => {
+    const li = document.createElement('li');
+    const b = document.createElement('b');
+    b.textContent = q.ruhmPro100 ? `${q.ruhmPro100} Ruhm` : `${q.ruhm} Ruhm`;
+    li.append(b, ' · ' + q.name);
+    return li;
+  }), (() => {
+    const li = document.createElement('li');
+    const b = document.createElement('b'); b.textContent = 'Der Schattenkönig';
+    li.append(b, ' kann dich jederzeit selbst erheben.');
+    return li;
+  })());
+
   // ---------- Der Weg ----------
   const weg = $('weg');
   const eintraege = PLAN.map((s) => {
@@ -29,7 +45,7 @@
     return { s, li };
   });
 
-  function standZeigen(level, hausId, figur) {
+  function standZeigen(level, hausId, figur, ruhm) {
     const haus = HAEUSER.find((h) => h.id === hausId);
     if (haus) document.body.style.setProperty('--haus', haus.css);
     eintraege.forEach(({ s, li }) => li.classList.toggle('erreicht', !s.aufstieg && level >= s.level));
@@ -38,7 +54,13 @@
     $('s-haus').textContent = haus ? haus.name : '';
     $('s-level').textContent = level;
     $('s-naechstes').textContent = naechste ? `Nächste Stufe: Level ${naechste.level} · ${naechste.name}` : 'Du bist eine Legende.';
-    const anteil = naechste ? (level - vorige.level) / (naechste.level - vorige.level) : 1;
+    // Fortschritt: mit Ruhm genau bis zum nächsten Level, sonst grob bis zur nächsten Stufe
+    let anteil = naechste ? (level - vorige.level) / (naechste.level - vorige.level) : 1;
+    if (typeof ruhm === 'number') {
+      const von = RUHM.ruhmFuerLevel(level), bis = RUHM.ruhmFuerLevel(level + 1);
+      anteil = level >= RUHM.maxLevel ? 1 : (ruhm - von) / (bis - von);
+      $('s-ruhm').textContent = level >= RUHM.maxLevel ? `${zahl(ruhm)} Ruhm` : `${zahl(ruhm)} Ruhm · noch ${zahl(bis - ruhm)} bis Level ${level + 1}`;
+    } else $('s-ruhm').textContent = '';
     $('s-balken').style.width = Math.round(Math.max(0.04, anteil) * 100) + '%';
     const bild = $('figur');
     if (haus && figur) { bild.src = `assets/figur-${haus.id}-${figur}.webp`; bild.hidden = false; } else bild.hidden = true;
@@ -64,12 +86,15 @@
       const d = await r.json();
       if (!d.gefunden) { hinweis.textContent = 'Unter diesem Namen ist noch niemand gebunden. Mach zuerst das Ritual.'; $('stand').hidden = true; return; }
       hinweis.textContent = '';
-      standZeigen(d.level || 1, d.haus, d.figur);
+      standZeigen(d.level || 1, d.haus, d.figur, d.ruhm);
     } catch (err) {
       hinweis.textContent = 'Morrígan ist gerade nicht erreichbar. Versuch es später nochmal.';
     }
   });
 
   // Vorschau ohne Server: ?level=12&haus=haus2&figur=c
-  if (q.has('level')) standZeigen(Math.max(1, parseInt(q.get('level'), 10) || 1), q.get('haus') || 'haus1', q.get('figur') || 'a');
+  if (q.has('level')) {
+    const lv = Math.max(1, parseInt(q.get('level'), 10) || 1);
+    standZeigen(lv, q.get('haus') || 'haus1', q.get('figur') || 'a', q.has('ruhm') ? Number(q.get('ruhm')) : RUHM.ruhmFuerLevel(lv) + 120);
+  }
 })();
