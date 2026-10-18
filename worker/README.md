@@ -84,6 +84,55 @@ public class CPHInline
 
 Für Kick/YouTube später: `"twitch"` durch die Plattform ersetzen und eine eigene Action anlegen.
 
+## Streamer.bot: Befehl `!levelup @Name`
+
+Du oder deine Mods geben jemandem ein Level: `!levelup @Name` (1 Level) oder `!levelup @Name 5`.
+Das Overlay zeigt den Effekt sofort (liest den Chat selbst mit), Streamer.bot speichert das Level im Worker.
+Minus geht auch zum Korrigieren: `!levelup @Name -1`. Level bleibt immer zwischen 1 und 999.
+
+1. **Commands → Add:** Name `Level Up`, Commands `!levelup`, `!lvlup` und `!lvl` (je eine Zeile), Location *Start*,
+   **Permissions:** nur *Moderators* und *Broadcaster*.
+2. **Action** anlegen, Trigger = dieser Command, Sub-Action **Execute C# Code** (wie oben, mit `Newtonsoft.Json.dll`):
+
+```csharp
+using System;
+using System.Net.Http;
+using System.Text;
+using Newtonsoft.Json.Linq;
+
+public class CPHInline
+{
+    static readonly HttpClient http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+    const string URL = "https://nwu-avatare.DEIN-NAME.workers.dev/avatare/level";
+
+    public bool Execute()
+    {
+        string user = args["user"].ToString();
+        string ziel = args.ContainsKey("input0") ? args["input0"].ToString().TrimStart('@') : "";
+        int anzahl = 1;
+        if (args.ContainsKey("input1")) int.TryParse(args["input1"].ToString(), out anzahl);
+        if (ziel == "" || anzahl == 0) { CPH.SendMessage($"@{user} So geht's: !levelup @Name oder !levelup @Name 5"); return true; }
+
+        var daten = new JObject { ["plattform"] = "twitch", ["name"] = ziel, ["anzahl"] = anzahl };
+        var req = new HttpRequestMessage(HttpMethod.Post, URL);
+        req.Headers.Add("Authorization", "Bearer " + CPH.GetGlobalVar<string>("nwuAvatarSecret", true));
+        req.Content = new StringContent(daten.ToString(), Encoding.UTF8, "application/json");
+        try
+        {
+            var antwort = JObject.Parse(http.SendAsync(req).Result.Content.ReadAsStringAsync().Result);
+            if ((bool?)antwort["ok"] == true)
+                CPH.SendMessage($"✨ @{antwort["name"]} steigt auf: jetzt Level {antwort["level"]}!");
+            else if ((string)antwort["grund"] == "unbekannt")
+                CPH.SendMessage($"@{user} {ziel} hat noch keine Gestalt (erst das Ritual machen).");
+            else
+                CPH.SendMessage($"@{user} So geht's: !levelup @Name oder !levelup @Name 5 (höchstens 100)");
+        }
+        catch (Exception e) { CPH.LogWarn("NWU Level: " + e.Message); }
+        return true;
+    }
+}
+```
+
 ## Streamer.bot: Schatten-Essenz für die Meilensteinkarte
 
 Jede Plattform hat ihren eigenen Pfad und ihre eigene Essenz. Eine Action **„NWU Essenz“** mit einer

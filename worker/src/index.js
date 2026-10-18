@@ -6,6 +6,7 @@
 //   ERLAUBTE_HERKUNFT   Komma-Liste erlaubter Website-Adressen für CORS
 //   STREAMERBOT_SECRET  Secret für /avatare/bestaetigen (nie in den Code!)
 //   ADMIN_SECRET        Secret für /avatare/rolle
+//   (STREAMERBOT_SECRET gilt auch für /avatare/level, /reise/essenz, /erfolge/plus)
 
 import '../../data/haeuser.js';
 import '../../data/quiz.js';
@@ -194,6 +195,23 @@ async function rolleSetzen(req, env) {
   return antwort({ ok: r.meta.changes > 0 });
 }
 
+// Von Streamer.bot: Chat-Befehl !levelup @Name [Anzahl] (nur Mods/Streamer, prüft Streamer.bot)
+async function levelAendern(req, env) {
+  const auth = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+  if (!env.STREAMERBOT_SECRET || !gleich(auth, env.STREAMERBOT_SECRET)) return fehler('Nicht erlaubt', 401);
+  const d = await jsonLesen(req);
+  const name = typeof d?.name === 'string' ? d.name.trim().replace(/^@/, '').toLowerCase() : '';
+  const anzahl = d?.anzahl === undefined ? 1 : Number(d.anzahl);
+  if (!d || !PLATTFORMEN.includes(d.plattform) || (!name && typeof d.plattformId !== 'string')
+      || !Number.isInteger(anzahl) || anzahl === 0 || Math.abs(anzahl) > 100) return antwort({ ok: false, grund: 'ungueltig' }, 400);
+  const k = await env.DB.prepare(`SELECT profil_id, name FROM konto WHERE plattform = ? AND ${name ? 'name_klein' : 'plattform_id'} = ?`)
+    .bind(d.plattform, name || d.plattformId).first();
+  if (!k) return antwort({ ok: false, grund: 'unbekannt' });
+  const p = await env.DB.prepare('UPDATE profil SET level = MAX(1, MIN(999, level + ?)) WHERE id = ? RETURNING level')
+    .bind(anzahl, k.profil_id).first();
+  return antwort({ ok: true, name: k.name, level: p.level });
+}
+
 // ---------- Meilensteinkarte (vier Pfade, einer pro Plattform) ----------
 const PFADE = REISE.pfade.map((p) => p.id);
 
@@ -316,6 +334,7 @@ export default {
       if (req.method === 'POST' && url.pathname === '/avatare/bestaetigen') return await bestaetigen(req, env);
       if (req.method === 'GET' && url.pathname === '/avatare/profil') return await profil(url, env, cors);
       if (req.method === 'POST' && url.pathname === '/avatare/rolle') return await rolleSetzen(req, env);
+      if (req.method === 'POST' && url.pathname === '/avatare/level') return await levelAendern(req, env);
       if (req.method === 'GET' && url.pathname === '/reise') return await reiseLesen(env, cors);
       if (req.method === 'POST' && url.pathname === '/reise/essenz') return await essenzMelden(req, env);
       if (req.method === 'POST' && url.pathname === '/reise/hand') return await essenzHand(req, env);

@@ -35,13 +35,15 @@ window.NWU_CONFIG = {
   // Großes Portal: automatisch alle X Minuten (0 = nur per Taste P), Dauer auf dem Terrain
   portal: { alleMinuten: 20, dauerSekunden: 150 },
 
-  // Stufe 1: fertige Figurenbilder (Seitenansicht, Blick nach rechts), Größe im Stream in Pixeln
+  // Figuren (Seitenansicht, Blick nach rechts), Größe im Stream in Pixeln.
+  // bild = Stufe 1 (ein Bild). rig = Stufe 2 (Teile mit Gelenken aus rigs.js), wenn vorhanden.
+  // Mit ?stufe1 in der Adresse laufen alle als Einzelbild.
   figurHoehe: 56,
   figuren: [
     { haus: 'haus1', typ: 'a', bild: 'figuren/haus1-a.webp' },
-    { haus: 'haus1', typ: 'b', bild: 'figuren/haus1-b.webp' },
-    { haus: 'haus1', typ: 'c', bild: 'figuren/haus1-c.webp' },
-    { haus: 'haus1', typ: 'd', bild: 'figuren/haus1-d.webp' },
+    { haus: 'haus1', typ: 'b', bild: 'figuren/haus1-b.webp', rig: 'haus1-b' },
+    { haus: 'haus1', typ: 'c', bild: 'figuren/haus1-c.webp', rig: 'haus1-c' },
+    { haus: 'haus1', typ: 'd', bild: 'figuren/haus1-d.webp', rig: 'haus1-d' },
   ],
 
   // Die 6 Häuser kommen aus data/haeuser.js (eine Quelle für Website und Overlay).

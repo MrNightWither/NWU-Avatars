@@ -16,8 +16,8 @@ Der vollständige Plan steht in [`docs/PLAN.md`](docs/PLAN.md).
 | **0** | Performance-Test | ✅ Prototyp fertig, **Messung auf deinem PC offen** |
 | **1** | Fundament (Datenbank, Chat-Bestätigung, Anwesenheit, Punkte) | 🟡 Worker `nwu-avatare` fertig und getestet (`worker/`), muss noch hochgeladen werden; Anwesenheit im Overlay |
 | **2** | Website | 🟡 Ritual als Film über die Karte (Quiz, Haus, Gestalt, Bindung per Code, Ton), Demo-Modus bis der Worker steht |
-| **3** | Figuren-Overlay | 🟡 Stufe 1: Einzelbild-Figuren mit Programm-Animation (`overlay/avatare.html`), Stufe 2 (Ebenen) später |
-| 4 | Level und Items | – |
+| **3** | Figuren-Overlay | 🟡 Stufe 2 für Mond-Seher, -Schatten, -Hüter: Figuren aus Teilen mit Gelenken (laufen, sitzen, jubeln, winken); die übrigen laufen als Einzelbild (Stufe 1) |
+| 4 | Level und Items | 🟡 `!levelup @Name [Anzahl]` für Streamer/Mods: Effekt im Overlay, Level im Worker; Items fehlen noch |
 | 5 | Portal und Terrain | 🟡 aufrechtes Portal, Figuren laufen aufs Terrain; Kämpfe und Terrain-Bilder fehlen noch |
 | ➕ | Meilensteinkarte | 🟡 vier Pfade (Twitch, YouTube, Kick, TikTok) zur Zitadelle, `reise.html` (Website) und `reise.html?szene=1` (OBS), Essenz pro Plattform im Worker; eigene Reise-Karte fehlt noch |
 | ➕ | Erfolgskarte | 🟡 `erfolge.html`: Follower-Weg bis 100.000 und Unterstützer-Weg bis 2.000, pro Plattform; eigene Karte fehlt noch |
@@ -43,7 +43,7 @@ data/quiz.js          24 Fragen, pro Durchgang 12 zufällig
 data/auswertung.js    Quiz-Auswertung (gleich für Seite und Worker)
 data/erfolge.js       Erfolgskarte: Stufen der beiden Wege, Plattformen
 data/meilensteine.js  Reise: vier Pfade, Meilensteine, Essenz-Regeln, Orte auf der Karte
-overlay/              OBS-Browserquellen: avatare.html (Figuren, Stufe 1), perf-test.html (Paket 0)
+overlay/              OBS-Browserquellen: avatare.html (Figuren), rig-test.html (Teil-Figuren prüfen), perf-test.html (Paket 0)
 docs/                 Plan, Engine-Prüfung, Datenmodell, Gemini-Prompts, Anleitung Paket 0
 ```
 
@@ -76,6 +76,7 @@ Oder per Adresse mit Einstellungen, z. B. `…/overlay/avatare.html?n=12&szene=s
 | `szene` / `cam` | Kamera-Rahmen aus `overlay/config.js` oder eigener `x,y,w,h` |
 | `bg=1` | dunkler Hintergrund mit Rahmen zum Ansehen im Browser |
 | `hud=0` | Anzeige oben links aus |
+| `stufe1` | alle Figuren als Einzelbild statt aus Teilen (zum Vergleichen) |
 
 **Chat:** In `overlay/config.js` bei `kanal` deinen Twitch-Namen eintragen (oder `?kanal=…`).
 Das Overlay liest den Chat anonym mit, ohne Login. Wer schreibt, tritt aus einem kleinen Portal
@@ -88,11 +89,19 @@ seine echte Figur aus dem Ritual, sonst eine zufällige.
 2,5 Minuten wieder hinein. Automatisch alle 20 Minuten (`portal` in `config.js`) oder per Taste.
 
 Tasten (OBS: Rechtsklick → Interagieren): `T` Test-Chatter, `M` Nachricht, `K` !lurk, `R` Raid,
-`P` Portal auf/zu, `U` Level-Up, `G` Gruppenbild, `J` alle jubeln, `S` Sparmodus,
+`P` Portal auf/zu, `U` Level-Up (zufällige Figur), `G` Gruppenbild, `J` alle jubeln, `S` Sparmodus,
 `1/2/3` = 4/12/30 Demo-Figuren, `H` Anzeige.
 
-Neue Figuren: Seitenansicht freistellen (`tools/figur.py`), auf 160 px Höhe verkleinern,
+**Level-Up:** Du oder ein Mod schreibt `!levelup @Name` (oder `!levelup @Name 5`). Die Figur bekommt
+Lichtstrahl, Funken und „LEVEL UP!“ und jubelt. Gespeichert wird das Level über Streamer.bot im Worker
+(Anleitung in `worker/README.md`).
+
+Neue Figuren (Stufe 1): Seitenansicht freistellen (`tools/figur.py`), auf 160 px Höhe verkleinern,
 nach `overlay/figuren/` legen und in `overlay/config.js` unter `figuren` eintragen.
+
+Neue Figuren (Stufe 2, aus Teilen): Teile-Bogen mit `tools/teile.py` zerlegen, die Teile nach
+`overlay/figuren/<haus-typ>/` legen, Gelenke in `overlay/rigs.js` eintragen, in `config.js` bei der Figur
+`rig: '<haus-typ>'` setzen. Prüfen mit `overlay/rig-test.html` (alle Posen nebeneinander, `?bewegt=1` animiert).
 
 ## Ansehen
 

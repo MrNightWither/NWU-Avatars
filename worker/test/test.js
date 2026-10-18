@@ -83,6 +83,17 @@ r = await ruf('/avatare/rolle', { method: 'POST', body: JSON.stringify({ plattfo
 assert.equal(r.daten.ok, true);
 assert.equal((await ruf('/avatare/profil?plattform=twitch&id=111')).daten.rolle, 'koenig');
 
+// Level-Up per Befehl (Streamer.bot): über den Namen, Groß/Klein und @ egal
+const level = (body, secret = 'sb-geheim-123') => ruf('/avatare/level', { method: 'POST', body: JSON.stringify(body), headers: { Authorization: 'Bearer ' + secret } });
+assert.equal((await level({ plattform: 'twitch', name: 'mrnightwither' }, 'falsch')).status, 401);
+r = await level({ plattform: 'twitch', name: '@MrNightWither' });
+assert.equal(r.daten.ok, true); assert.equal(r.daten.level, 2); assert.equal(r.daten.name, 'mrnightwither');
+assert.equal((await level({ plattform: 'twitch', plattformId: '111', anzahl: 5 })).daten.level, 7);
+assert.equal((await level({ plattform: 'twitch', name: 'mrnightwither', anzahl: -50 })).daten.level, 1, 'nie unter Level 1');
+assert.equal((await level({ plattform: 'twitch', name: 'niemand' })).daten.grund, 'unbekannt');
+assert.equal((await level({ plattform: 'twitch', name: 'mrnightwither', anzahl: 500 })).status, 400);
+assert.equal((await ruf('/avatare/profil?plattform=twitch&id=111')).daten.level, 1);
+
 // Abgelaufener Code
 r = await anmeldung('SpaeterLeser', { ip: '5.5.5.5' });
 env.DB.roh.prepare("UPDATE anmeldung SET gueltig_bis = '2000-01-01T00:00:00.000Z' WHERE id = ?").run(r.daten.id);

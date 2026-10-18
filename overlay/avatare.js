@@ -1,5 +1,6 @@
-// NWU Avatare – Overlay Stufe 1
-// Jede Figur ist EIN Bild (Seitenansicht). Die Bewegung entsteht per Programm.
+// NWU Avatare – Overlay
+// Stufe 1: Figur ist EIN Bild (Seitenansicht), die Bewegung entsteht per Programm.
+// Stufe 2: Figur aus Teilen mit Gelenken (rig.js, rigs.js), sobald es für sie Teile gibt.
 // Chatter erscheinen aus einem kleinen Portal am Rahmen, das große Portal ist ein
 // aufrechtes Tor, aus dem die Figuren aufs Terrain laufen.
 'use strict';
@@ -56,7 +57,20 @@
     img.onerror = () => fehler(new Error('Bild fehlt: ' + src));
     img.src = src;
   });
-  const VORLAGEN = await Promise.all(CFG.figuren.map(async (f) => ({ ...f, tex: await laden(f.bild) })));
+  const RIGS = window.NWU_RIGS || {};
+  const VORLAGEN = await Promise.all(CFG.figuren.map(async (f) => {
+    const v = { ...f, tex: await laden(f.bild) };
+    v.hoehe = v.tex.height;
+    const def = !q.has('stufe1') && f.rig && RIGS[f.rig];
+    if (def && window.NWU_RIG) {
+      try {
+        const namen = [...new Set(def.teile.map((t) => t.bild))];
+        const tex = await Promise.all(namen.map((n) => laden(`figuren/${f.rig}/${n}.webp`)));
+        v.rigDef = def; v.rigTex = Object.fromEntries(namen.map((n, i) => [n, tex[i]])); v.hoehe = def.hoehe;
+      } catch (e) { console.warn('Teile fehlen, nehme Einzelbild:', f.rig, e.message); }
+    }
+    return v;
+  }));
   const textur = (zeichnen) => {
     const g = new PIXI.Graphics(); zeichnen(g);
     const t = app.renderer.generateTexture({ target: g, resolution: 2 }); g.destroy(); return t;
@@ -195,15 +209,16 @@
   function figurErzeugen(vorlage, info) {
     const root = new PIXI.Container();
     const schatten = new PIXI.Graphics().ellipse(0, 0, S.hoehe * 0.32, S.hoehe * 0.06).fill({ color: 0x000000, alpha: 0.35 });
-    const koerper = new PIXI.Sprite(vorlage.tex);
-    koerper.anchor.set(0.5, 1);
-    const basis = S.hoehe / vorlage.tex.height;
+    const rig = vorlage.rigDef ? window.NWU_RIG.bauen(vorlage.rigDef, vorlage.rigTex) : null;
+    const koerper = rig ? rig.koerper : new PIXI.Sprite(vorlage.tex);
+    if (!rig) koerper.anchor.set(0.5, 1);
+    const basis = S.hoehe / vorlage.hoehe;
     koerper.scale.set(basis);
     root.addChild(schatten, koerper);
     root.alpha = 0;
     figurenEbene.addChild(root);
     const fi = {
-      root, koerper, schatten, basis, vorlage, farbe: HAUSFARBE[vorlage.haus] || 0xc9a84c,
+      root, koerper, rig, schatten, basis, vorlage, jubel: 0, winken: 0, farbe: HAUSFARBE[vorlage.haus] || 0xc9a84c,
       id: info.id || null, name: info.name || '', mod: !!info.mod, demo: !!info.demo,
       s: info.s ?? Math.random() * umfang,
       richtung: Math.random() < 0.5 ? 1 : -1,
@@ -211,7 +226,7 @@
       phase: Math.random() * 10, winkel: 0, lurker: !!info.lurker,
       zustand: 'idle', zustandZeit: 1.4 + Math.random() * 2,
       g: { laufen: 0, idle: 1, sitzen: 0, schlafen: 0 },
-      sprung: -1, puls: 0, zTimer: 0,
+      sprung: -1, puls: 0, zTimer: 0, versatz: Math.random() * 20, jubelBis: 0, winkenBis: 0,
       einblenden: 0, entfernen: false, letzte: zeit,
       modus: 'rahmen', modusAlpha: 1, wartet: 0, x: 0,
     };
@@ -255,11 +270,26 @@
     }
     fi.puls = Math.max(0, fi.puls - dt * 2.5);
 
-    const sy = 1 + laufen * (0.045 * schritt - 0.03) + idle * 0.018 * atmen + hocken * (-0.16 + 0.015 * atmen) + sprungS + fi.puls * 0.12;
-    const sx = 1 + (1 - sy) * 0.6 + fi.puls * 0.06;
-    fi.koerper.scale.set(fi.basis * sx * fi.richtung, fi.basis * sy);
-    fi.koerper.y = -(laufen * schritt * S.hoehe * 0.07 + sprungY);
-    fi.koerper.rotation = fi.richtung * (laufen * Math.sin(fi.phase) * 0.07 + schlafen * 0.2 + sitzen * 0.04);
+    // Jubeln (Raid, Taste J) und Winken (Chat-Nachricht) – nur Teil-Figuren heben die Arme
+    const jubelZiel = fi.jubelBis > zeit ? 1 : 0;
+    fi.jubel = lerp(fi.jubel, jubelZiel, Math.min(1, dt * 5));
+    fi.winken = lerp(fi.winken, fi.winkenBis > zeit ? 1 : 0, Math.min(1, dt * 6));
+
+    if (fi.rig) {
+      // Gelenke machen die Bewegung, der ganze Körper federt nur noch leicht
+      const sy = 1 + laufen * 0.015 * schritt + idle * 0.01 * atmen + sprungS + fi.puls * 0.1;
+      const sx = 1 + (1 - sy) * 0.6 + fi.puls * 0.05;
+      fi.koerper.scale.set(fi.basis * sx * fi.richtung, fi.basis * sy);
+      fi.koerper.y = -(laufen * schritt * S.hoehe * 0.035 + sprungY);
+      fi.koerper.rotation = fi.richtung * schlafen * 0.1;
+      window.NWU_RIG.pose(fi.rig, { laufen, idle, sitzen, schlafen, phase: fi.phase, t: t + fi.versatz, jubel: fi.jubel, winken: fi.winken });
+    } else {
+      const sy = 1 + laufen * (0.045 * schritt - 0.03) + idle * 0.018 * atmen + hocken * (-0.16 + 0.015 * atmen) + sprungS + fi.puls * 0.12;
+      const sx = 1 + (1 - sy) * 0.6 + fi.puls * 0.06;
+      fi.koerper.scale.set(fi.basis * sx * fi.richtung, fi.basis * sy);
+      fi.koerper.y = -(laufen * schritt * S.hoehe * 0.07 + sprungY);
+      fi.koerper.rotation = fi.richtung * (laufen * Math.sin(fi.phase) * 0.07 + schlafen * 0.2 + sitzen * 0.04);
+    }
     fi.schatten.scale.set(1 - Math.min(0.5, (-fi.koerper.y) / S.hoehe), 1);
     fi.schatten.alpha = fi.winkel > -0.3 && fi.winkel < 0.3 ? 1 : 0;
   }
@@ -276,8 +306,15 @@
   }
 
   async function chatter(u, art) {
-    if (!u.id || u.broadcaster) return;                 // Schattenkönig bekommt später eine eigene Figur
     const text = (u.text || '').trim().toLowerCase();
+    // !levelup @Name (Streamer und Mods): Effekt sofort hier, gespeichert wird über Streamer.bot im Worker
+    const lv = text.match(/^!(?:levelup|lvlup|lvl)\s+@?([a-z0-9_]{2,25})/);
+    if (lv && (u.broadcaster || u.mod)) {
+      const ziel = figuren.find((f) => !f.entfernen && f.name === lv[1]);
+      if (ziel && ziel.root) { ziel.letzte = zeit; levelUp(ziel); }
+      return;
+    }
+    if (!u.id || u.broadcaster) return;                 // Schattenkönig bekommt später eine eigene Figur
     let fi = nachId.get(u.id);
     if (fi && !fi.entfernen) {
       fi.letzte = zeit;
@@ -295,6 +332,7 @@
 
   function leuchten(fi) {
     fi.puls = 1;
+    if (fi.g && fi.g.laufen < 0.5 && fi.g.schlafen < 0.5) fi.winkenBis = zeit + 1.6;
     const p = versetzt(fi.root.x, fi.root.y, fi.winkel, S.hoehe * 0.6);
     funken(p.x, p.y, fi.farbe, 5);
   }
@@ -319,6 +357,7 @@
   }
 
   // ---------- Level-Up ----------
+  const lvStil = new PIXI.TextStyle({ fontFamily: 'Georgia, serif', fontSize: 15, fontWeight: 'bold', fill: 0xe8c96d, stroke: { color: 0x1a1208, width: 3 }, letterSpacing: 1 });
   function levelUp(fi) {
     const a = fi.winkel, mitte = versetzt(fi.root.x, fi.root.y, a, S.hoehe * 0.5);
     const strahl = new PIXI.Sprite(T.strahl);
@@ -329,7 +368,12 @@
     ring.position.set(mitte.x, mitte.y);
     effekt(ring, { leben: 1, max: 1, ring: true });
     funken(mitte.x, mitte.y, 0xe8c96d, 18);
-    huepfen(fi); fi.puls = 1;
+    const schrift = new PIXI.Text({ text: 'LEVEL UP!', style: lvStil });
+    schrift.anchor.set(0.5);
+    const oben = versetzt(fi.root.x, fi.root.y, a, S.hoehe * 1.35);
+    schrift.position.set(oben.x, oben.y);
+    effekt(schrift, { vy: -18, leben: 2.4, max: 2.4 });
+    huepfen(fi); fi.puls = 1; fi.jubelBis = zeit + 1.8;
   }
 
   // ---------- Großes Portal: Ablauf ----------
@@ -409,6 +453,7 @@
           if (Math.abs(d) > 3) { fi.richtung = Math.sign(d); fi.zustand = 'laufen'; fi.s += Math.sign(d) * Math.min(Math.abs(d), 230 * dt); }
           else {
             fi.richtung = fi.root.x < R.x + R.w / 2 ? 1 : -1; fi.zustand = 'idle';
+            if (fi.formJubel) fi.jubelBis = zeit + 0.3;
             if (fi.formJubel && fi.sprung < 0 && Math.random() < dt * 1.2) huepfen(fi);
           }
           if (zeit > fi.formEnde) { fi.modus = 'rahmen'; fi.lurker = fi.lurkerVorher; fi.zustandZeit = 0; }
@@ -529,7 +574,7 @@
     else if (k === 'g') formation(12, false);
     else if (k === 'p') { if (EV.phase === 'aus') portalStarten(); else portalBeenden(); }
     else if (k === 'u') { const f = zufallsFigur(); if (f) levelUp(f); }
-    else if (k === 'j') figuren.forEach((f, i) => setTimeout(() => huepfen(f), i * 60));
+    else if (k === 'j') figuren.forEach((f, i) => setTimeout(() => { huepfen(f); f.jubelBis = zeit + 2.5; }, i * 60));
     else if (k === 's') { S.sparmodus = !S.sparmodus; sichtbarkeit(); }
     else if (k === '1') demoSetzen(4);
     else if (k === '2') demoSetzen(12);

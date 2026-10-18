@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>NWU Avatare – Teil-Figuren prüfen</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  html, body { margin: 0; height: 100%; background: #2a2a33; overflow: hidden; }
+  #info { position: fixed; left: 12px; top: 8px; font: 13px Consolas, monospace; color: #ddd; }
+</style>
+</head>
+<body>
+<div id="info">Teil-Figuren · ?bewegt=1 für Animation · ?figur=haus1-c</div>
+<script src="lib/pixi.min.js"></script>
+<script src="rig.js"></script>
+<script src="rigs.js"></script>
+<script>
+'use strict';
+(async () => {
+  const q = new URLSearchParams(location.search);
+  const bewegt = q.get('bewegt') === '1';
+  const nur = q.get('figur');
+  const app = new PIXI.Application();
+  await app.init({ background: 0x2a2a33, resizeTo: window, antialias: true });
+  document.body.appendChild(app.canvas);
+  const laden = (src) => new Promise((ok, f) => { const i = new Image(); i.onload = () => ok(PIXI.Texture.from(i)); i.onerror = () => f(src); i.src = src; });
+  const ids = Object.keys(NWU_RIGS).filter((id) => !nur || id === nur);
+  const POSEN = [
+    ['stehen', { idle: 1 }], ['laufen +', { laufen: 1, phase: Math.PI / 2 }], ['laufen −', { laufen: 1, phase: -Math.PI / 2 }],
+    ['sitzen', { sitzen: 1 }], ['jubeln', { idle: 1, jubel: 1 }], ['winken', { idle: 1, winken: 1 }],
+  ];
+  const figuren = [];
+  let zeile = 0;
+  for (const id of ids) {
+    const def = NWU_RIGS[id], tex = {};
+    for (const t of def.teile) if (!tex[t.bild]) tex[t.bild] = await laden(`figuren/${id}/${t.bild}.webp`);
+    const vorlage = await laden(`../assets/seite-${id}.webp`).catch(() => null);
+    const y = 40 + (zeile + 1) * 470;
+    if (vorlage) { const v = new PIXI.Sprite(vorlage); v.anchor.set(0.5, 1); v.scale.set(def.hoehe / vorlage.height); v.position.set(170, y); app.stage.addChild(v); }
+    (bewegt ? [['laufen', null]] : POSEN).forEach(([name, p], i) => {
+      const r = NWU_RIG.bauen(def, tex);
+      r.koerper.position.set(430 + i * 300, y);
+      app.stage.addChild(new PIXI.Graphics().rect(430 + i * 300 - 140, y, 280, 2).fill(0x666677));
+      app.stage.addChild(r.koerper);
+      const txt = new PIXI.Text({ text: `${id} · ${name}`, style: { fill: 0xcccccc, fontSize: 14 } });
+      txt.position.set(430 + i * 300 - 60, y + 8); app.stage.addChild(txt);
+      figuren.push({ r, p });
+    });
+    zeile++;
+  }
+  const skal = Math.min(1, window.innerHeight / (60 + zeile * 470), window.innerWidth / (430 + POSEN.length * 300));
+  app.stage.scale.set(skal);
+  let t = 0;
+  app.ticker.add((tk) => {
+    t += tk.deltaMS / 1000;
+    for (const f of figuren) {
+      const p = f.p ? { laufen: 0, idle: 0, sitzen: 0, schlafen: 0, phase: 0, t: 0, ...f.p }
+                    : { laufen: 1, idle: 0, sitzen: 0, schlafen: 0, phase: t * 7, t };
+      NWU_RIG.pose(f.r, p);
+    }
+  });
+  window.FERTIG = true;
+})();
+</script>
+</body>
+</html>
