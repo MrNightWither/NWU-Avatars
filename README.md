@@ -1,7 +1,7 @@
 # NWU Avatare
 
 Stream-Avatare für das NWU-Universum: Zuschauer machen ein Quiz, landen in einem von
-6 Häusern, wählen eine Figur, und die läuft im Stream um den Kamera-Rahmen. Mit Level,
+4 Häusern, wählen eine Figur, und die läuft im Stream um den Kamera-Rahmen. Mit Level,
 Items, Portal-Events und Haus-Duellen.
 
 Die Seite bekommt eine eigene Subdomain und wird nur über Twitch verlinkt
@@ -38,7 +38,7 @@ js/grafik.js          Platzhalter-Wappen und -Figuren (SVG)
 js/film.js            Kamera über die Karte, Szenen der Gebiete
 js/ton.js             Klang (im Browser erzeugt), Stumm-Knopf
 assets/               Karte und Gebiete (WebP), Originale in assets/roh/
-data/haeuser.js       Die 6 Häuser – EINE Quelle für Seite und Overlay
+data/haeuser.js       Die Häuser (4 aktiv, Dornen/Raben verloren) – EINE Quelle für Seite und Overlay
 data/quiz.js          24 Fragen, pro Durchgang 12 zufällig
 data/auswertung.js    Quiz-Auswertung (gleich für Seite und Worker)
 data/erfolge.js       Erfolgskarte: Stufen der beiden Wege, Plattformen
@@ -53,7 +53,11 @@ docs/                 Plan, Engine-Prüfung, Datenmodell, Gemini-Prompts, Anleit
   Die ids `haus1` … `haus6` bitte nicht ändern, darauf verweist die Datenbank.
 - **Fragen:** `data/quiz.js`. Jede Antwort gibt Punkte an 1 bis 2 Häuser
   (`'M2'` = Mond 2 Punkte, `'F2 B1'` = Flamme 2, Blut 1). Aktuell bekommt jedes Haus
-  gleich viele Punkte über alle Fragen. Wenn du etwas änderst, das Gleichgewicht halten.
+  gleich viele Punkte über alle Fragen (jede Frage hat genau eine starke Antwort pro Haus).
+  Wenn du etwas änderst, das Gleichgewicht halten.
+- **Verlorene Häuser wecken:** in `data/haeuser.js` bei Dornen/Raben `verloren: true` entfernen,
+  im Quiz Antworten mit `D`/`R` ergänzen und in `js/film.js` die Orte wieder eintragen.
+  Den Nebel auf der Karte macht `tools/nebel.py` (Original liegt in `assets/roh/karte.jpg`).
 - Das Quiz zieht pro Durchgang 12 von 24 Fragen. Bei knappem Ergebnis gewinnt das Haus
   mit weniger Mitgliedern (sobald der Worker die Belegung liefert).
 

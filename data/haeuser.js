@@ -1,4 +1,6 @@
-// Die 6 Häuser – eine Quelle für Website und Overlay.
+// Die Häuser – eine Quelle für Website und Overlay.
+// Zum Start gibt es 4 Häuser. Dornen und Raben sind "verlorene Häuser" (verloren: true):
+// Ihre Gebiete liegen im Nebel, sie erwachen später (z. B. bei einem großen Meilenstein).
 // Namen, Farben, Wappen und Sprüche sind ARBEITSTITEL (Plan 15.1) und werden später ersetzt.
 // Die ids (haus1 … haus6) bleiben fest, darauf verweist die Datenbank.
 // wappenBild: fertiges Wappen aus assets/ – fehlt es, wird ein Platzhalter gezeichnet.
@@ -45,7 +47,7 @@
     ],
   },
   {
-    id: 'haus5', name: 'Haus der Dornen', kurz: 'Dornen', symbol: 'dornen', wappenBild: 'assets/wappen-haus5.webp',
+    id: 'haus5', name: 'Haus der Dornen', kurz: 'Dornen', symbol: 'dornen', wappenBild: 'assets/wappen-haus5.webp', verloren: true,
     farbe: 0x5f9e48, css: '#6fae55',
     wesen: 'Geduldig, standhaft und wehrhaft. Ihr schützt, was euch gehört.',
     sprueche: [
@@ -55,7 +57,7 @@
     ],
   },
   {
-    id: 'haus6', name: 'Haus der Raben', kurz: 'Raben', symbol: 'raben', wappenBild: 'assets/wappen-haus6.webp',
+    id: 'haus6', name: 'Haus der Raben', kurz: 'Raben', symbol: 'raben', wappenBild: 'assets/wappen-haus6.webp', verloren: true,
     farbe: 0x7a68b5, css: '#8b79c6',
     wesen: 'Neugierig, klug und unvergessen. Ihr tragt das Wissen und die Botschaften.',
     sprueche: [
@@ -65,6 +67,10 @@
     ],
   },
 ];
+// Nur die Häuser, in die man aktuell kommen kann
+(typeof window !== 'undefined' ? window : globalThis).NWU_AKTIVE_HAEUSER =
+  (typeof window !== 'undefined' ? window : globalThis).NWU_HAEUSER.filter((h) => !h.verloren);
+
 
 // 4 Startcharaktere pro Haus (Plan 3). Gleiche Grundtypen, Aussehen später pro Haus.
 // Namen und Beschreibungen sind Platzhalter.

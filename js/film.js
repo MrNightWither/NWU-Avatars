@@ -18,7 +18,7 @@
     verkuendungFlug: 4600,     // Kamerafahrt zum Haus
     hausBlende: 2600,          // Überblendung ins Hausgebiet
   };
-  const FRAGEN_PRO_GEBIET = 2;
+  const FRAGEN_PRO_GEBIET = 3;
 
   // Orte auf der Karte (Anteil der Bildbreite/-höhe) und Zoomstufe
   const ORTE = {
@@ -29,11 +29,10 @@
     haus2: { x: 0.79, y: 0.20, z: 2.3 },   // Blut, oben rechts
     haus3: { x: 0.83, y: 0.58, z: 2.3 },   // Nebel, rechts
     haus4: { x: 0.50, y: 0.82, z: 2.3 },   // Flamme, unten Mitte
-    haus5: { x: 0.15, y: 0.76, z: 2.3 },   // Dornen, unten links
-    haus6: { x: 0.16, y: 0.22, z: 2.3 },   // Raben, oben links
+    // haus5 (Dornen) und haus6 (Raben) liegen im Westen im Nebel – verlorene Häuser
   };
   // Reihenfolge der Gebiete während der Fragen (verrät nichts über das Ergebnis)
-  const RUNDGANG = ['haus3', 'haus1', 'haus4', 'haus6', 'haus2', 'haus5'];
+  const RUNDGANG = ['haus3', 'haus1', 'haus4', 'haus2'];
   const gebietFuerFrage = (nr) => RUNDGANG[Math.floor(nr / FRAGEN_PRO_GEBIET) % RUNDGANG.length];
 
   const karte = $('karte');

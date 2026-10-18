@@ -1,6 +1,8 @@
 # Bilder mit Gemini: Prompts
 
-Stand: 18.10.2026. Für: Karte, 6 Wappen, 24 Charaktere und Teile-Bögen zum Zerlegen.
+Stand: 18.10.2026. Für: Karte, Wappen, Charaktere und Teile-Bögen zum Zerlegen.
+**Es gibt zum Start nur 4 Häuser: Mond, Blut, Nebel, Flamme** (= 16 Charaktere). Dornen und Raben
+sind „verlorene Häuser“ und brauchen erst später Figuren.
 
 ## So gehst du vor
 

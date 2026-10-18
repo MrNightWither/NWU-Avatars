@@ -91,7 +91,7 @@ function quizPruefen(fragen, antworten) {
 
 async function belegung(env) {
   const { results } = await env.DB.prepare('SELECT haus, COUNT(*) AS n FROM profil WHERE haus IS NOT NULL GROUP BY haus').all();
-  const b = Object.fromEntries(HAEUSER.map((h) => [h.id, 0]));
+  const b = Object.fromEntries(globalThis.NWU_AKTIVE_HAEUSER.map((h) => [h.id, 0]));
   for (const r of results) b[r.haus] = r.n;
   return b;
 }
