@@ -17,6 +17,8 @@
     titelHalten: 2600,         // "Morrígan hat entschieden" stehen lassen
     verkuendungFlug: 4600,     // Kamerafahrt zum Haus
     hausBlende: 2600,          // Überblendung ins Hausgebiet
+    nebelWarten: 1800,         // so lange liegt beim Start alles im Nebel
+    nebelZiehen: 9000,         // Nebel zieht sich vom Mond im Uhrzeigersinn bis zur Flamme zurück
   };
   const FRAGEN_PRO_GEBIET = 3;
 
@@ -35,7 +37,7 @@
   const RUNDGANG = ['haus3', 'haus1', 'haus4', 'haus2'];
   const gebietFuerFrage = (nr) => RUNDGANG[Math.floor(nr / FRAGEN_PRO_GEBIET) % RUNDGANG.length];
 
-  const karte = $('karte');
+  const karte = $('karte'), welt = $('weltbild');
   // Große Karte nur für große Bildschirme, Handys bekommen die kleine (spart Speicher und Daten)
   const pixel = Math.max(screen.width, screen.height) * (window.devicePixelRatio || 1);
   karte.src = pixel > 2200 ? karte.dataset.gross : karte.dataset.klein;
@@ -54,8 +56,8 @@
   function fahren(ort, dauer, kurve) {
     aktuell = ort;
     if (ruhig) dauer = 0;
-    karte.style.transition = dauer ? `transform ${dauer}ms ${kurve || SANFT}` : 'none';
-    karte.style.transform = transform(ort);
+    welt.style.transition = dauer ? `transform ${dauer}ms ${kurve || SANFT}` : 'none';
+    welt.style.transform = transform(ort);
     return warte(dauer);
   }
 
@@ -67,12 +69,99 @@
     let i = 0;
     const schritt = () => {
       i++;
-      karte.style.transition = `transform 22000ms ease-in-out`;
-      karte.style.transform = transform({ x: basis.x + Math.sin(i * 1.7) * 0.025, y: basis.y + Math.cos(i * 1.3) * 0.02, z: basis.z * 1.04 });
+      welt.style.transition = `transform 22000ms ease-in-out`;
+      welt.style.transform = transform({ x: basis.x + Math.sin(i * 1.7) * 0.025, y: basis.y + Math.cos(i * 1.3) * 0.02, z: basis.z * 1.04 });
     };
     schritt();
     treiben = setInterval(schritt, 22000);
   }
+
+  // ---------- Nebel über der Karte ----------
+  // Beim Start liegt alles im Nebel außer der Zitadelle. Dann zieht er sich vom Mondland (oben)
+  // im Uhrzeigersinn über Blut und Nebel bis zur Flamme (unten) zurück. Der Westen mit den
+  // verlorenen Häusern (Dornen, Raben) bleibt im Nebel.
+  const nebel = (() => {
+    const leinwand = $('kartennebel'), ctx = leinwand.getContext('2d');
+    const B = 640, MITTE = { x: 0.5, y: 0.47 };
+    const VON = -Math.PI / 2 - 0.42, BIS = Math.PI / 2 + 0.42;     // etwas links von oben bis etwas links von unten
+    let HH = 349, wolken = null, frei = 0, letzt = 0, zug = null;
+    const konisch = typeof ctx.createConicGradient === 'function';
+
+    function wolkenMalen() {
+      HH = Math.round(B * (karte.naturalHeight || 768) / (karte.naturalWidth || 1408));
+      leinwand.width = B; leinwand.height = HH;
+      wolken = document.createElement('canvas');
+      wolken.width = B * 2; wolken.height = HH;                     // doppelt breit, damit er ziehen kann
+      const w = wolken.getContext('2d');
+      let saat = 11;
+      const zufall = () => { saat = (saat * 16807) % 2147483647; return saat / 2147483647; };
+      w.fillStyle = 'rgba(22,23,30,0.70)'; w.fillRect(0, 0, B * 2, HH);
+      for (let i = 0; i < 180; i++) {
+        const x = zufall() * B * 2, y = zufall() * HH, r = 30 + zufall() * 90, hell = 135 + zufall() * 60;
+        const g = w.createRadialGradient(x, y, 0, x, y, r);
+        g.addColorStop(0, `rgba(${hell},${hell},${hell + 12},${0.12 + zufall() * 0.14})`);
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        w.fillStyle = g; w.fillRect(x - r, y - r, r * 2, r * 2);
+      }
+    }
+
+    function zeichnen(t) {
+      if (!wolken) wolkenMalen();
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.clearRect(0, 0, B, HH);
+      const versatz = (t / 1000 * 4) % B;                            // langsames Ziehen nach rechts
+      ctx.drawImage(wolken, -B + versatz, 0); ctx.drawImage(wolken, versatz, 0);
+
+      ctx.globalCompositeOperation = 'destination-out';
+      const mx = MITTE.x * B, my = MITTE.y * HH;
+      // Zitadelle ist immer frei
+      const kreis = ctx.createRadialGradient(mx, my, B * 0.05, mx, my, B * 0.15);
+      kreis.addColorStop(0, 'rgba(0,0,0,1)'); kreis.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = kreis; ctx.fillRect(0, 0, B, HH);
+      // Der freie Bogen um die Zitadelle
+      if (frei > 0) {
+        if (konisch) {
+          const voll = (BIS - VON) / (Math.PI * 2), kante = 0.035;
+          const stand = voll * frei;
+          const g = ctx.createConicGradient(VON, mx, my);
+          g.addColorStop(0, 'rgba(0,0,0,0)');
+          g.addColorStop(Math.min(kante, stand), 'rgba(0,0,0,1)');
+          g.addColorStop(Math.max(Math.min(kante, stand), stand - 0.001), 'rgba(0,0,0,1)');
+          g.addColorStop(Math.min(1, stand + kante), 'rgba(0,0,0,0)');
+          g.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = g; ctx.fillRect(0, 0, B, HH);
+        } else {
+          // ältere Browser: rechte Hälfte einfach weich aufhellen
+          const g = ctx.createLinearGradient(B * 0.36, 0, B * 0.48, 0);
+          g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, `rgba(0,0,0,${frei})`);
+          ctx.fillStyle = g; ctx.fillRect(0, 0, B, HH);
+        }
+      }
+    }
+
+    function schleife(t) {
+      requestAnimationFrame(schleife);
+      if (t - letzt < 50) return;                                   // 20 Bilder pro Sekunde reichen für Nebel
+      letzt = t;
+      if (zug) {
+        const u = Math.min(1, (t - zug.start) / zug.dauer);
+        frei = u < 0 ? 0 : u * u * (3 - 2 * u);
+        if (u >= 1) zug = null;
+      }
+      zeichnen(ruhig ? 0 : t);
+    }
+    requestAnimationFrame(schleife);
+    if (!karte.complete) karte.addEventListener('load', () => { wolken = null; });
+
+    return {
+      voll() { zug = null; frei = 0; },
+      zurueckziehen(warten) {
+        if (ruhig) { frei = 1; return; }
+        zug = { start: performance.now() + (warten || 0), dauer: TEMPO.nebelZiehen };
+      },
+      fertig() { zug = null; frei = 1; },
+    };
+  })();
 
   // ---------- Szenen (Nahaufnahmen der Gebiete) ----------
   const szenen = {};
@@ -109,8 +198,10 @@
   async function start() {
     vorspann(true);
     abdunkeln(1);
+    nebel.voll();
     await fahren(ORTE.vorspann, 0);
     schweben(true);
+    nebel.zurueckziehen(TEMPO.nebelWarten);
   }
 
   // Erste Frage: Karte klart auf, langsamer Flug zur Zitadelle, Überblendung ins erste Gebiet
@@ -161,6 +252,7 @@
   // Direkt in einem Gebiet stehen (z. B. nach Neuladen)
   async function imGebiet(haus, dunkel) {
     schweben(false);
+    nebel.fertig();
     vorspann(false);
     await fahren(ORTE[haus], 0);
     abdunkeln(dunkel || 2);
