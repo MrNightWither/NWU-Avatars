@@ -48,8 +48,7 @@
   $('b-start').addEventListener('click', () => {
     st = { fragen: mischen(QUIZ.fragen).slice(0, QUIZ.runden).map((f) => f.id), antworten: [] };
     sichern();
-    FILM.vorladen();
-    frageZeigen(true);
+    frageZeigen('start');
   });
 
   // ---------- Ton: startet beim ersten Klick, Knopf oben rechts ----------
@@ -65,10 +64,16 @@
   tonKnopf.addEventListener('click', () => { TON.start(); TON.stummSchalten(); tonAnzeigen(); });
 
   // ---------- 2. Fragen ----------
-  async function frageZeigen(mitFilm) {
+  // modus: 'start' (Aufbruch nach dem Startbild), 'weiter' (nächste Frage), 'direkt' (nach Neuladen)
+  async function frageZeigen(modus) {
     const nr = st.antworten.length;
-    const flug = mitFilm ? FILM.frage(nr) : FILM.imGebiet(FILM.gebietFuerFrage(nr), 2);
-    if (mitFilm) await warte(470);          // Oberfläche ist ausgeblendet, jetzt Inhalt tauschen
+    let film;
+    if (modus === 'start') film = FILM.aufbruch();
+    else if (modus === 'weiter') {
+      $('s-quiz').classList.add('blende');     // Frage sanft ausblenden …
+      film = FILM.frage(nr);
+      await warte(700);                         // … dann Inhalt tauschen
+    } else film = FILM.imGebiet(FILM.gebietFuerFrage(nr), 2);
     const frage = QUIZ.fragen.find((f) => f.id === st.fragen[nr]);
     $('zaehler').textContent = `Frage ${nr + 1} von ${st.fragen.length}`;
     $('balken').style.width = (100 * nr / st.fragen.length) + '%';
@@ -85,7 +90,8 @@
       return b;
     }));
     zeige('s-quiz');
-    await flug;
+    $('s-quiz').classList.remove('blende');
+    if (modus === 'start') await film;
     $('t-frage').focus({ preventScroll: true });
   }
 
@@ -95,8 +101,8 @@
     TON.klick();
     st.antworten.push(antwortId);
     sichern();
-    await new Promise((r) => setTimeout(r, 380));
-    if (st.antworten.length < st.fragen.length) { frageZeigen(true); return; }
+    await warte(650);
+    if (st.antworten.length < st.fragen.length) { frageZeigen('weiter'); return; }
     $('balken').style.width = '100%';
     await verkuenden();
   }
@@ -276,6 +282,6 @@
   else if (st.anmeldung && st.anmeldung.bis > Date.now()) { imHaus(); codeZeigen(); }
   else if (st.figur && st.haus) { imHaus(); bindungZeigen(); zeige('s-bindung'); }
   else if (st.haus) hausZeigen(false);
-  else if (st.fragen && st.antworten && st.antworten.length < st.fragen.length) frageZeigen(false);
+  else if (st.fragen && st.antworten && st.antworten.length < st.fragen.length) frageZeigen('direkt');
   else FILM.start();
 })();

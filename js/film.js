@@ -1,4 +1,4 @@
-// Kamera und Szenen: Flug über die Karte, Eintauchen in die Gebiete.
+// Kamera und Szenen: ruhige Überblendungen, eine große Kamerafahrt bei der Verkündung.
 // Die Karte ist ein großes Bild, die "Kamera" verschiebt und zoomt es per CSS-Transform.
 'use strict';
 
@@ -6,23 +6,38 @@
   const $ = (id) => document.getElementById(id);
   const warte = (ms) => new Promise((r) => setTimeout(r, ms));
   const ruhig = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const SANFT = 'cubic-bezier(.45,0,.25,1)';
+
+  // Zeiten an einer Stelle – hier lässt sich das Tempo des ganzen Films einstellen (ms)
+  const TEMPO = {
+    vorspannAufklaren: 3200,   // Karte wird beim Start klar
+    vorspannFlug: 4200,        // langsamer Flug zur Zitadelle
+    szeneBlende: 2000,         // Überblendung zwischen zwei Gebieten
+    ruckblende: 2400,          // zurück zur Karte vor der Verkündung
+    titelHalten: 2600,         // "Morrígan hat entschieden" stehen lassen
+    verkuendungFlug: 4600,     // Kamerafahrt zum Haus
+    hausBlende: 2600,          // Überblendung ins Hausgebiet
+  };
+  const FRAGEN_PRO_GEBIET = 2;
 
   // Orte auf der Karte (Anteil der Bildbreite/-höhe) und Zoomstufe
   const ORTE = {
-    ueberblick: { x: 0.5, y: 0.47, z: 1.0 },
-    zitadelle:  { x: 0.5, y: 0.43, z: 1.9 },
-    haus1: { x: 0.50, y: 0.16, z: 2.5 },   // Mond, oben Mitte
-    haus2: { x: 0.79, y: 0.20, z: 2.5 },   // Blut, oben rechts
-    haus3: { x: 0.83, y: 0.58, z: 2.5 },   // Nebel, rechts
-    haus4: { x: 0.50, y: 0.82, z: 2.5 },   // Flamme, unten Mitte
-    haus5: { x: 0.15, y: 0.76, z: 2.5 },   // Dornen, unten links
-    haus6: { x: 0.16, y: 0.22, z: 2.5 },   // Raben, oben links
+    vorspann:   { x: 0.5, y: 0.46, z: 1.25 },
+    ueberblick: { x: 0.5, y: 0.47, z: 1.08 },   // leicht gezoomt, damit der Kartenrand nicht stört
+    zitadelle:  { x: 0.5, y: 0.43, z: 1.7 },
+    haus1: { x: 0.50, y: 0.16, z: 2.3 },   // Mond, oben Mitte
+    haus2: { x: 0.79, y: 0.20, z: 2.3 },   // Blut, oben rechts
+    haus3: { x: 0.83, y: 0.58, z: 2.3 },   // Nebel, rechts
+    haus4: { x: 0.50, y: 0.82, z: 2.3 },   // Flamme, unten Mitte
+    haus5: { x: 0.15, y: 0.76, z: 2.3 },   // Dornen, unten links
+    haus6: { x: 0.16, y: 0.22, z: 2.3 },   // Raben, oben links
   };
   // Reihenfolge der Gebiete während der Fragen (verrät nichts über das Ergebnis)
   const RUNDGANG = ['haus3', 'haus1', 'haus4', 'haus6', 'haus2', 'haus5'];
+  const gebietFuerFrage = (nr) => RUNDGANG[Math.floor(nr / FRAGEN_PRO_GEBIET) % RUNDGANG.length];
 
-  const kamera = $('kamera'), karte = $('karte');
-  let aktuell = ORTE.ueberblick, treiben = null;
+  const karte = $('karte');
+  let aktuell = ORTE.vorspann, treiben = null;
 
   function transform(ort) {
     const W = window.innerWidth, H = window.innerHeight;
@@ -37,12 +52,12 @@
   function fahren(ort, dauer, kurve) {
     aktuell = ort;
     if (ruhig) dauer = 0;
-    karte.style.transition = dauer ? `transform ${dauer}ms ${kurve || 'cubic-bezier(.65,0,.35,1)'}` : 'none';
+    karte.style.transition = dauer ? `transform ${dauer}ms ${kurve || SANFT}` : 'none';
     karte.style.transform = transform(ort);
     return warte(dauer);
   }
 
-  // Langsames Schweben über der Karte, solange nichts passiert
+  // Ganz langsames Schweben, solange man auf der Karte steht
   function schweben(an) {
     clearInterval(treiben);
     if (!an || ruhig) return;
@@ -50,11 +65,11 @@
     let i = 0;
     const schritt = () => {
       i++;
-      fahren({ x: basis.x + Math.sin(i * 1.7) * 0.04, y: basis.y + Math.cos(i * 1.3) * 0.03, z: basis.z * 1.06 }, 14000, 'ease-in-out');
-      aktuell = basis;
+      karte.style.transition = `transform 22000ms ease-in-out`;
+      karte.style.transform = transform({ x: basis.x + Math.sin(i * 1.7) * 0.025, y: basis.y + Math.cos(i * 1.3) * 0.02, z: basis.z * 1.04 });
     };
     schritt();
-    treiben = setInterval(schritt, 14000);
+    treiben = setInterval(schritt, 22000);
   }
 
   // ---------- Szenen (Nahaufnahmen der Gebiete) ----------
@@ -63,9 +78,9 @@
   let sichtbar = null;
 
   function szene(haus, dauer) {
-    if (ruhig) dauer = 0;
+    if (ruhig) dauer = Math.min(dauer, 400);
     for (const [h, img] of Object.entries(szenen)) {
-      img.style.transitionDuration = (dauer == null ? 900 : dauer) + 'ms';
+      img.style.transitionDuration = dauer + 'ms';
       if (h === haus) {
         if (!img.getAttribute('src')) img.src = img.dataset.src;
         if (sichtbar !== haus) { img.classList.remove('an'); void img.offsetWidth; }   // Ken-Burns neu starten
@@ -75,7 +90,7 @@
       }
     }
     sichtbar = haus;
-    return warte(dauer == null ? 900 : dauer);
+    return warte(dauer);
   }
 
   function vorladen() {
@@ -84,59 +99,67 @@
 
   function abdunkeln(stufe) { document.body.dataset.dunkel = String(stufe); }
   function unterwegs(an) { document.body.classList.toggle('unterwegs', an); }
+  function vorspann(an) { document.body.classList.toggle('vorspann', an); }
 
   // ---------- Abläufe ----------
+
+  // Startbild: Dunkelheit und Nebel, die Karte nur als Ahnung im Hintergrund
   async function start() {
-    await fahren(ORTE.ueberblick, 0);
+    vorspann(true);
     abdunkeln(1);
+    await fahren(ORTE.vorspann, 0);
     schweben(true);
   }
 
-  async function frage(nr) {
-    const ziel = RUNDGANG[nr % RUNDGANG.length];
+  // Erste Frage: Karte klart auf, langsamer Flug zur Zitadelle, Überblendung ins erste Gebiet
+  async function aufbruch() {
     schweben(false);
     unterwegs(true);
-    window.NWU_TON.wusch(1.3);
-    if (sichtbar) {
-      await fahren(ORTE[sichtbar], 0);
-      await szene(null, 450);
-    } else {
-      await fahren(ORTE.zitadelle, 900);
-    }
-    await fahren(ORTE[ziel], 950);
+    vorladen();
+    window.NWU_TON.wusch(4);
+    vorspann(false);
+    await fahren(ORTE.zitadelle, TEMPO.vorspannFlug);
     abdunkeln(2);
-    szene(ziel, 650);
-    await warte(300);
+    await szene(gebietFuerFrage(0), TEMPO.szeneBlende);
     unterwegs(false);
+  }
+
+  // Jede weitere Frage: nur weiche Überblendung, und nur wenn das Gebiet wechselt
+  async function frage(nr) {
+    const ziel = gebietFuerFrage(nr);
+    if (ziel === sichtbar) return;
+    await szene(ziel, TEMPO.szeneBlende);
   }
 
   async function verkuenden(haus) {
     schweben(false);
     unterwegs(true);
-    if (sichtbar) { await fahren(ORTE[sichtbar], 0); }
-    window.NWU_TON.wusch(2);
-    szene(null, 600);
-    await fahren(ORTE.ueberblick, 1700);
+    await fahren(ORTE.ueberblick, 0);
     abdunkeln(1);
+    await szene(null, TEMPO.ruckblende);
+
     const zwischen = $('zwischentitel');
     zwischen.textContent = 'Morrígan hat entschieden';
     zwischen.classList.add('an');
     window.NWU_TON.donner();
-    await warte(ruhig ? 600 : 1800);
+    await warte(ruhig ? 800 : TEMPO.titelHalten);
     zwischen.classList.remove('an');
-    window.NWU_TON.wusch(2.2);
-    await fahren(ORTE[haus], 2100, 'cubic-bezier(.7,0,.2,1)');
-    document.body.classList.add('blitz');
+    await warte(900);
+
+    window.NWU_TON.wusch(TEMPO.verkuendungFlug / 1000);
+    await fahren(ORTE[haus], TEMPO.verkuendungFlug);
+    document.body.classList.add('glimmen');
     window.NWU_TON.glocke();
     abdunkeln(2);
-    await szene(haus, 300);
-    setTimeout(() => document.body.classList.remove('blitz'), 900);
+    await szene(haus, TEMPO.hausBlende);
+    setTimeout(() => document.body.classList.remove('glimmen'), 2500);
     unterwegs(false);
   }
 
   // Direkt in einem Gebiet stehen (z. B. nach Neuladen)
   async function imGebiet(haus, dunkel) {
     schweben(false);
+    vorspann(false);
     await fahren(ORTE[haus], 0);
     abdunkeln(dunkel || 2);
     await szene(haus, 0);
@@ -145,5 +168,5 @@
   window.addEventListener('resize', () => fahren(aktuell, 0));
   if (!karte.complete) karte.addEventListener('load', () => fahren(aktuell, 0));
 
-  window.NWU_FILM = { gebietFuerFrage: (nr) => RUNDGANG[nr % RUNDGANG.length], start, frage, verkuenden, imGebiet, vorladen, abdunkeln };
+  window.NWU_FILM = { gebietFuerFrage, start, aufbruch, frage, verkuenden, imGebiet, vorladen, abdunkeln };
 })();

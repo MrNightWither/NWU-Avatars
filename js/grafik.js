@@ -24,6 +24,13 @@
   };
 
   function wappen(haus) {
+    if (haus.wappenBild) {
+      const img = new Image();
+      img.src = haus.wappenBild;
+      img.alt = `Wappen ${haus.name}`;
+      img.decoding = 'async';
+      return img;
+    }
     const f = haus.css;
     return svg('0 0 120 140', `
       <defs>

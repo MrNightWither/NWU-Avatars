@@ -1,6 +1,7 @@
 // Die 6 Häuser – eine Quelle für Website und Overlay.
 // Namen, Farben, Wappen und Sprüche sind ARBEITSTITEL (Plan 15.1) und werden später ersetzt.
 // Die ids (haus1 … haus6) bleiben fest, darauf verweist die Datenbank.
+// wappenBild: fertiges Wappen aus assets/ – fehlt es, wird ein Platzhalter gezeichnet.
 window.NWU_HAEUSER = [
   {
     id: 'haus1', name: 'Haus des Mondes', kurz: 'Mond', symbol: 'mond',
@@ -13,7 +14,7 @@ window.NWU_HAEUSER = [
     ],
   },
   {
-    id: 'haus2', name: 'Haus des Blutes', kurz: 'Blut', symbol: 'blut',
+    id: 'haus2', name: 'Haus des Blutes', kurz: 'Blut', symbol: 'blut', wappenBild: 'assets/wappen-haus2.webp',
     farbe: 0xb3122e, css: '#d0243f',
     wesen: 'Treu bis in den Tod. Wer zu euch gehört, ist niemals allein.',
     sprueche: [
@@ -23,7 +24,7 @@ window.NWU_HAEUSER = [
     ],
   },
   {
-    id: 'haus3', name: 'Haus des Nebels', kurz: 'Nebel', symbol: 'nebel',
+    id: 'haus3', name: 'Haus des Nebels', kurz: 'Nebel', symbol: 'nebel', wappenBild: 'assets/wappen-haus3.webp',
     farbe: 0x9aa3b0, css: '#9aa3b0',
     wesen: 'Ungreifbar und listig. Ihr seid überall und nirgends.',
     sprueche: [
