@@ -709,8 +709,8 @@ Wenn jemand wissen will, was gespeichert ist, oder gelöscht werden möchte (Tex
 ```bash
 # Auskunft
 npx wrangler d1 execute nwu-avatare --remote --command "SELECT k.plattform, k.plattform_id, k.name, p.* FROM konto k JOIN profil p ON p.id = k.profil_id WHERE k.name_klein = 'NAME'"
-# Löschen (alles zu diesem Profil)
-npx wrangler d1 execute nwu-avatare --remote --command "DELETE FROM pruefung_antwort WHERE profil_id IN (SELECT profil_id FROM konto WHERE name_klein = 'NAME'); UPDATE pruefung SET gewinner_id = NULL, gewinner_name = NULL WHERE gewinner_id IN (SELECT profil_id FROM konto WHERE name_klein = 'NAME'); DELETE FROM profil WHERE id IN (SELECT profil_id FROM konto WHERE name_klein = 'NAME'); DELETE FROM konto WHERE name_klein = 'NAME'; DELETE FROM anmeldung WHERE name_klein = 'NAME'"
+# Löschen: erst bei der Auskunft die Spalte id ablesen (= PROFIL_ID), dann alles zu diesem Profil löschen
+npx wrangler d1 execute nwu-avatare --remote --command "DELETE FROM konto WHERE profil_id = 'PROFIL_ID'; DELETE FROM pruefung_antwort WHERE profil_id = 'PROFIL_ID'; UPDATE pruefung SET gewinner_id = NULL, gewinner_name = NULL WHERE gewinner_id = 'PROFIL_ID'; DELETE FROM profil WHERE id = 'PROFIL_ID'; DELETE FROM anmeldung WHERE name_klein = 'NAME'"
 ```
 
 Anmeldungen (mit IP-Hash) löscht der Worker nach 7 Tagen von selbst.
