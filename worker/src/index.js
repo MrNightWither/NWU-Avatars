@@ -193,24 +193,37 @@ async function rolleSetzen(req, env) {
   return antwort({ ok: r.meta.changes > 0 });
 }
 
-// ---------- Meilensteinkarte ----------
-async function reiseLesen(env, cors) {
-  const r = await env.DB.prepare("SELECT wert FROM reise WHERE schluessel = 'essenz'").first();
-  const essenz = r ? r.wert : 0;
-  const st = reiseStand(essenz);
-  return antwort({ essenz, erreicht: st.erreicht.id, naechster: st.naechster ? st.naechster.id : null, anteil: st.anteil },
-    200, { ...cors, 'Cache-Control': 'max-age=15' });
+// ---------- Meilensteinkarte (vier Pfade, einer pro Plattform) ----------
+const PFADE = REISE.pfade.map((p) => p.id);
+
+async function reiseStaende(env) {
+  const { results } = await env.DB.prepare("SELECT schluessel, wert FROM reise WHERE schluessel LIKE 'essenz:%'").all();
+  const werte = Object.fromEntries(results.map((r) => [r.schluessel.slice(7), r.wert]));
+  const pfade = {};
+  for (const id of PFADE) {
+    const st = reiseStand(werte[id] || 0, id);
+    pfade[id] = { essenz: st.essenz, erreicht: st.erreicht.id, naechster: st.naechster ? st.naechster.id : null, anteil: st.anteil, angekommen: st.angekommen };
+  }
+  return { pfade, zitadelleOffen: PFADE.every((id) => pfade[id].angekommen) };
 }
 
-async function essenzAddieren(env, menge, quelle) {
-  const vorher = (await env.DB.prepare("SELECT wert FROM reise WHERE schluessel = 'essenz'").first() || { wert: 0 }).wert;
-  const nachher = Math.max(0, vorher + menge);
+async function reiseLesen(env, cors) {
+  return antwort(await reiseStaende(env), 200, { ...cors, 'Cache-Control': 'max-age=15' });
+}
+
+async function essenzAddieren(env, pfad, menge, quelle) {
+  const vorher = await reiseStaende(env);
+  const alt = vorher.pfade[pfad].essenz;
   await env.DB.batch([
-    env.DB.prepare("INSERT INTO reise (schluessel, wert) VALUES ('essenz', ?) ON CONFLICT(schluessel) DO UPDATE SET wert = MAX(0, wert + ?)").bind(nachher, menge),
-    env.DB.prepare('INSERT INTO essenz_log (zeit, quelle, menge) VALUES (?, ?, ?)').bind(jetzt(), quelle, menge),
+    env.DB.prepare('INSERT INTO reise (schluessel, wert) VALUES (?, MAX(0, ?)) ON CONFLICT(schluessel) DO UPDATE SET wert = MAX(0, wert + ?)')
+      .bind('essenz:' + pfad, menge, menge),
+    env.DB.prepare('INSERT INTO essenz_log (zeit, pfad, quelle, menge) VALUES (?, ?, ?, ?)').bind(jetzt(), pfad, quelle, menge),
   ]);
-  const neu = REISE.meilensteine.filter((m) => m.essenz > vorher && m.essenz <= nachher).map((m) => ({ id: m.id, name: m.name }));
-  return { ok: true, essenz: nachher, neu };
+  const neuWert = Math.max(0, alt + menge);
+  const ms = REISE.pfade.find((p) => p.id === pfad).meilensteine;
+  const neu = ms.filter((m) => m.essenz > alt && m.essenz <= neuWert).map((m) => ({ id: m.id, name: m.name }));
+  const nachher = await reiseStaende(env);
+  return { ok: true, pfad, essenz: neuWert, neu, zitadelleGeoeffnet: !vorher.zitadelleOffen && nachher.zitadelleOffen };
 }
 
 // Von Streamer.bot: Ereignisse in Essenz umrechnen
@@ -218,6 +231,8 @@ async function essenzMelden(req, env) {
   const auth = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
   if (!env.STREAMERBOT_SECRET || !gleich(auth, env.STREAMERBOT_SECRET)) return fehler('Nicht erlaubt', 401);
   const d = await jsonLesen(req);
+  const pfad = (d && d.plattform) || 'twitch';
+  if (!PFADE.includes(pfad)) return fehler('Unbekannte Plattform', 400);
   const E = REISE.essenz;
   const anzahl = Math.max(0, Math.floor(Number(d && d.anzahl) || 1));
   const menge = {
@@ -229,7 +244,7 @@ async function essenzMelden(req, env) {
     stunde: E.streamStunde,
   }[d && d.quelle];
   if (menge === undefined) return fehler('Unbekannte Quelle', 400);
-  return antwort(await essenzAddieren(env, menge, d.quelle));
+  return antwort(await essenzAddieren(env, pfad, menge, d.quelle));
 }
 
 // Von Hand (Admin): beliebig dazugeben oder abziehen
@@ -237,9 +252,10 @@ async function essenzHand(req, env) {
   const auth = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
   if (!env.ADMIN_SECRET || !gleich(auth, env.ADMIN_SECRET)) return fehler('Nicht erlaubt', 401);
   const d = await jsonLesen(req);
-  const menge = Math.trunc(Number(d && d.menge));
+  if (!d || !PFADE.includes(d.plattform)) return fehler('Unbekannte Plattform', 400);
+  const menge = Math.trunc(Number(d.menge));
   if (!Number.isFinite(menge) || Math.abs(menge) > 1000000) return fehler('Ungültige Menge', 400);
-  return antwort(await essenzAddieren(env, menge, 'hand'));
+  return antwort(await essenzAddieren(env, d.plattform, menge, 'hand'));
 }
 
 // ---------- Router ----------

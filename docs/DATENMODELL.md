@@ -142,3 +142,14 @@ Wer einen fremden Namen auf der Website eingibt, kommt nicht weiter.
 Die Website läuft später auf einer eigenen Subdomain. Der Worker muss für die
 öffentlichen Endpunkte genau diese Herkunft erlauben (`Access-Control-Allow-Origin`),
 nicht `*`. `/avatare/bestaetigen` braucht kein CORS (nur Streamer.bot ruft es auf).
+
+## Meilensteinkarte (vier Pfade)
+
+Daten und Regeln: `data/meilensteine.js`. Jede Plattform hat einen eigenen Pfad mit eigener Essenz.
+
+- `GET /reise` → `{ pfade: { twitch: { essenz, erreicht, naechster, anteil, angekommen }, youtube: …, kick: …, tiktok: … }, zitadelleOffen }`
+- `POST /reise/essenz` (Streamer.bot-Secret) `{ plattform, quelle: chat|follow|sub|bits|raid|stunde, anzahl? }`
+  → `{ ok, pfad, essenz, neu: [{ id, name }], zitadelleGeoeffnet }`
+- `POST /reise/hand` (Admin-Secret) `{ plattform, menge }` – negativ zieht ab, nie unter 0
+
+Die Zitadelle öffnet sich, wenn alle vier Pfade ihren letzten Meilenstein erreicht haben.

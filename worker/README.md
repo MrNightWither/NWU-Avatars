@@ -86,21 +86,23 @@ Für Kick/YouTube später: `"twitch"` durch die Plattform ersetzen und eine eige
 
 ## Streamer.bot: Schatten-Essenz für die Meilensteinkarte
 
-Eine Action **„NWU Essenz“** mit einer C#-Sub-Action. Andere Actions rufen sie auf und setzen
-vorher zwei Argumente: `nwuQuelle` und optional `nwuAnzahl`.
+Jede Plattform hat ihren eigenen Pfad und ihre eigene Essenz. Eine Action **„NWU Essenz“** mit einer
+C#-Sub-Action; andere Actions rufen sie auf und setzen vorher die Argumente `nwuPlattform`
+(`twitch`, `youtube`, `kick`, `tiktok`), `nwuQuelle` und optional `nwuAnzahl`.
 
 | Auslöser in Streamer.bot | `nwuQuelle` | `nwuAnzahl` |
 |---|---|---|
-| Twitch → Follow | `follow` | – |
-| Twitch → Sub / Resub / Gift Sub | `sub` | Anzahl (bei Gift Bomb) |
-| Twitch → Cheer | `bits` | `%bits%` |
-| Twitch → Raid | `raid` | – |
-| Timed Action alle 60 Min. (nur live) | `stunde` | – |
+| Follow (Twitch/Kick) · Abo (YouTube) · Follow (TikTok) | `follow` | – |
+| Sub / Resub / Gift Sub · YouTube-Mitglied · Kick-Sub | `sub` | Anzahl (bei Gift Bomb) |
+| Twitch Cheer · YouTube Super Chat · Kick-Kicks · TikTok-Geschenk | `bits` | Wert in „Bits“ umgerechnet |
+| Raid / Host | `raid` | – |
+| Timed Action alle 60 Min. (pro Plattform, auf der du live bist) | `stunde` | – |
 | Timed Action alle 5 Min. (Chat-Paket) | `chat` | Zähler (siehe unten) |
 
-**Chat zählen:** Action auf *Twitch → Chat Message* mit Sub-Action *Global Variable → Increment*
-`nwuChatZaehler` (nicht persistiert). Die 5-Minuten-Action setzt `nwuAnzahl` = `~nwuChatZaehler~`,
-ruft „NWU Essenz“ auf und setzt den Zähler danach auf 0.
+**Chat zählen:** pro Plattform eine Action auf *Chat Message* mit *Global Variable → Increment*
+`nwuChat_twitch` (bzw. `_youtube`, `_kick`). Die 5-Minuten-Action ruft „NWU Essenz“ je Plattform mit
+`nwuQuelle = chat` und `nwuAnzahl` = Zählerstand auf und setzt den Zähler danach auf 0.
+TikTok kommt über deinen Tiktory-Flow (Webhook oder Streamer.bot-Ausführung) mit `nwuPlattform = tiktok`.
 
 ```csharp
 using System;
@@ -115,7 +117,10 @@ public class CPHInline
 
     public bool Execute()
     {
-        var daten = new JObject { ["quelle"] = args["nwuQuelle"].ToString() };
+        var daten = new JObject {
+            ["plattform"] = args.ContainsKey("nwuPlattform") ? args["nwuPlattform"].ToString() : "twitch",
+            ["quelle"] = args["nwuQuelle"].ToString()
+        };
         if (args.ContainsKey("nwuAnzahl") && int.TryParse(args["nwuAnzahl"].ToString(), out int n)) daten["anzahl"] = n;
         var req = new HttpRequestMessage(HttpMethod.Post, URL);
         req.Headers.Add("Authorization", "Bearer " + CPH.GetGlobalVar<string>("nwuAvatarSecret", true));
@@ -125,9 +130,11 @@ public class CPHInline
             var antwort = JObject.Parse(http.SendAsync(req).Result.Content.ReadAsStringAsync().Result);
             foreach (var m in antwort["neu"] ?? new JArray())
             {
-                CPH.SendMessage($"🗺️ Meilenstein erreicht: {m["name"]}! Die Reise geht weiter.");
+                CPH.SendMessage($"🗺️ Meilenstein auf dem {daten["plattform"]}-Pfad erreicht: {m["name"]}!");
                 // Optional: hier auf die OBS-Szene mit der Reise-Karte umschalten
             }
+            if ((bool?)antwort["zitadelleGeoeffnet"] == true)
+                CPH.SendMessage("🏰 Alle vier Pfade sind angekommen. Die Tore der Zitadelle sind offen!");
         }
         catch (Exception e) { CPH.LogWarn("NWU Essenz: " + e.Message); }
         return true;
@@ -138,9 +145,9 @@ public class CPHInline
 **Von Hand** (z. B. nach einem Event), PowerShell:
 ```powershell
 Invoke-RestMethod -Method Post -Uri "https://nwu-avatare.DEIN-NAME.workers.dev/reise/hand" `
-  -Headers @{ Authorization = "Bearer DEIN_ADMIN_SECRET" } -ContentType "application/json" -Body '{"menge": 500}'
+  -Headers @{ Authorization = "Bearer DEIN_ADMIN_SECRET" } -ContentType "application/json" -Body '{"plattform": "twitch", "menge": 500}'
 ```
-Negative Menge zieht ab.
+Negative Menge zieht ab. `plattform` ist Pflicht.
 
 ## Testen
 

@@ -19,7 +19,7 @@ Der vollständige Plan steht in [`docs/PLAN.md`](docs/PLAN.md).
 | **3** | Figuren-Overlay | 🟡 Stufe 1: Einzelbild-Figuren mit Programm-Animation (`overlay/avatare.html`), Stufe 2 (Ebenen) später |
 | 4 | Level und Items | – |
 | 5 | Portal und Terrain | 🟡 aufrechtes Portal, Figuren laufen aufs Terrain; Kämpfe und Terrain-Bilder fehlen noch |
-| ➕ | Meilensteinkarte | 🟡 `reise.html` (Website) und `reise.html?szene=1` (OBS), Schatten-Essenz im Worker; eigene Reise-Karte fehlt noch |
+| ➕ | Meilensteinkarte | 🟡 vier Pfade (Twitch, YouTube, Kick, TikTok) zur Zitadelle, `reise.html` (Website) und `reise.html?szene=1` (OBS), Essenz pro Plattform im Worker; eigene Reise-Karte fehlt noch |
 | 6 | Haus-Duelle | – |
 | 7 | Plattformen und Feinschliff | – |
 
@@ -27,7 +27,7 @@ Der vollständige Plan steht in [`docs/PLAN.md`](docs/PLAN.md).
 
 ```
 index.html            Die Ritual-Seite (Quiz → Haus → Gestalt → Bindung)
-reise.html            Meilensteinkarte (Website; mit ?szene=1 als OBS-Szene, ?essenz=… zum Testen)
+reise.html            Meilensteinkarte (Website; ?szene=1 als OBS-Szene; Test: ?twitch=5200&kick=9000 …)
 worker/               Eigener Cloudflare Worker nwu-avatare (D1), Anleitung + Streamer.bot-Code
 css/ritual.css        Aussehen (NWU-Look: Schwarz, Gold, Rajdhani/Inter)
 js/ritual.js          Ablauf der Seite
@@ -39,7 +39,7 @@ assets/               Karte und Gebiete (WebP), Originale in assets/roh/
 data/haeuser.js       Die 6 Häuser – EINE Quelle für Seite und Overlay
 data/quiz.js          24 Fragen, pro Durchgang 12 zufällig
 data/auswertung.js    Quiz-Auswertung (gleich für Seite und Worker)
-data/meilensteine.js  Reise: Meilensteine, Essenz-Regeln, Orte auf der Karte
+data/meilensteine.js  Reise: vier Pfade, Meilensteine, Essenz-Regeln, Orte auf der Karte
 overlay/              OBS-Browserquellen: avatare.html (Figuren, Stufe 1), perf-test.html (Paket 0)
 docs/                 Plan, Engine-Prüfung, Datenmodell, Gemini-Prompts, Anleitung Paket 0
 ```

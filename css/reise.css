@@ -11,18 +11,23 @@ body { background: #000; color: var(--text); font-family: Inter, system-ui, sans
 #welt { position: absolute; top: 0; left: 0; transform-origin: 0 0; will-change: transform; }
 #karte { display: block; user-select: none; }
 #pfad { position: absolute; inset: 0; overflow: visible; }
-#krone { position: absolute; width: 46px; height: 46px; margin: -52px 0 0 -23px; filter: drop-shadow(0 0 10px rgba(232,201,109,0.8)); animation: schweben 3s ease-in-out infinite; }
-@keyframes schweben { 50% { transform: translateY(-6px); } }
 
 .schleier { position: fixed; inset: 0; pointer-events: none;
   background: radial-gradient(120% 90% at 50% 45%, transparent 40%, rgba(0,0,0,0.8) 100%), linear-gradient(transparent 55%, rgba(0,0,0,0.85)); }
 
-/* Pfad und Orte */
-.weg { fill: none; stroke: rgba(232,201,109,0.35); stroke-width: 3; stroke-dasharray: 2 9; stroke-linecap: round; }
-.weg-fertig { fill: none; stroke: var(--gold-hi); stroke-width: 5; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(232,201,109,0.9)); }
-.ort circle { fill: #0b0b0e; stroke: rgba(232,201,109,0.5); stroke-width: 2.5; }
-.ort.erreicht circle { fill: var(--gold); stroke: var(--gold-hi); }
-.ort.naechster circle { stroke: var(--gold-hi); stroke-width: 3; animation: pulsieren 2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+/* Pfade (Farbe je Plattform kommt als stroke-Attribut bzw. --farbe) */
+.weg { fill: none; stroke-opacity: 0.45; stroke-width: 3; stroke-dasharray: 2 9; stroke-linecap: round; }
+.weg-fertig { fill: none; stroke-width: 5; stroke-linecap: round; filter: drop-shadow(0 0 5px rgba(0,0,0,0.8)) drop-shadow(0 0 6px currentColor); }
+.ort circle { fill: #0b0b0e; stroke: var(--farbe); stroke-opacity: 0.55; stroke-width: 2.5; }
+.ort.erreicht circle { fill: var(--farbe); stroke-opacity: 1; }
+.ort.naechster circle { stroke-opacity: 1; stroke-width: 3; animation: pulsieren 2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.marker-glanz { opacity: 0.35; animation: glimmen 2.4s ease-in-out infinite; }
+@keyframes glimmen { 50% { opacity: 0.7; } }
+.marker-text { font-family: var(--kopf); font-weight: 700; font-size: 13px; text-anchor: middle; }
+.zitadelle circle { fill: #0b0b0e; stroke: var(--gold); stroke-width: 3; }
+.zitadelle.offen circle { fill: var(--gold); stroke: var(--gold-hi); filter: drop-shadow(0 0 12px rgba(232,201,109,0.9)); animation: pulsieren 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.zitadelle text { font-family: var(--kopf); font-weight: 700; font-size: 18px; letter-spacing: 0.1em; text-transform: uppercase; fill: var(--gold-hi);
+  paint-order: stroke; stroke: rgba(0,0,0,0.9); stroke-width: 5px; text-anchor: middle; }
 @keyframes pulsieren { 50% { transform: scale(1.35); } }
 .ort text { font-family: var(--kopf); font-weight: 700; font-size: 15px; letter-spacing: 0.06em; fill: #f4ead0;
   paint-order: stroke; stroke: rgba(0,0,0,0.85); stroke-width: 4px; text-anchor: middle; }
@@ -36,17 +41,21 @@ body { background: #000; color: var(--text); font-family: Inter, system-ui, sans
 .zurueck:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 3px; }
 
 .tafel {
-  position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
-  width: min(560px, calc(100% - 32px));
+  position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%);
+  width: min(760px, calc(100% - 24px));
   background: rgba(10,10,13,0.78); border: 1px solid rgba(201,168,76,0.35); border-radius: 12px;
   padding: 14px 18px; backdrop-filter: blur(6px); text-align: center;
 }
-.tafel .klein { color: var(--muted); font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; }
-.tafel h2 { font-family: var(--kopf); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold-hi); font-size: 1.4rem; margin: 2px 0 4px; }
-.tafel .text { font-style: italic; font-size: 0.92rem; margin-bottom: 10px; }
-.balken { height: 8px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; }
-.balken span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--gold), var(--gold-hi)); transition: width 1.5s ease; }
-.zahlen { margin-top: 6px; font-size: 0.82rem; color: var(--muted); }
+.pfade { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; text-align: left; }
+.zeile { min-width: 0; }
+.z-kopf { display: flex; flex-direction: column; }
+.z-kopf b { font-family: var(--kopf); letter-spacing: 0.1em; text-transform: uppercase; color: var(--farbe); font-size: 0.95rem; }
+.z-ziel { font-size: 0.78rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.balken { height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; margin: 5px 0 3px; }
+.balken span { display: block; height: 100%; width: 0; background: var(--farbe); box-shadow: 0 0 8px var(--farbe); transition: width 1.5s ease; }
+.z-zahlen { font-size: 0.72rem; color: var(--muted); }
+.zitadelle-text { margin-top: 10px; font-style: italic; font-size: 0.85rem; color: var(--gold-hi); }
+@media (max-width: 560px) { .pfade { grid-template-columns: repeat(2, 1fr); } }
 
 .feier { position: fixed; inset: 0; display: grid; place-content: center; text-align: center; pointer-events: none; opacity: 0;
   background: radial-gradient(circle at 50% 50%, rgba(232,201,109,0.25), transparent 60%); transition: opacity 1.2s ease; }
@@ -57,8 +66,14 @@ body { background: #000; color: var(--text); font-family: Inter, system-ui, sans
 
 /* Stream-Szene (?szene=1): keine Bedienelemente, größere Schrift */
 body.szene .kopf .zurueck { display: none; }
-body.szene .tafel { width: 620px; bottom: 48px; padding: 18px 24px; }
-body.szene .tafel h2 { font-size: 2rem; }
-body.szene .tafel .text { font-size: 1.1rem; }
+body.szene .tafel { width: 980px; bottom: 44px; padding: 18px 26px; }
+body.szene .z-kopf b { font-size: 1.25rem; }
+body.szene .z-ziel { font-size: 0.95rem; }
+body.szene .z-zahlen { font-size: 0.85rem; }
+body.szene .balken { height: 9px; }
+/* In der Szene den gerade gezeigten Pfad hervorheben */
+body.szene[data-fokus]:not([data-fokus=""]) .zeile { opacity: 0.45; transition: opacity 0.8s ease; }
+body.szene[data-fokus="twitch"] .zeile:nth-child(1), body.szene[data-fokus="youtube"] .zeile:nth-child(2),
+body.szene[data-fokus="kick"] .zeile:nth-child(3), body.szene[data-fokus="tiktok"] .zeile:nth-child(4) { opacity: 1; }
 
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }

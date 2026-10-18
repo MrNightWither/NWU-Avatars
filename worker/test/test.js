@@ -93,26 +93,40 @@ assert.equal((await ruf('/avatare/anmeldung/' + r.daten.id)).daten.status, 'abge
 for (let i = 0; i < 5; i++) await anmeldung('Spammer' + i, { ip: '9.9.9.9' });
 assert.equal((await anmeldung('Spammer9', { ip: '9.9.9.9' })).status, 429);
 
-// Meilensteinkarte
-r = await ruf('/reise'); assert.equal(r.daten.essenz, 0); assert.equal(r.daten.erreicht, 'm01'); assert.equal(r.daten.naechster, 'm02');
+// Meilensteinkarte: vier Pfade
+r = await ruf('/reise');
+assert.deepEqual(Object.keys(r.daten.pfade).sort(), ['kick', 'tiktok', 'twitch', 'youtube']);
+assert.equal(r.daten.pfade.twitch.erreicht, 'tw1'); assert.equal(r.daten.zitadelleOffen, false);
 const essenz = (body, secret = 'sb-geheim-123') => ruf('/reise/essenz', { method: 'POST', body: JSON.stringify(body), headers: { Authorization: 'Bearer ' + secret } });
 assert.equal((await essenz({ quelle: 'sub' }, 'falsch')).status, 401);
 assert.equal((await essenz({ quelle: 'quatsch' })).status, 400);
-r = await essenz({ quelle: 'chat', anzahl: 500 });                   // gedeckelt auf 120
-assert.equal(r.daten.essenz, 120);
-r = await essenz({ quelle: 'bits', anzahl: 250 });                   // 2 × 10
+assert.equal((await essenz({ quelle: 'sub', plattform: 'myspace' })).status, 400);
+r = await essenz({ quelle: 'chat', anzahl: 500 });                         // ohne Plattform = twitch, gedeckelt auf 120
+assert.equal(r.daten.pfad, 'twitch'); assert.equal(r.daten.essenz, 120);
+r = await essenz({ quelle: 'bits', anzahl: 250, plattform: 'twitch' });   // + 2 × 10
 assert.equal(r.daten.essenz, 140);
-for (let i = 0; i < 14; i++) r = await essenz({ quelle: 'sub' });   // 14 × 60 = 840 → 980
-assert.equal(r.daten.essenz, 980); assert.deepEqual(r.daten.neu, []);
-r = await essenz({ quelle: 'follow' });                               // 995
-r = await essenz({ quelle: 'stunde' });                               // 1095 → Sumpf erreicht
-assert.equal(r.daten.essenz, 1095); assert.deepEqual(r.daten.neu.map((m) => m.id), ['m02']);
-r = await ruf('/reise'); assert.equal(r.daten.erreicht, 'm02'); assert.ok(r.daten.anteil > 0 && r.daten.anteil < 0.1);
-const hand = (menge, secret = 'admin-geheim-456') => ruf('/reise/hand', { method: 'POST', body: JSON.stringify({ menge }), headers: { Authorization: 'Bearer ' + secret } });
-assert.equal((await hand(5000, 'sb-geheim-123')).status, 401, 'Streamer.bot-Secret darf nicht von Hand setzen');
-r = await hand(6000); assert.deepEqual(r.daten.neu.map((m) => m.id), ['m03', 'm04', 'm05']);
-r = await hand(-999999); assert.equal(r.daten.essenz, 0, 'nie unter 0');
-assert.equal(env.DB.roh.prepare('SELECT COUNT(*) AS n FROM essenz_log').get().n, 20);
+for (let i = 0; i < 22; i++) r = await essenz({ quelle: 'sub', plattform: 'twitch' });   // + 1320 = 1460
+assert.equal(r.daten.essenz, 1460); assert.deepEqual(r.daten.neu, []);
+r = await essenz({ quelle: 'follow', plattform: 'twitch' });             // 1475
+r = await essenz({ quelle: 'raid', plattform: 'twitch' });               // 1555 → Gräberklippe
+assert.deepEqual(r.daten.neu.map((m) => m.id), ['tw2']);
+r = await essenz({ quelle: 'stunde', plattform: 'kick' });               // Kick getrennt
+assert.equal(r.daten.essenz, 100);
+r = await ruf('/reise');
+assert.equal(r.daten.pfade.twitch.erreicht, 'tw2'); assert.equal(r.daten.pfade.kick.essenz, 100); assert.equal(r.daten.pfade.youtube.essenz, 0);
+const hand = (plattform, menge, secret = 'admin-geheim-456') => ruf('/reise/hand', { method: 'POST', body: JSON.stringify({ plattform, menge }), headers: { Authorization: 'Bearer ' + secret } });
+assert.equal((await hand('twitch', 5000, 'sb-geheim-123')).status, 401, 'Streamer.bot-Secret darf nicht von Hand setzen');
+assert.equal((await hand(undefined, 5000)).status, 400, 'Plattform ist Pflicht');
+r = await hand('youtube', 9000); assert.deepEqual(r.daten.neu.map((m) => m.id), ['yt2', 'yt3', 'yt4']);
+// Zitadelle öffnet sich erst, wenn alle vier angekommen sind
+await hand('twitch', 20000); await hand('youtube', 20000); r = await hand('kick', 20000);
+assert.equal(r.daten.zitadelleGeoeffnet, false);
+r = await hand('tiktok', 20000);
+assert.equal(r.daten.zitadelleGeoeffnet, true);
+assert.equal((await ruf('/reise')).daten.zitadelleOffen, true);
+r = await hand('kick', -999999); assert.equal(r.daten.essenz, 0, 'nie unter 0');
+assert.equal((await ruf('/reise')).daten.zitadelleOffen, false);
+assert.ok(env.DB.roh.prepare("SELECT COUNT(*) AS n FROM essenz_log WHERE pfad = 'kick'").get().n === 3);
 
 // Unbekannter Pfad
 assert.equal((await ruf('/gibtsnicht')).status, 404);

@@ -49,11 +49,13 @@ CREATE TABLE IF NOT EXISTS reise (
   schluessel    TEXT PRIMARY KEY,
   wert          INTEGER NOT NULL
 );
-INSERT OR IGNORE INTO reise (schluessel, wert) VALUES ('essenz', 0);
+-- eine Zeile pro Plattform-Pfad
+INSERT OR IGNORE INTO reise (schluessel, wert) VALUES ('essenz:twitch', 0), ('essenz:youtube', 0), ('essenz:kick', 0), ('essenz:tiktok', 0);
 
 -- Protokoll, woher die Essenz kam (zum Nachvollziehen)
 CREATE TABLE IF NOT EXISTS essenz_log (
   zeit          TEXT NOT NULL,
+  pfad          TEXT NOT NULL,
   quelle        TEXT NOT NULL,
   menge         INTEGER NOT NULL
 );

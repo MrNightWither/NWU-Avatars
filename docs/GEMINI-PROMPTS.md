@@ -260,29 +260,26 @@ wichtigsten Figuren von einem Zeichner sauber zerlegen.
 
 ---
 
-## 6. Die Reise-Karte (Meilensteinkarte)
+## 6. Die Reise-Karte (Meilensteinkarte, vier Pfade)
 
 **Datei:** `reise-karte.png` · Format **16:9**, so groß wie möglich
 
-Am besten deine Weltkarte (`karte.png`) **hochladen**, damit Stil und Gebiete passen, und dazu:
+Vier Plattformen, vier Pfade, ein Ziel: Jeder Pfad kommt aus einer Ecke und führt zur Zitadelle
+in der Mitte. Am besten deine Weltkarte (`karte.png`) **hochladen**, damit Stil und Gebiete passen, und dazu:
 
 ```
-Same art style and world as the uploaded map, but a NEW map designed as a journey.
-A long winding golden path leads from the bottom-left corner across the whole map
-to a black citadel with golden spires at the top-right.
-Along the path, nine clearly visible landmarks in this order, evenly spaced:
-1. ruined stone arch at the start (bottom-left)
-2. a cursed foggy swamp with dead trees
-3. a circle of ancient glowing rune stones
-4. a narrow path through thick grey mist
-5. a stone bridge over a chasm, with ravens on it
-6. a black forge glowing with lava
-7. a river ford with blood-red water
-8. a silver moonlit lake with towers
-9. the gates of the black citadel (end, top-right)
-The path must be clearly readable and never cross itself.
+Same art style and world as the uploaded map, but a NEW map designed as a journey with
+FOUR separate paths. In the exact center: a black citadel with golden spires on a hill,
+with four gates facing the four corners.
+Four winding paths, each starting in one corner of the map and ending at one gate:
+- from the top-left corner, through raven cliffs and graveyards (violet tones),
+- from the top-right corner, through a red-stone city and a blood-red river (crimson tones),
+- from the bottom-left corner, through a thorny root forest (dark green tones),
+- from the bottom-right corner, through misty marshes and sunken ruins (grey-cyan tones).
+Each path has four clearly visible landmarks evenly spaced along it before reaching its gate.
+The four paths never cross each other and are clearly readable as roads.
 Night, atmospheric, dark gothic fantasy, gold accents. No text, no labels, no letters.
 ```
 
-Danach setze ich die 9 Orte genau auf die Landmarken. Namen, Texte und Essenz-Schwellen
+Danach setze ich die Orte genau auf die Landmarken. Namen, Texte und Essenz-Schwellen
 stehen in `data/meilensteine.js` und lassen sich jederzeit ändern.
