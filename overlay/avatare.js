@@ -392,6 +392,8 @@
     const neu = figurErzeugen(vorlageFuer(profil.haus, profil.figur, u.id), { id: u.id, name: u.name, mod: u.mod || ['waechter', 'koenigin'].includes(profil.rolle),
       level: profil.level, aussehen: profil.aussehen, s: fi.s, rolle: profil.rolle });
     setTimeout(() => levelUp(neu), 900);
+    // Willkommen: das eigene Haus läuft zur neuen Gestalt und jubelt
+    setTimeout(() => sammeln(neu, figuren.filter((f) => f.vorlage.haus === neu.vorlage.haus), 8, true), 2200);
   }
 
   async function chatter(u, art) {
@@ -420,7 +422,8 @@
       const duellRuf = text.match(/^!duell\s+@?([a-z0-9_]{2,25})/);
       if (duellRuf) { duellStarten(fi, figuren.find((f) => !f.entfernen && f.name === duellRuf[1])); return; }
       if (text.startsWith('!lurk')) { fi.lurker = true; fi.zustandZeit = 0; }
-      else if (text.startsWith('!wache') && fi.mod) { fi.wache = true; }
+      else if (text.startsWith('!ruf') && !fi.ungebunden) { hausRuf(fi); }
+      else if (text.startsWith('!wache') && fi.mod) { fi.wache = true; sammeln(fi, figuren.filter((f) => f.mod), 8, false); }
       else if (art === 'nachricht') { if (fi.lurker && !text.startsWith('!')) { fi.lurker = false; fi.zustandZeit = 0; } leuchten(fi); }
       if (fi.ungebunden) bindungPruefen(fi, u);
       return;
@@ -582,6 +585,103 @@
   pokalLaden();
   setInterval(pokalLaden, 10 * 60 * 1000);
 
+  // ---------- Flüstern aus dem Westen: seltenes Zeichen der verborgenen Häuser (Raben, Dornen) ----------
+  // Am linken Bildrand: Nebel, zwei violette Augen und entweder ein Rabe, der davonfliegt, oder eine Dornenranke.
+  const laufende = [];                      // kleine Abläufe mit eigener update(dt)-Funktion
+  const FLUESTERN = (CFG.fluesternMinuten ?? 25) * 60;
+  let fluesterIn = FLUESTERN * (0.6 + Math.random() * 0.8);
+  function fluestern(art) {
+    if (S.sparmodus) return;
+    art = art || (Math.random() < 0.5 ? 'rabe' : 'dornen');
+    const y = H * (0.25 + Math.random() * 0.5);
+    const box = new PIXI.Container();
+    effektEbene.addChild(box);
+    const nebel = new PIXI.Sprite(T.glanz); nebel.anchor.set(0.5); nebel.tint = 0x8a849a; nebel.scale.set(5, 4); nebel.position.set(0, y);
+    const augen = new PIXI.Graphics().circle(-9, 0, 3).circle(9, 0, 3).fill(0xc9a8ff);
+    augen.position.set(34, y - 10); augen.alpha = 0;
+    box.addChild(nebel, augen);
+    let t = 0, ende = 6;
+    let figur = null;
+    if (art === 'rabe') {
+      // Rabe: Körper, Kopf mit Schnabel, Schwanz, zwei Flügel (schlagen über scale.y)
+      const linie = { width: 1.2, color: 0x7d6ca8 }, schwarz = 0x15121e;
+      const fluegel = () => new PIXI.Graphics().poly([0, 0, -5, -7, -16, -20, -9, -19, -2, -12, 6, -14, 3, -4]).fill(schwarz).stroke(linie);
+      const hinten = fluegel(), vorne = fluegel();
+      hinten.position.set(-2, -2); hinten.tint = 0x9a90b0;
+      vorne.position.set(1, -2);
+      const koerper = new PIXI.Graphics()
+        .poly([-12, -2, -24, -6, -21, 1, -24, 5, -12, 3]).fill(schwarz).stroke(linie)
+        .ellipse(0, 0, 13, 5).fill(schwarz).stroke(linie)
+        .circle(12, -3, 5).fill(schwarz).stroke(linie)
+        .poly([16, -4, 24, -2, 16, -1]).fill(0x2a2433).stroke(linie)
+        .circle(13, -4, 1.3).fill(0xc9a8ff);
+      figur = new PIXI.Container();
+      figur.addChild(hinten, koerper, vorne);
+      figur.fluegel = [hinten, vorne];
+      figur.position.set(-30, y + 10); figur.scale.set(1.8);
+      box.addChild(figur);
+    } else {
+      figur = new PIXI.Graphics();
+      box.addChild(figur);
+    }
+    laufende.push((dt) => {
+      t += dt;
+      const ein = Math.min(1, t / 1.2), aus = Math.max(0, Math.min(1, (ende - t) / 1.5));
+      nebel.alpha = 0.55 * ein * aus;
+      augen.alpha = (t > 0.8 && t < 3.2 ? 1 : 0) * aus * (0.7 + 0.3 * Math.sin(t * 9));
+      if (art === 'rabe') {
+        const u = Math.max(0, t - 1.6);
+        figur.x = -30 + u * 210; figur.y = y + 10 - u * 70 - Math.sin(u * 3) * 8;
+        const schlag = Math.sin(u * 10);
+        figur.fluegel.forEach((f, i) => { f.scale.y = schlag * (i ? 1 : 0.85); });
+        figur.rotation = -0.25 + Math.sin(u * 3) * 0.06;
+        figur.alpha = Math.min(1, u * 2) * aus;
+      } else {
+        // Ranke wächst herein und zieht sich wieder zurück
+        const laenge = 260 * Math.min(1, Math.max(0, t - 0.8) / 2) * (t > ende - 1.8 ? Math.max(0, (ende - t) / 1.8) : 1);
+        figur.clear();
+        if (laenge > 2) {
+          const pkt = (x) => ({ x, y: y + 18 + Math.sin(x / 34) * 12 });
+          figur.moveTo(0, pkt(0).y);
+          for (let x = 6; x <= laenge; x += 6) figur.lineTo(x, pkt(x).y);
+          figur.stroke({ width: 5, color: 0x1c2a14 });
+          for (let x = 24; x < laenge; x += 30) {
+            const p = pkt(x), s = x % 60 ? -1 : 1;
+            figur.poly([p.x - 4, p.y, p.x + 4, p.y, p.x, p.y + s * 11]).fill(0x2e4220);
+          }
+        }
+      }
+      if (t >= ende) { box.destroy({ children: true }); return false; }
+      return true;
+    });
+  }
+
+  // ---------- Sammeln: Haus-Ruf (!ruf), Wächter-Wache (!wache), Willkommen für Neu-Gebundene ----------
+  // Die anderen laufen abwechselnd links und rechts neben die Person, schauen zu ihr und jubeln (oder halten Wache).
+  const RUF_PAUSE = 180;                      // Sekunden pro Haus
+  const rufPause = {};
+  const sammelbar = (f) => f && f.root && !f.entfernen && !f.versteckt && !f.ungebunden && f.modus === 'rahmen';
+  function sammeln(mitte, mitglieder, dauer, jubeln) {
+    const andere = mitglieder.filter((f) => f !== mitte && sammelbar(f));
+    if (!andere.length || !sammelbar(mitte)) return 0;
+    const abstand = S.hoehe * 0.55;
+    andere.sort((a, b) => Math.abs(norm(a.s - mitte.s)) - Math.abs(norm(b.s - mitte.s)));
+    [mitte, ...andere].forEach((f, i) => {
+      const seite = i === 0 ? 0 : (i % 2 ? -1 : 1) * Math.ceil(i / 2);
+      f.modus = 'formation'; f.zielS = mitte.s + seite * abstand; f.formZiel = i === 0 ? undefined : mitte.s;
+      f.formEnde = zeit + dauer; f.formJubel = jubeln; f.lurkerVorher = f.lurker; f.lurker = false;
+    });
+    return andere.length;
+  }
+  function hausRuf(fi) {
+    const haus = fi.vorlage.haus;
+    if ((rufPause[haus] || 0) > zeit) return;
+    if (sammeln(fi, figuren.filter((f) => f.vorlage.haus === haus), 9, true)) {
+      rufPause[haus] = zeit + RUF_PAUSE;
+      leuchten(fi);
+    }
+  }
+
   // ---------- Level-Up ----------
   const lvStil = new PIXI.TextStyle({ fontFamily: 'Georgia, serif', fontSize: 15, fontWeight: 'bold', fill: 0xe8c96d, stroke: { color: 0x1a1208, width: 3 }, letterSpacing: 1 });
   function levelUp(fi) {
@@ -644,6 +744,8 @@
     zeit += dt;
     portalAblauf(dt);
     duellSchritt(dt);
+    for (let i = laufende.length - 1; i >= 0; i--) if (!laufende[i](dt)) laufende.splice(i, 1);
+    if (FLUESTERN > 0 && (fluesterIn -= dt) <= 0) { fluestern(); fluesterIn = FLUESTERN * (0.6 + Math.random() * 0.8); }
     portalAktualisieren(grossesPortal, dt, zeit);
     for (let i = kleinePortale.length - 1; i >= 0; i--) {
       const k = kleinePortale[i];
@@ -684,11 +786,13 @@
           let d = norm(fi.zielS - fi.s); if (d > umfang / 2) d -= umfang;
           if (Math.abs(d) > 3) { fi.richtung = Math.sign(d); fi.zustand = 'laufen'; fi.s += Math.sign(d) * Math.min(Math.abs(d), 230 * dt); }
           else {
-            fi.richtung = fi.root.x < R.x + R.w / 2 ? 1 : -1; fi.zustand = 'idle';
+            if (fi.formZiel !== undefined) { let z = norm(fi.formZiel - fi.s); if (z > umfang / 2) z -= umfang; fi.richtung = Math.abs(z) < 2 ? fi.richtung : Math.sign(z); }
+            else fi.richtung = fi.root.x < R.x + R.w / 2 ? 1 : -1;
+            fi.zustand = 'idle';
             if (fi.formJubel) fi.jubelBis = zeit + 0.3;
             if (fi.formJubel && fi.sprung < 0 && Math.random() < dt * 1.2) huepfen(fi);
           }
-          if (zeit > fi.formEnde) { fi.modus = 'rahmen'; fi.lurker = fi.lurkerVorher; fi.zustandZeit = 0; }
+          if (zeit > fi.formEnde) { fi.modus = 'rahmen'; fi.lurker = fi.lurkerVorher; fi.zustandZeit = 0; fi.formZiel = undefined; }
         } else if (fi.g.laufen > 0.05) {
           fi.s += fi.richtung * fi.tempo * dt * fi.g.laufen;
         }
@@ -790,7 +894,7 @@
     hud.innerHTML =
       `<b>NWU Avatare</b> · ${Math.round(app.ticker.FPS)} FPS · ${da.filter((f) => !f.versteckt).length}/${da.length} Figuren · Chat: ${chatStatus}` +
       `${S.sparmodus ? ' · <b>Sparmodus</b>' : ''}${EV.phase !== 'aus' ? ' · Portal: ' + EV.phase : ''}` +
-      `<div class="klein">T Test-Chatter · M Nachricht · K !lurk · R Raid · P Portal · U Level-Up · G Gruppenbild · J Jubeln · D Duell · S Sparmodus · 1/2/3 Demo · H Anzeige</div>`;
+      `<div class="klein">T Test-Chatter · M Nachricht · K !lurk · R Raid · P Portal · U Level-Up · G Gruppenbild · J Jubeln · D Duell · F Haus-Ruf · W Westen · S Sparmodus · 1/2/3 Demo · H Anzeige</div>`;
   }
 
   let testNr = 0;
@@ -818,6 +922,8 @@
     else if (k === 'g') formation(12, false);
     else if (k === 'p') { if (EV.phase === 'aus') portalStarten(); else portalBeenden(); }
     else if (k === 'u') { const f = zufallsFigur(); if (f) levelUp(f); }
+    else if (k === 'w') fluestern();
+    else if (k === 'f') { const f = zufallsFigur(); if (f) hausRuf(f); }
     else if (k === 'd') { const da = figuren.filter(darfDuellieren); if (da.length > 1) duellStarten(da[0], da[1 + Math.floor(Math.random() * (da.length - 1))]); }
     else if (k === 'j') figuren.forEach((f, i) => setTimeout(() => { huepfen(f); f.jubelBis = zeit + 2.5; }, i * 60));
     else if (k === 's') { S.sparmodus = !S.sparmodus; sichtbarkeit(); }
@@ -828,5 +934,5 @@
   });
 
   demoSetzen(S.demo);
-  window.NWU = { S, figuren, chatter, formation, portalStarten, portalBeenden, levelUp, EV, demoSetzen, figurErzeugen, VORLAGEN, duellStarten, duellLaeuft: () => !!duell };
+  window.NWU = { S, figuren, chatter, hausRuf, sammeln, fluestern, formation, portalStarten, portalBeenden, levelUp, EV, demoSetzen, figurErzeugen, VORLAGEN, duellStarten, duellLaeuft: () => !!duell };
 })();

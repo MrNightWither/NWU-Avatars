@@ -99,11 +99,17 @@ seine echte Figur aus dem Ritual, sonst eine zufällige.
 **Ehrenduelle:** `!duell @Name` – beide laufen am Rahmen aufeinander zu, drei Schlagabtausche mit Funken, der Sieger
 jubelt, der Verlierer setzt sich kurz. Höheres Level hilft etwas (höchstens 70 : 30). Pro Person alle 2 Minuten.
 
+**Haus-Ruf:** `!ruf` – alle Figuren des eigenen Hauses laufen zur rufenden Person und jubeln (pro Haus alle 3 Minuten).
+**Wächter-Wache:** schreibt ein Mod `!wache`, stellen sich die anderen Mods für einige Sekunden neben ihn.
+**Willkommen:** wird eine Silhouette durch das Ritual zur echten Gestalt, läuft ihr Haus zu ihr und begrüßt sie.
+**Flüstern aus dem Westen:** etwa alle 25 Minuten (`fluesternMinuten` in `config.js`) erscheint am linken Rand Nebel
+mit violetten Augen, dazu ein Rabe oder eine Dornenranke – ein leiser Hinweis auf die verborgenen Häuser.
+
 **Zeichen der Zitadelle:** Mods (Wächter) tragen einen goldenen Ring zu ihren Füßen, die Rolle `koenigin`
 (Partnerin) zusätzlich Diadem und violetten Schimmer. Das Siegerhaus des Vormonats trägt Kronen.
 
 Tasten (OBS: Rechtsklick → Interagieren): `T` Test-Chatter, `M` Nachricht, `K` !lurk, `R` Raid,
-`P` Portal auf/zu, `U` Level-Up (zufällige Figur), `G` Gruppenbild, `J` alle jubeln, `D` Duell, `S` Sparmodus,
+`P` Portal auf/zu, `U` Level-Up (zufällige Figur), `G` Gruppenbild, `J` alle jubeln, `D` Duell, `F` Haus-Ruf, `W` Flüstern aus dem Westen, `S` Sparmodus,
 `1/2/3` = 4/12/30 Demo-Figuren, `H` Anzeige.
 
 **Aussehen und Freischaltungen:** Die Haare jeder Figur sind eine eigene Ebene und werden pro Person

@@ -35,6 +35,9 @@ window.NWU_CONFIG = {
   // Mods (Wächter) bleiben länger; mit !wache bis zum Ende
   waechterMinuten: 120,
 
+  // Flüstern aus dem Westen: ungefähr alle X Minuten (zufällig ±40 %), 0 = aus. Taste W zum Testen.
+  fluesternMinuten: 25,
+
   // Großes Portal: automatisch alle X Minuten (0 = nur per Taste P), Dauer auf dem Terrain
   portal: { alleMinuten: 20, dauerSekunden: 150 },
 
