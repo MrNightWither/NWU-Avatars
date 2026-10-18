@@ -92,6 +92,7 @@
       b.addEventListener('click', () => antworten(a.id, b));
       return b;
     }));
+    $('b-zurueck').hidden = nr === 0;
     zeige('s-quiz');
     $('s-quiz').classList.remove('blende');
     if (modus === 'start') await film;
@@ -107,8 +108,34 @@
     await warte(650);
     if (st.antworten.length < st.fragen.length) { frageZeigen('weiter'); return; }
     $('balken').style.width = '100%';
-    await verkuenden();
+    bereitZeigen();
   }
+
+  // Verdrückt? Eine Frage zurück (die letzte Antwort wird gelöscht, die Frage neu gezeigt)
+  let zurueckGesperrt = false;
+  async function zurueck() {
+    if (zurueckGesperrt || !st.antworten.length || st.haus) return;
+    zurueckGesperrt = true;
+    st.antworten.pop();
+    sichern();
+    TON.klick();
+    await frageZeigen('weiter');
+    zurueckGesperrt = false;
+  }
+  $('b-zurueck').addEventListener('click', zurueck);
+
+  // Nach der letzten Frage: erst bestätigen, dann verkündet Morrígan (Haus ist danach endgültig)
+  function bereitZeigen() {
+    zeige('s-bereit');
+    $('t-bereit').focus({ preventScroll: true });
+  }
+  $('b-letzte').addEventListener('click', zurueck);
+  $('b-verkuenden').addEventListener('click', async () => {
+    if (st.haus) return;
+    $('b-verkuenden').disabled = true;
+    await verkuenden();
+    $('b-verkuenden').disabled = false;
+  });
 
   // ---------- 3. Verkündung ----------
   async function verkuenden() {
@@ -163,6 +190,7 @@
   }
 
   $('b-zur-bindung').addEventListener('click', () => { bindungZeigen(); zeige('s-bindung'); });
+  $('b-andere-gestalt').addEventListener('click', () => { figurenZeigen(); zeige('s-figur'); });
 
   // ---------- 5. Bindung ----------
   function bindungZeigen() {
@@ -288,5 +316,6 @@
   else if (st.figur && st.haus) { imHaus(); bindungZeigen(); zeige('s-bindung'); }
   else if (st.haus) hausZeigen(false);
   else if (st.fragen && st.antworten && st.antworten.length < st.fragen.length) frageZeigen('direkt');
+  else if (st.fragen && st.antworten && st.antworten.length === st.fragen.length) { FILM.imGebiet(FILM.gebietFuerFrage(st.antworten.length - 1), 2); bereitZeigen(); }
   else FILM.start();
 })();

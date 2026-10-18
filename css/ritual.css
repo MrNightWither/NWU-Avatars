@@ -273,3 +273,11 @@ body[data-dunkel="1"] .schleier {
 .reise-link { color: var(--gold); text-decoration: none; font-size: 0.9rem; letter-spacing: 0.04em; text-shadow: 0 2px 10px #000; }
 .reise-link:hover { color: var(--gold-hi); }
 .reise-link:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 3px; }
+
+/* Zurück-Knöpfe: dezent, damit sie nicht mit den Antworten verwechselt werden */
+.zurueck-knopf { display: block; margin: 18px auto 0; background: none; border: 0; color: var(--gold); font: inherit;
+  font-size: 0.9rem; letter-spacing: 0.04em; cursor: pointer; opacity: 0.85; text-shadow: 0 2px 10px #000; }
+.zurueck-knopf:hover { opacity: 1; color: var(--gold-hi); }
+.zurueck-knopf:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 3px; }
+#s-bereit .knopf { margin-top: 18px; }
+.zurueck-knopf[hidden] { display: none; }

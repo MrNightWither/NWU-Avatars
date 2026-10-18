@@ -58,6 +58,16 @@
     <p class="zaehler" id="zaehler"></p>
     <h2 class="frage" id="t-frage" tabindex="-1"></h2>
     <div class="antworten" id="antworten"></div>
+    <button class="zurueck-knopf" id="b-zurueck" type="button" hidden>← Vorige Frage</button>
+  </section>
+
+  <!-- 2b. Alle Fragen beantwortet: noch einmal Zeit, bevor Morrígan entscheidet -->
+  <section class="schritt" id="s-bereit" hidden aria-labelledby="t-bereit">
+    <p class="zaehler">Alle Fragen beantwortet</p>
+    <h2 class="frage" id="t-bereit" tabindex="-1">Morrígan blickt in die Kugel …</h2>
+    <p class="unter">Bist du bereit für ihr Urteil?</p>
+    <button class="knopf" id="b-verkuenden" type="button">Morrígans Urteil hören</button>
+    <button class="zurueck-knopf" id="b-letzte" type="button">← Letzte Antwort ändern</button>
   </section>
 
   <!-- 3. Verkündung -->
@@ -96,6 +106,7 @@
     </div>
     <p class="warnung">Nach der Bestätigung sind Haus und Gestalt fest.</p>
     <button class="knopf" id="b-code" type="button">Code anfordern</button>
+    <button class="zurueck-knopf" id="b-andere-gestalt" type="button">← Andere Gestalt wählen</button>
   </section>
 
   <!-- 6. Code im Chat schreiben -->
