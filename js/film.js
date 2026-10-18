@@ -37,6 +37,9 @@
   const gebietFuerFrage = (nr) => RUNDGANG[Math.floor(nr / FRAGEN_PRO_GEBIET) % RUNDGANG.length];
 
   const karte = $('karte');
+  // Große Karte nur für große Bildschirme, Handys bekommen die kleine (spart Speicher und Daten)
+  const pixel = Math.max(screen.width, screen.height) * (window.devicePixelRatio || 1);
+  karte.src = pixel > 2200 ? karte.dataset.gross : karte.dataset.klein;
   let aktuell = ORTE.vorspann, treiben = null;
 
   function transform(ort) {
