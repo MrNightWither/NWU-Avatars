@@ -73,7 +73,9 @@ assert.equal((await anmeldung('MrNightWither')).status, 409, 'Name schon gebunde
 
 // Profil für das Overlay
 r = await ruf('/avatare/profil?plattform=twitch&id=111');
-assert.deepEqual({ ...r.daten }, { gefunden: true, haus: 'haus1', rolle: null, figur: 'b', level: 1, ruhm: 0, aussehen: {}, hausName: 'Haus des Mondes', jahrestag: 0 });
+const { seit, ...ohneDatum } = r.daten;
+assert.deepEqual({ ...ohneDatum }, { gefunden: true, name: 'mrnightwither', haus: 'haus1', rolle: null, figur: 'b', level: 1, ruhm: 0, aussehen: {}, hausName: 'Haus des Mondes', jahrestag: 0, platz: 1 });
+assert.match(seit, /^\d{4}-\d{2}-\d{2}$/);
 assert.equal((await ruf('/avatare/profil?plattform=twitch&name=MRNIGHTWITHER')).daten.gefunden, true);
 assert.equal((await ruf('/avatare/profil?plattform=twitch&name=niemand')).daten.gefunden, false);
 
@@ -184,6 +186,8 @@ const vorEinemJahr = new Date(); vorEinemJahr.setUTCFullYear(vorEinemJahr.getUTC
 env.DB.roh.prepare("UPDATE profil SET erstellt_am = ? WHERE id = (SELECT profil_id FROM konto WHERE plattform_id = '111')").run(vorEinemJahr.toISOString());
 assert.equal((await ruf('/avatare/profil?plattform=twitch&id=111')).daten.jahrestag, 1);
 assert.equal((await ruf('/avatare/profil?plattform=twitch&id=222')).daten.jahrestag, 0);
+const p111 = (await ruf('/avatare/profil?plattform=twitch&id=111')).daten, p222 = (await ruf('/avatare/profil?plattform=twitch&id=222')).daten;
+assert.equal(p111.platz + p222.platz, 3, 'Plätze 1 und 2 im Haus des Mondes');
 
 // Abgelaufener Code
 r = await anmeldung('SpaeterLeser', { ip: '5.5.5.5' });

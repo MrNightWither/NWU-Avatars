@@ -34,6 +34,8 @@ erfolge.html          Erfolgskarte Follower/Unterstützer (?szene=1 für OBS; Te
 stufen.html           Alle Stufen bis Level 100 und „Dein Stand“ per Chat-Name (Test: ?level=12&haus=haus2&figur=c)
 chronik.html          Haus-Pokal (Kampf um das Banner) und die zehn Ruhmreichsten jedes Hauses
 prolog.html           Prolog „Die Spaltung“: Morrígan erzählt die Geschichte (Stimme: assets/stimme/)
+figur.html            Eigene Figurenseite zum Teilen: ?p=twitch&n=Name (Test: ?beispiel=1)
+haus.html             Hausseiten: ?h=haus1 … haus4 (haus5/haus6 zeigen nur die Legende der Verborgenen)
 worker/               Eigener Cloudflare Worker nwu-avatare (D1), Anleitung + Streamer.bot-Code
 css/ritual.css        Aussehen (NWU-Look: Schwarz, Gold, Rajdhani/Inter)
 js/ritual.js          Ablauf der Seite

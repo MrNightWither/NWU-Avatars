@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Haus — NightWither Unity</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self' https://*.workers.dev; base-uri 'none'; form-action 'none'">
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="preload" href="fonts/rajdhani-700.woff" as="font" type="font/woff" crossorigin>
+<link rel="stylesheet" href="css/stufen.css">
+<link rel="stylesheet" href="css/seiten.css">
+<link rel="stylesheet" href="css/chronik.css">
+</head>
+<body>
+<div class="hintergrund" id="hintergrund" aria-hidden="true"></div>
+
+<header class="kopf haus-kopf">
+  <a class="zurueck" href="./">← Zum Ritual</a>
+  <img class="wappen" id="h-wappen" alt="">
+  <h1 id="h-name">Haus</h1>
+  <p class="unter" id="h-reiter"></p>
+</header>
+
+<main class="inhalt">
+  <p class="wesen" id="h-wesen"></p>
+  <p class="beispiel" id="beispiel" hidden>Beispiel-Zahlen: Sobald der Server läuft, stehen hier die echten.</p>
+
+  <section class="zahlen" id="h-zahlen" aria-label="Das Haus in Zahlen">
+    <div><b id="z-mitglieder">–</b><span>Mitglieder</span></div>
+    <div><b id="z-ruhm">–</b><span>Ruhm diesen Monat</span></div>
+    <div><b id="z-platz">–</b><span>Platz im Pokal</span></div>
+  </section>
+
+  <section class="karte geschichte" aria-labelledby="t-geschichte">
+    <h2 id="t-geschichte">Seit der Spaltung</h2>
+    <p id="h-geschichte"></p>
+  </section>
+
+  <section class="karte" id="gestalten-karte" aria-labelledby="t-gestalten">
+    <h2 id="t-gestalten">Die vier Gestalten</h2>
+    <div class="gestalten" id="h-gestalten"></div>
+  </section>
+
+  <section class="karte" aria-labelledby="t-sprueche">
+    <h2 id="t-sprueche">Was Morrígan über sie sagt</h2>
+    <ul class="sprueche" id="h-sprueche"></ul>
+  </section>
+
+  <section class="karte liste" id="liste-karte" aria-labelledby="t-liste">
+    <h2 id="t-liste">Die Ruhmreichsten</h2>
+    <ol id="h-liste"></ol>
+  </section>
+
+  <nav class="links" id="h-andere" aria-label="Andere Häuser"></nav>
+</main>
+
+<script src="data/haeuser.js"></script>
+<script src="js/einstellungen.js"></script>
+<script src="js/haus.js"></script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+/* Figurenseite und Hausseiten: bauen auf css/stufen.css auf */
+.beispiel { text-align: center; font-size: 0.82rem; color: var(--gold); border: 1px dashed rgba(201,168,76,0.4); border-radius: 8px; padding: 6px 10px; }
+.hintergrund { background-size: cover; background-position: center; }
+.links { text-align: center; font-size: 0.9rem; }
+.links a, .haus a { color: inherit; text-decoration: none; }
+.links a { color: var(--gold); }
+
+/* Figurenseite */
+.gestalt { display: grid; grid-template-columns: minmax(150px, 240px) 1fr; gap: 20px; align-items: center; }
+.gestalt .gross { width: 100%; height: auto; filter: drop-shadow(0 10px 24px rgba(0,0,0,0.7)); }
+.g-typ { font-size: 0.9rem; color: #d8d2c4; margin: 2px 0 6px; }
+.abzeichen { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+.werte { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
+.werte div { background: rgba(255,255,255,0.04); border-radius: 8px; padding: 6px 8px; }
+.werte dt { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+.werte dd { font-family: var(--kopf); font-weight: 700; font-size: 1.05rem; }
+.kopiert { margin-left: 8px; font-size: 0.85rem; color: var(--gold-hi); }
+.knopf.leise { background: transparent; color: var(--gold); box-shadow: inset 0 0 0 1px rgba(201,168,76,0.45); }
+.frei { list-style: none; display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+.frei li { background: color-mix(in srgb, var(--haus) 12%, transparent); border-radius: 6px; padding: 5px 8px; font-size: 0.9rem; }
+.frei b { font-family: var(--kopf); color: var(--gold-hi); margin-right: 4px; }
+.naechstes { margin-top: 10px; }
+
+/* Hausseiten */
+.haus-kopf { text-align: center; }
+.haus-kopf .wappen { width: min(170px, 40vw); filter: drop-shadow(0 8px 24px rgba(0,0,0,0.8)); }
+.haus-kopf h1 { color: var(--haus); }
+.wesen { font-style: italic; text-align: center; color: #e8e1d0; }
+.zahlen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; }
+.zahlen div { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 10px 6px; }
+.zahlen b { display: block; font-family: var(--kopf); font-size: 1.6rem; color: var(--haus); }
+.zahlen span { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+.geschichte p { line-height: 1.65; }
+.sprueche { list-style: none; display: grid; gap: 8px; }
+.sprueche li { font-style: italic; border-left: 2px solid var(--haus); padding-left: 10px; color: #e2dccd; }
+.gestalten { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; }
+.gestalten img { width: 100%; height: auto; }
+.gestalten b { display: block; font-family: var(--kopf); letter-spacing: 0.08em; color: var(--haus); }
+.gestalten span { font-size: 0.8rem; color: #c9c4b8; }
+.verborgen { text-align: center; color: var(--muted); font-style: italic; }
+
+@media (max-width: 600px) {
+  .gestalt { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+  .gestalt .gross { width: 60%; }
+  .werte { grid-template-columns: 1fr 1fr 1fr; }
+  .frei { grid-template-columns: 1fr; }
+  .gestalten { grid-template-columns: repeat(2, 1fr); }
+}
+.liste a.name { color: var(--text); text-decoration: none; } .liste a.name:hover { color: var(--gold-hi); }

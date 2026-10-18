@@ -54,6 +54,14 @@ Alles getestet (Worker-Tests, Overlay/Website im Browser), aber noch nicht live 
 - **Ehrenduelle** (`!duell @Name`, Taste D)
 - **Mipmaps** für die Figuren (in OBS prüfen, ob es schärfer/ruhiger aussieht)
 
+Später am 18.10. dazugekommen (ebenfalls getestet, nicht live):
+- **Zurück-Knopf** im Ritual, Bestätigung vor Morrígans Urteil, andere Gestalt wählen
+- **Haus-Ruf** (`!ruf`), **Wächter-Wache** (`!wache`), **Willkommen** für Neu-Gebundene
+- **Flüstern aus dem Westen** (Rabe/Dornen am linken Rand, `fluesternMinuten`)
+- **Morrígans Prophezeiung** (`/prophezeiung`, Overlay-Karte) und **Jahrestag der Bindung**
+- **Figurenseite** `figur.html` und **Hausseiten** `haus.html` (mit Geschichte je Haus in `data/haeuser.js`)
+- Hinweis: Auf der Website zeigen die Figurenbilder noch die Standard-Haarfarbe des Hauses, nicht die eigene.
+
 ## Gewünschte Features (Reihenfolge-Vorschlag, ursprünglich)
 
 1. **Ruhm automatisch** (Grundlage für alles) – inkl. Anwesenheit für stille Zuschauer

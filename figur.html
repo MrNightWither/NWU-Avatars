@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestalt — NightWither Unity</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self' https://*.workers.dev; base-uri 'none'; form-action 'none'">
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="preload" href="fonts/rajdhani-700.woff" as="font" type="font/woff" crossorigin>
+<link rel="stylesheet" href="css/stufen.css">
+<link rel="stylesheet" href="css/seiten.css">
+</head>
+<body>
+<div class="hintergrund" id="hintergrund" aria-hidden="true"></div>
+
+<header class="kopf">
+  <a class="zurueck" href="./">← Zum Ritual</a>
+  <h1 id="t-name">Gestalt</h1>
+  <p class="unter" id="t-unter">Wer im Buch der Zitadelle steht</p>
+</header>
+
+<main class="inhalt">
+  <p class="beispiel" id="beispiel" hidden>Beispiel: Sobald der Server läuft, steht hier die echte Gestalt.</p>
+
+  <section class="karte" id="suche-karte" aria-labelledby="t-suche" hidden>
+    <h2 id="t-suche">Gestalt suchen</h2>
+    <form class="suche" id="suche">
+      <select id="plattform" aria-label="Plattform"></select>
+      <input id="name" type="text" placeholder="Name im Chat" autocapitalize="off" spellcheck="false" maxlength="40" aria-label="Name im Chat">
+      <button class="knopf" type="submit">Ansehen</button>
+    </form>
+    <p class="hinweis" id="hinweis"></p>
+  </section>
+
+  <section class="karte gestalt" id="gestalt" hidden>
+    <img class="gross" id="g-bild" alt="">
+    <div class="g-text">
+      <p class="haus"><a id="g-haus" href="#"></a></p>
+      <p class="g-typ" id="g-typ"></p>
+      <div class="abzeichen" id="g-abzeichen"></div>
+      <p class="level"><span>Level</span> <b id="g-level"></b></p>
+      <p class="ruhm" id="g-ruhm"></p>
+      <div class="balken" aria-hidden="true"><span id="g-balken"></span></div>
+      <dl class="werte">
+        <div><dt>Platz im Haus</dt><dd id="g-platz"></dd></div>
+        <div><dt>Gebunden seit</dt><dd id="g-seit"></dd></div>
+        <div><dt>Haarfarbe</dt><dd id="g-haare"></dd></div>
+      </dl>
+      <button class="knopf leise" id="g-teilen" type="button">Link kopieren</button>
+      <span class="kopiert" id="g-kopiert" aria-live="polite"></span>
+    </div>
+  </section>
+
+  <section class="karte" id="frei-karte" hidden aria-labelledby="t-frei">
+    <h2 id="t-frei">Freigeschaltet</h2>
+    <ul class="frei" id="g-frei"></ul>
+    <p class="naechstes" id="g-naechstes"></p>
+  </section>
+
+  <p class="links"><a href="stufen.html">Die Stufen →</a> · <a href="chronik.html">Die Chronik →</a></p>
+</main>
+
+<script src="data/haeuser.js"></script>
+<script src="data/aussehen.js"></script>
+<script src="data/ruhm.js"></script>
+<script src="data/fortschritt.js"></script>
+<script src="js/einstellungen.js"></script>
+<script src="js/figur.js"></script>
+</body>
+</html>

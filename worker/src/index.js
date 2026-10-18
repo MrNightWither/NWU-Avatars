@@ -182,7 +182,7 @@ async function profil(url, env, cors) {
   const id = url.searchParams.get('id');
   const name = (url.searchParams.get('name') || '').toLowerCase();
   if (!PLATTFORMEN.includes(plattform) || (!id && !name)) return fehler('Ungültige Anfrage', 400, cors);
-  const sql = `SELECT p.haus, p.rolle, p.figur, p.level, p.ruhm, p.aussehen, p.erstellt_am FROM konto k JOIN profil p ON p.id = k.profil_id
+  const sql = `SELECT k.name, p.haus, p.rolle, p.figur, p.level, p.ruhm, p.aussehen, p.erstellt_am FROM konto k JOIN profil p ON p.id = k.profil_id
                WHERE k.plattform = ? AND ${id ? 'k.plattform_id = ?' : 'k.name_klein = ?'} AND p.gesperrt = 0`;
   const p = await env.DB.prepare(sql).bind(plattform, id || name).first();
   if (!p) return antwort({ gefunden: false }, 200, { ...cors, 'Cache-Control': 'max-age=60' });
@@ -193,7 +193,9 @@ async function profil(url, env, cors) {
   const jahre = seit.slice(5, 10) === heute.slice(5, 10) ? Number(heute.slice(0, 4)) - Number(seit.slice(0, 4)) : 0;
   const haus = HAEUSER.find((h) => h.id === p.haus);
   const { erstellt_am, ...rest } = p;
-  return antwort({ gefunden: true, ...rest, aussehen, hausName: haus ? haus.name : null, jahrestag: Math.max(0, jahre) },
+  // Platz im eigenen Haus (nach Ruhm) – für die Figurenseite
+  const platz = p.haus ? (await env.DB.prepare('SELECT COUNT(*) AS n FROM profil WHERE haus = ? AND gesperrt = 0 AND ruhm > ?').bind(p.haus, p.ruhm).first()).n + 1 : null;
+  return antwort({ gefunden: true, ...rest, aussehen, hausName: haus ? haus.name : null, jahrestag: Math.max(0, jahre), platz, seit: seit.slice(0, 10) },
     200, { ...cors, 'Cache-Control': 'max-age=60' });
 }
 

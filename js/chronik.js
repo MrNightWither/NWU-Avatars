@@ -49,7 +49,8 @@
       const k = document.createElement('section');
       k.className = 'karte liste';
       k.style.setProperty('--haus', h.css);
-      const t = document.createElement('h3'); t.textContent = h.name;
+      const t = document.createElement('h3');
+      const ta = document.createElement('a'); ta.href = `haus.html?h=${h.id}`; ta.textContent = h.name; t.append(ta);
       const ol = document.createElement('ol');
       const eintraege = d.listen[h.id] || [];
       if (!eintraege.length) {
@@ -60,7 +61,7 @@
         const li = document.createElement('li');
         const nr = document.createElement('span'); nr.className = 'platz'; nr.textContent = i + 1;
         const img = document.createElement('img'); img.src = `assets/figur-${h.id}-${e.figur}.webp`; img.alt = ''; img.loading = 'lazy';
-        const name = document.createElement('span'); name.className = 'name'; name.textContent = e.name;
+        const name = document.createElement('a'); name.className = 'name'; name.href = `figur.html?p=twitch&n=${encodeURIComponent(e.name)}`; name.textContent = e.name;
         const lv = document.createElement('span'); lv.className = 'lv'; lv.textContent = 'Lv ' + e.level;
         li.append(nr, img, name, lv);
         li.title = zahl(e.ruhm) + ' Ruhm';

@@ -87,6 +87,8 @@
       if (!d.gefunden) { hinweis.textContent = 'Unter diesem Namen ist noch niemand gebunden. Mach zuerst das Ritual.'; $('stand').hidden = true; return; }
       hinweis.textContent = '';
       standZeigen(d.level || 1, d.haus, d.figur, d.ruhm);
+      $('s-mehr').href = `figur.html?p=${encodeURIComponent(sel.value)}&n=${encodeURIComponent(d.name || name)}`;
+      $('s-mehr').hidden = false;
     } catch (err) {
       hinweis.textContent = 'Morrígan ist gerade nicht erreichbar. Versuch es später nochmal.';
     }
