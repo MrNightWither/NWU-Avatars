@@ -148,7 +148,9 @@ nicht `*`. `/avatare/bestaetigen` braucht kein CORS (nur Streamer.bot ruft es au
 Daten und Regeln: `data/meilensteine.js`. Jede Plattform hat einen eigenen Pfad mit eigener Essenz.
 
 - `GET /reise` → `{ pfade: { twitch: { essenz, erreicht, naechster, anteil, angekommen }, youtube: …, kick: …, tiktok: … }, zitadelleOffen }`
-- `POST /reise/essenz` (Streamer.bot-Secret) `{ plattform, quelle: chat|follow|sub|bits|raid|stunde, anzahl? }`
+- `POST /reise/essenz` (Streamer.bot-Secret) `{ plattform, quelle, anzahl? }`
+  Quellen Twitch/YouTube/Kick: `chat|follow|sub|bits|raid|stunde` · TikTok: `likes|zuschauer|follow|stunde`
+  (eine Quelle, die es auf der Plattform nicht gibt, ergibt 400)
   → `{ ok, pfad, essenz, neu: [{ id, name }], zitadelleGeoeffnet }`
 - `POST /reise/hand` (Admin-Secret) `{ plattform, menge }` – negativ zieht ab, nie unter 0
 

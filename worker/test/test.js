@@ -112,6 +112,20 @@ r = await essenz({ quelle: 'raid', plattform: 'twitch' });               // 1555
 assert.deepEqual(r.daten.neu.map((m) => m.id), ['tw2']);
 r = await essenz({ quelle: 'stunde', plattform: 'kick' });               // Kick getrennt
 assert.equal(r.daten.essenz, 100);
+// TikTok hat eigene Regeln: Likes, Zuschauer, Follows, Stunden – aber keine Subs/Bits/Raids
+assert.equal((await essenz({ quelle: 'sub', plattform: 'tiktok' })).status, 400, 'keine Subs auf TikTok');
+assert.equal((await essenz({ quelle: 'raid', plattform: 'tiktok' })).status, 400, 'keine Raids auf TikTok');
+assert.equal((await essenz({ quelle: 'likes', plattform: 'twitch' })).status, 400, 'keine Likes auf Twitch');
+r = await essenz({ quelle: 'likes', anzahl: 1250, plattform: 'tiktok' });     // 12 × 3 = 36
+assert.equal(r.daten.essenz, 36);
+r = await essenz({ quelle: 'likes', anzahl: 999999, plattform: 'tiktok' });   // gedeckelt 60 → 96
+assert.equal(r.daten.essenz, 96);
+r = await essenz({ quelle: 'zuschauer', anzahl: 25, plattform: 'tiktok' });   // 25 → 121
+assert.equal(r.daten.essenz, 121);
+r = await essenz({ quelle: 'zuschauer', anzahl: 500, plattform: 'tiktok' });  // gedeckelt 40 → 161
+r = await essenz({ quelle: 'follow', plattform: 'tiktok' });                  // 15 → 176
+assert.equal(r.daten.essenz, 176);
+await ruf('/reise/hand', { method: 'POST', body: JSON.stringify({ plattform: 'tiktok', menge: -176 }), headers: { Authorization: 'Bearer admin-geheim-456' } });
 r = await ruf('/reise');
 assert.equal(r.daten.pfade.twitch.erreicht, 'tw2'); assert.equal(r.daten.pfade.kick.essenz, 100); assert.equal(r.daten.pfade.youtube.essenz, 0);
 const hand = (plattform, menge, secret = 'admin-geheim-456') => ruf('/reise/hand', { method: 'POST', body: JSON.stringify({ plattform, menge }), headers: { Authorization: 'Bearer ' + secret } });

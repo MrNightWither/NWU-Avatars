@@ -10,7 +10,8 @@
   ziel.NWU_REISE = {
     karte: 'assets/karte.webp',
 
-    // Wie viel Essenz bringt was? Gleich für alle Plattformen (anpassbar)
+    // Wie viel Essenz bringt was? Standard für Twitch, YouTube und Kick (anpassbar).
+    // Ein Pfad kann eigene Regeln haben (siehe TikTok unten).
     essenz: {
       chatNachricht: 1,        // pro Nachricht, gesammelt von Streamer.bot
       chatMaxProPaket: 120,    // Obergrenze pro 5-Minuten-Paket (gegen Spam)
@@ -57,6 +58,16 @@
       },
       {
         id: 'tiktok', name: 'Pfad des Nebels', plattform: 'TikTok', farbe: '#25f4ee',
+      // TikTok hat keine Subs, Bits oder Raids – hier zählen Likes, Zuschauer und Follower.
+      // Kommt über Tikory (Webhook / Streamer.bot-Ausführung).
+      essenz: {
+        likesPro100: 3,
+        likesMaxProPaket: 60,    // pro 5-Minuten-Paket
+        zuschauer: 1,            // pro Zuschauer, alle 5 Minuten
+        zuschauerMaxProPaket: 40,
+        follow: 15,
+        streamStunde: 100,
+      },
         meilensteine: [
           { id: 'tt1', name: 'Die Nebelküste',    essenz: 0,     ort: { x: 0.90, y: 0.80 }, text: 'Hier endet das Land und beginnt der Nebel.' },
           { id: 'tt2', name: 'Die Versunkenen Ruinen', essenz: 1500, ort: { x: 0.82, y: 0.62 }, text: 'Was der Nebel verschluckt, gibt er nicht zurück.' },
@@ -66,6 +77,30 @@
         ],
       },
     ],
+  };
+
+  // Essenz-Regeln eines Pfads: eigene Regeln, sonst der Standard
+  ziel.NWU_REISE_REGELN = function (pfadId) {
+    const pfad = ziel.NWU_REISE.pfade.find((p) => p.id === pfadId);
+    return (pfad && pfad.essenz) || ziel.NWU_REISE.essenz;
+  };
+
+  // Wie viel Essenz bringt ein Ereignis auf einem Pfad? null = gibt es dort nicht.
+  ziel.NWU_ESSENZ_FUER = function (pfadId, quelle, anzahl) {
+    const E = ziel.NWU_REISE_REGELN(pfadId);
+    const n = Math.max(0, Math.floor(Number(anzahl) || 1));
+    const deckel = (wert, max) => (max ? Math.min(wert, max) : wert);
+    switch (quelle) {
+      case 'chat': return E.chatNachricht ? deckel(n * E.chatNachricht, E.chatMaxProPaket) : null;
+      case 'follow': return E.follow ?? null;
+      case 'sub': return E.sub ? Math.min(n, 100) * E.sub : null;
+      case 'bits': return E.bitsPro100 ? Math.floor(Math.min(n, 1000000) / 100) * E.bitsPro100 : null;
+      case 'raid': return E.raid ?? null;
+      case 'stunde': return E.streamStunde ?? null;
+      case 'likes': return E.likesPro100 ? deckel(Math.floor(Math.min(n, 10000000) / 100) * E.likesPro100, E.likesMaxProPaket) : null;
+      case 'zuschauer': return E.zuschauer ? deckel(Math.min(n, 100000) * E.zuschauer, E.zuschauerMaxProPaket) : null;
+      default: return null;
+    }
   };
 
   // Wo steht ein Pfad bei einer bestimmten Essenz-Menge?

@@ -233,17 +233,8 @@ async function essenzMelden(req, env) {
   const d = await jsonLesen(req);
   const pfad = (d && d.plattform) || 'twitch';
   if (!PFADE.includes(pfad)) return fehler('Unbekannte Plattform', 400);
-  const E = REISE.essenz;
-  const anzahl = Math.max(0, Math.floor(Number(d && d.anzahl) || 1));
-  const menge = {
-    chat: Math.min(anzahl, E.chatMaxProPaket) * E.chatNachricht,
-    follow: E.follow,
-    sub: Math.min(anzahl, 100) * E.sub,
-    bits: Math.floor(Math.min(anzahl, 1000000) / 100) * E.bitsPro100,
-    raid: E.raid,
-    stunde: E.streamStunde,
-  }[d && d.quelle];
-  if (menge === undefined) return fehler('Unbekannte Quelle', 400);
+  const menge = globalThis.NWU_ESSENZ_FUER(pfad, d && d.quelle, d && d.anzahl);
+  if (menge === null) return fehler('Diese Quelle gibt es auf dieser Plattform nicht', 400);
   return antwort(await essenzAddieren(env, pfad, menge, d.quelle));
 }
 

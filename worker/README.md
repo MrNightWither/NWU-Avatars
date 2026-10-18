@@ -102,7 +102,19 @@ C#-Sub-Action; andere Actions rufen sie auf und setzen vorher die Argumente `nwu
 **Chat zählen:** pro Plattform eine Action auf *Chat Message* mit *Global Variable → Increment*
 `nwuChat_twitch` (bzw. `_youtube`, `_kick`). Die 5-Minuten-Action ruft „NWU Essenz“ je Plattform mit
 `nwuQuelle = chat` und `nwuAnzahl` = Zählerstand auf und setzt den Zähler danach auf 0.
-TikTok kommt über deinen Tiktory-Flow (Webhook oder Streamer.bot-Ausführung) mit `nwuPlattform = tiktok`.
+**TikTok (über Tikory)** hat eigene Regeln: Likes, Zuschauer, Follows und Stream-Stunden
+(keine Subs, Bits oder Raids). Tikory löst dafür Streamer.bot-Actions aus:
+
+| Tikory-Ereignis | was Streamer.bot macht | `nwuQuelle` | `nwuAnzahl` |
+|---|---|---|---|
+| Like | Zähler `nwuLikes_tiktok` um die Like-Anzahl erhöhen | – | – |
+| alle 5 Minuten (Timed Action) | Likes-Paket senden, Zähler auf 0 | `likes` | Zählerstand |
+| alle 5 Minuten (Timed Action) | aktuelle Zuschauerzahl senden | `zuschauer` | Zuschauerzahl |
+| Follow | direkt senden | `follow` | – |
+| alle 60 Minuten, solange live | direkt senden | `stunde` | – |
+
+Immer mit `nwuPlattform = tiktok`. Likes und Zuschauer sind pro Paket gedeckelt
+(`data/meilensteine.js` → TikTok-Pfad → `essenz`), damit Like-Spam die Reise nicht überrollt.
 
 ```csharp
 using System;
