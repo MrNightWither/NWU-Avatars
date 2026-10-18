@@ -105,11 +105,13 @@ r = await essenz({ quelle: 'chat', anzahl: 500 });                         // oh
 assert.equal(r.daten.pfad, 'twitch'); assert.equal(r.daten.essenz, 120);
 r = await essenz({ quelle: 'bits', anzahl: 250, plattform: 'twitch' });   // + 2 × 10
 assert.equal(r.daten.essenz, 140);
-for (let i = 0; i < 22; i++) r = await essenz({ quelle: 'sub', plattform: 'twitch' });   // + 1320 = 1460
-assert.equal(r.daten.essenz, 1460); assert.deepEqual(r.daten.neu, []);
+const gemeldet = [];
+for (let i = 0; i < 22; i++) { r = await essenz({ quelle: 'sub', plattform: 'twitch' }); gemeldet.push(...r.daten.neu.map((m) => m.id)); }   // + 1320 = 1460
+assert.equal(r.daten.essenz, 1460);
+assert.deepEqual(gemeldet, ['tw2'], 'erster Meilenstein (500) wird genau einmal gemeldet');
 r = await essenz({ quelle: 'follow', plattform: 'twitch' });             // 1475
-r = await essenz({ quelle: 'raid', plattform: 'twitch' });               // 1555 → Gräberklippe
-assert.deepEqual(r.daten.neu.map((m) => m.id), ['tw2']);
+r = await essenz({ quelle: 'raid', plattform: 'twitch' });               // 1555
+assert.deepEqual(r.daten.neu, []);
 r = await essenz({ quelle: 'stunde', plattform: 'kick' });               // Kick getrennt
 assert.equal(r.daten.essenz, 100);
 // TikTok hat eigene Regeln: Likes, Zuschauer, Follows, Stunden – aber keine Subs/Bits/Raids
