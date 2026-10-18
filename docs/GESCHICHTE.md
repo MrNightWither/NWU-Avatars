@@ -22,7 +22,9 @@ Zwei weitere Häuser, **die Raben und die Dornen**, verschwanden in jener Nacht 
 Seitdem liegt dort undurchdringlicher Nebel. Man erzählt sich, dass sie nicht tot sind, sondern **warten** ❓.
 
 Alle Häuser tragen bis heute dieselbe alte Rüstung von Unity, dieselben vier Wege (Klinge, Seher,
-Schatten, Hüter), nur in den Farben ihrer neuen Seite. Sie sind **getrennte Geschwister, keine Feinde**.
+Schatten, Hüter), nur in den Farben ihrer neuen Seite. **Der Mond war das Zeichen von Unity** – deshalb
+tragen ihn alle Häuser noch auf Gürtel, Schulter und Umhang. Das eigene Haus-Zeichen verdient man sich erst
+(Freischaltung Level 2, wird zusätzlich zum Mond getragen). Sie sind **getrennte Geschwister, keine Feinde**.
 
 ## Die Figuren der Geschichte
 

@@ -7,7 +7,8 @@ Items, Portal-Events und Haus-Duellen.
 Die Seite bekommt eine eigene Subdomain und wird nur über Twitch verlinkt
 (nicht auf der Hauptseite, nicht im Linktree). Suchmaschinen sind ausgesperrt.
 
-Der vollständige Plan steht in [`docs/PLAN.md`](docs/PLAN.md).
+Der vollständige Plan steht in [`docs/PLAN.md`](docs/PLAN.md), die Geschichte in [`docs/GESCHICHTE.md`](docs/GESCHICHTE.md),
+der aktuelle Stand mit allen offenen Entscheidungen in [`docs/UEBERGABE.md`](docs/UEBERGABE.md).
 
 ## Stand
 
