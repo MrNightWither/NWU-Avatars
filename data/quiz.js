@@ -269,6 +269,66 @@
       ['Menschen, die bleiben.', 'B2'],
       ['Freiraum und ein paar Geheimnisse.', 'N2'],
       ['Abenteuer.', 'F2']]],
+    ['s13', 'Was ist dein größter Traum?', [
+      ['Die Welt wirklich zu verstehen.', 'M2'],
+      ['Ein Zuhause voller Menschen, die mich lieben.', 'B2'],
+      ['Ein Leben, das niemand ganz durchschaut.', 'N2 M1'],
+      ['Etwas Großes schaffen, das man nie vergisst.', 'F2']]],
+    ['s14', 'Wie reagierst du auf ein Kompliment?', [
+      ['Ich lächle still und denke noch lange darüber nach.', 'M2'],
+      ['Ich gebe es sofort zurück.', 'B2'],
+      ['Ich frage mich, was die Person eigentlich will.', 'N2'],
+      ['Ich freue mich laut und zeige es.', 'F2 B1']]],
+    ['s15', 'Was machst du, wenn du nicht schlafen kannst?', [
+      ['Ich schaue aus dem Fenster in die Nacht.', 'M2'],
+      ['Ich schreibe jemandem, der auch noch wach ist.', 'B2'],
+      ['Ich gehe raus, wenn alle schlafen.', 'N2 F1'],
+      ['Ich stehe auf und mache irgendwas.', 'F2']]],
+    ['s16', 'Welches Wort beschreibt dich am besten?', [
+      ['Tiefgründig.', 'M2'],
+      ['Treu.', 'B2'],
+      ['Rätselhaft.', 'N2'],
+      ['Leidenschaftlich.', 'F2 M1']]],
+    ['s17', 'Wie gehst du mit Fehlern um?', [
+      ['Ich denke lange darüber nach, was ich lernen kann.', 'M2'],
+      ['Ich entschuldige mich bei allen, die es betrifft.', 'B2 M1'],
+      ['Ich sorge dafür, dass ihn niemand bemerkt.', 'N2'],
+      ['Abhaken und weitermachen.', 'F2']]],
+    ['s18', 'Was hast du immer in der Tasche?', [
+      ['Kopfhörer, um in meine eigene Welt zu gehen.', 'M2 N1'],
+      ['Ein Foto oder Andenken an meine Liebsten.', 'B2'],
+      ['Etwas, von dem niemand weiß.', 'N2'],
+      ['Snacks. Man weiß nie, wann das Abenteuer losgeht.', 'F2']]],
+    ['s19', 'Du hast einen ganzen Tag lang Macht über die Welt. Was tust du?', [
+      ['Ich beobachte und verstehe, wie alles zusammenhängt.', 'M2'],
+      ['Ich sorge dafür, dass es meinen Leuten gut geht.', 'B2'],
+      ['Ich ändere Dinge, ohne dass jemand merkt, dass ich es war.', 'N2'],
+      ['Ich feiere das größte Fest, das es je gab.', 'F2 B1']]],
+    ['s20', 'Was ärgert dich am meisten an anderen?', [
+      ['Wenn sie reden, ohne nachzudenken.', 'M2'],
+      ['Wenn sie ihre Freunde im Stich lassen.', 'B2 F1'],
+      ['Wenn sie neugierig in meinen Sachen herumschnüffeln.', 'N2'],
+      ['Wenn sie sich nichts trauen.', 'F2']]],
+    ['s21', 'Welche Musik passt zu dir?', [
+      ['Ruhig, melancholisch, mit viel Gefühl.', 'M2'],
+      ['Lieder, die man zusammen laut mitsingt.', 'B2'],
+      ['Dunkle, geheimnisvolle Klänge.', 'N2 F1'],
+      ['Laut, schnell, mit viel Energie.', 'F2']]],
+    ['s22', 'Wie zeigst du jemandem, dass du ihn magst?', [
+      ['Ich höre wirklich zu.', 'M2'],
+      ['Ich bin da, wenn es darauf ankommt.', 'B2'],
+      ['Ich vertraue ihm ein Geheimnis an.', 'N2'],
+      ['Ich ziehe ihn in ein Abenteuer mit hinein.', 'F2 N1']]],
+    ['s23', 'Was ist dein Lieblingsort zu Hause?', [
+      ['Am Fenster, mit Blick nach draußen.', 'M2'],
+      ['Die Küche, wo alle zusammenkommen.', 'B2'],
+      ['Eine Ecke, die nur mir gehört.', 'N2'],
+      ['Gar keiner. Ich bin lieber unterwegs.', 'F2 M1']]],
+    ['s24', 'Wenn du ein Element wärst, welches?', [
+      ['Wasser, still und tief.', 'M2'],
+      ['Erde, die alles trägt.', 'B2'],
+      ['Luft, die man nicht greifen kann.', 'N2'],
+      ['Feuer.', 'F2']]],
   ];
 
   const ziel = typeof window !== 'undefined' ? window : globalThis;   // Browser und Worker
