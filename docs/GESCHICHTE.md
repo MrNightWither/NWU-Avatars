@@ -67,3 +67,11 @@ und bei Kreaturen-Kämpfen stehen sie in der ersten Reihe.
 - **Schatten-Essenz**: was die Community gemeinsam auf der Reise-Karte sammelt.
 - **Die Spaltung**: die Nacht, in der Unity zerbrach.
 - **Die Verborgenen**: Raben und Dornen.
+
+## Der große Bogen: Rückkehr und Vereinigung
+
+Die verborgenen Häuser kehren zurück, wenn die Community wächst (regelmäßige Zuschauer, je 4 Streams hintereinander):
+**Dornen bei 50**, **Raben bei 500**. Bei **1.000** findet Unity wieder zusammen: Aus den Häusern wird ein Bündnis,
+eine Familie. Gekämpft wird dann nur noch gemeinsam gegen die Kreaturen der Spaltung – und zum Spaß im Duell.
+Nichts geht verloren: Level, Ruhm und Gestalt bleiben. Morrígans letzter Satz im Prolog („… eines Tages wieder eins“)
+ist genau dieses Versprechen.

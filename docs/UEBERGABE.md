@@ -3,6 +3,22 @@
 Für die Weiterarbeit mit Claude Code direkt auf dem Stream-PC (Overlays, Kameras, OBS).
 Erst `README.md`, `docs/GESCHICHTE.md`, `docs/FORTSCHRITT.md` lesen.
 
+## Zeitplan und großer Bogen (Stand 19.10.2026)
+
+- **Release erst, wenn alles fertig ist – Ziel: in etwa einem Monat (ca. 19.11.2026).** Bis dahin in Ruhe testen.
+  Vorher kommen eigene Sachen (KI, Sicherheitspatches). Nichts davon geht beim nächsten Stream live.
+- **Warum das Ganze:** Wie Stream Avatars (Figuren laufen, kämpfen), aber **mit Geschichte**: Die Community heißt Unity,
+  der Prolog erklärt, wie es zur Spaltung kam – und die Geschichte bleibt bewusst offen für die Wiedervereinigung.
+- **Die Häuser kehren mit der Community zurück** (regelmäßige Zuschauer, jeweils **4 Streams hintereinander**):
+  1. **Dornen** erwachen bei **50 Zuschauern**.
+  2. **Raben** (das letzte verborgene Haus) bei **500 Zuschauern**.
+  3. **Die Vereinigung** bei **1.000 Zuschauern**: Unity wird wieder ein Bündnis, eine Familie. Kein Haus-gegen-Haus mehr
+     (nur noch Spaßduelle), stattdessen kämpfen alle gemeinsam gegen Kreaturen. Level, Ruhm und Freischaltungen bleiben,
+     das Overlay läuft weiter.
+  Technisch: `verloren: true` in `data/haeuser.js` entfernen, Quiz/Film um das Haus ergänzen, Nebel im Westen lichten,
+  Hauspokal und Haus-Spiele (Rennen, Tauziehen) nach der Vereinigung abschalten oder umbauen. Das ersetzt die frühere
+  Idee „Das Erwachen über die Reise-Karte“.
+
 ## Was steht
 
 - **Website** (GitHub Pages, Demo-Modus bis der Worker läuft): Ritual als Film über die Karte, Nebel zieht beim
