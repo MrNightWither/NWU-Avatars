@@ -143,12 +143,16 @@ Tasten (OBS: Rechtsklick → Interagieren): `T` Test-Chatter, `M` Nachricht, `K`
 `P` Portal auf/zu, `U` Level-Up (zufällige Figur), `G` Gruppenbild, `J` alle jubeln, `D` Duell, `F` Haus-Ruf, `W` Flüstern aus dem Westen, `B` Rabe, `E` Wettrennen, `Z` Tauziehen, `L` Letzter steht, `X` Schatzsuche, `Q` Würfel (zufällige Figur), `S` Sparmodus,
 `1/2/3` = 4/12/30 Demo-Figuren, `H` Anzeige.
 
-**Aussehen und Freischaltungen:** Die Haare jeder Figur sind eine eigene Ebene und werden pro Person
-eingefärbt. Standard je Haus: Mond Silber, Blut Schwarz, Nebel Weiß, Flamme Rot. Ab Level 3 zieht die Figur
-beim Laufen eine Staubspur, ab Level 5 kann man mit `!haare <farbe>` die Haarfarbe wählen, ab Level 10 gibt
-es eine Funkenspur in Hausfarbe, ab Level 25 seltene Haarfarben. Stufen und Farben stehen in
-`data/aussehen.js`, der ganze Plan bis Level 100 (und Aufstieg danach) in `docs/FORTSCHRITT.md`.
-Andere Häuser umfärben: Farben in `tools/umfaerben.py` anpassen und `python tools/umfaerben.py` ausführen.
+**Aussehen und Freischaltungen** (alles in `data/aussehen.js`, Plan bis Level 100 in `docs/FORTSCHRITT.md`):
+Level 2 Haus-Abzeichen an der Gürtelschnalle (Blut, Nebel, Flamme; der Mond trägt das alte Unity-Zeichen),
+3 Staubspur, 5 Haarfarbe, 8 Frisur (4 zum Start, 18 mehr, 35 alle 24 + Glatze), 10 Funkenspur, 20 Begleiter
+(Rabe, Katze; 45 Wolfswelpe, Fledermaus; 70 Geisterlicht, Feuersalamander), 25 seltene Haarfarben,
+30 Kopfschmuck (Silberreif, Kapuze, Blumenkranz, Federn; 60 Hörner, Maske, Augenklappe, Hexenhut, Vogelschädel;
+80 Eisenkrone, Heiligenschein, Geweih). Wählen im Chat (`!haare`, `!frisur`, `!kopf`, `!begleiter`) oder unter
+„Mein Profil“; die Figur kleidet sich sofort neu ein. Frisuren und Kopfschmuck liegen in einem gemeinsamen
+Bezugsrahmen (`tools/frisuren.py`, `tools/kopfschmuck.py`) und passen dadurch auf jede Figur (`kopfRahmen` in
+`overlay/rigs.js`). Beim Schatten verdeckt die Kapuze die Frisur. Wer kein Ritual gemacht hat, läuft als **Besucher**
+oder **Besucherin** (Reisemantel, keine Waffe).
 
 **Morrígans Prüfung:** Startet Streamer.bot eine Prüfung (`!pruefung` oder Timer), zeigt das Overlay die Frage
 als Karte oben in der Mitte; der Gewinner jubelt, ohne Gewinner wird die richtige Antwort markiert.

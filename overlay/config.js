@@ -64,10 +64,12 @@ window.NWU_CONFIG = {
   // bild = Stufe 1 (ein Bild). rig = Stufe 2 (Teile mit Gelenken aus rigs.js), wenn vorhanden.
   // Mit ?stufe1 in der Adresse laufen alle als Einzelbild.
   figurHoehe: 56,
-  // Besucher: Figur für alle, die (noch) kein Ritual gemacht haben – normale Kleidung, keine Waffe.
-  // Sobald das Bild da ist: besucher: { bild: 'figuren/besucher.webp' } (oder mit rig: 'besucher' aus Teilen).
-  // null = Silhouette.
-  besucher: null,
+  // Besucher: Figuren für alle, die (noch) kein Ritual gemacht haben – Reisemantel, keine Waffe.
+  // Mehrere Einträge = jede Person bekommt fest eine davon. Leere Liste = Silhouette.
+  besucher: [
+    { bild: 'figuren/besucher.webp', rig: 'besucher' },
+    { bild: 'figuren/besucherin.webp', rig: 'besucherin' },
+  ],
   // Alle 4 Häuser nutzen dieselben 4 Grundfiguren, umgefärbt (tools/umfaerben.py).
   figuren: ['haus1', 'haus2', 'haus3', 'haus4'].flatMap((haus) => ['a', 'b', 'c', 'd'].map((typ) => (
     { haus, typ, bild: `figuren/${haus}-${typ}.webp`, rig: `${haus}-${typ}` }))),

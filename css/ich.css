@@ -21,3 +21,16 @@
 .sicher p { width: 100%; }
 .knopf.rot { background: linear-gradient(#d0243f, #8f1024); color: #fff; }
 .hinweis.gut { color: var(--gold-hi); }
+
+.wahl { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
+.wahl button { position: relative; background: #0d0d11; color: var(--text); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px;
+  padding: 6px 4px 6px; font: inherit; font-size: 0.75rem; cursor: pointer; display: grid; justify-items: center; gap: 2px; }
+.wahl button[aria-pressed="true"] { border-color: var(--gold-hi); box-shadow: 0 0 0 1px var(--gold-hi); }
+.wahl button:disabled { opacity: 0.4; cursor: not-allowed; }
+.wahl button:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
+.wahl .bild { position: relative; width: 64px; height: 64px; }
+.wahl .bild img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.wahl .lv { color: var(--muted); font-size: 0.7rem; }
+#frisuren .bild img, #kopfschmuck .bild img { width: 170%; height: 170%; left: -42%; top: -22%; right: auto; bottom: auto; }
+.wahl .bild { overflow: hidden; border-radius: 8px; }
+#kopfschmuck .bild img { top: -14%; }

@@ -102,6 +102,19 @@ Ebenfalls am 18.10. (getestet im Browser und mit Worker-Tests, nicht live):
   Streamer.bot-Version das Plattform-Argument heißt (`commandSource`).
 - Offen: eigene Figuren für dich (Schattenkönig) und die Partnerin (Prompts: `GEMINI-PROMPTS.md` Abschnitt 14).
 
+## Gebaut 19.10. (abends): die Bilder von Gemini
+
+- **Reise-Karte** (vier Pfade) und **Erfolgs-Karte** eingesetzt, alle Orte auf die Landmarken gesetzt.
+- **Prolog** mit vier Bildern: Morrígan mit der Kugel, Unity-Fest, die Spaltung, der Westen.
+- **Haus-Abzeichen** (Blut, Nebel, Flamme) ab Level 2 an der Figur, dazu auf Haus- und Figurenseite.
+- **24 Frisuren + Glatze, 12 Kopfschmuck, 6 Begleiter**: Overlay, Chat (`!frisur`, `!kopf`, `!begleiter`), „Mein Profil“,
+  Level-Freischaltungen, Stufen-Seite. Streamer.bot-Aktion „Aussehen“ ersetzt die alte „Haare“.
+- **Besucher und Besucherin** aus Teilen für alle ohne Ritual.
+- Rohbilder liegen in `assets/roh/` (Bögen), fertige Teile in `overlay/frisuren`, `overlay/kopfschmuck`,
+  `overlay/begleiter`, `overlay/symbole`, `overlay/figuren/besucher*`.
+- Noch offen bei den Bildern: Kopfschmuck auf dem Schatten (Kapuze) sitzt nur ungefähr – live in OBS prüfen.
+  Website-Bilder der Figuren zeigen noch nicht die eigene Frisur/Farbe.
+
 ## Gewünschte Features (Reihenfolge-Vorschlag, ursprünglich)
 
 1. **Ruhm automatisch** (Grundlage für alles) – inkl. Anwesenheit für stille Zuschauer

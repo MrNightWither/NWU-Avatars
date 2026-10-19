@@ -72,6 +72,8 @@
     }
     // Sitzen: Hüfte sinkt fast auf den Boden, die Beine zeigen nach vorne
     r.koerper.pivot.y = hy * 0.62 * hock;
+    // Mitläufer (Frisur, Kopfhaut, Kopfschmuck) folgen ihrem Teil, liegen aber davor oder dahinter
+    for (const f of r.folger || []) { f.sprite.position.copyFrom(f.ziel.position); f.sprite.rotation = f.ziel.rotation; }
   }
 
   window.NWU_RIG = { bauen, pose };

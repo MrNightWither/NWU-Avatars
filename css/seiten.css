@@ -47,3 +47,5 @@
   .gestalten { grid-template-columns: repeat(2, 1fr); }
 }
 .liste a.name { color: var(--text); text-decoration: none; } .liste a.name:hover { color: var(--gold-hi); }
+.haus-kopf .zeichen { display: block; width: 54px; height: auto; margin: 8px auto 0; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.7)); }
+.zeichen-klein { width: 22px; height: auto; vertical-align: -5px; margin-right: 6px; }

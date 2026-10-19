@@ -24,6 +24,9 @@
     $('g-bild').src = haus ? `assets/figur-${haus.id}-${d.figur}.webp` : '';
     $('g-haus').textContent = haus ? haus.name : '';
     $('g-haus').href = haus ? `haus.html?h=${haus.id}` : '#';
+    const zeichen = haus && ['haus2', 'haus3', 'haus4'].includes(haus.id) && (d.level || 1) >= 2;
+    $('g-zeichen').hidden = !zeichen;
+    if (zeichen) $('g-zeichen').src = `assets/symbol-${haus.id}.webp`;
     $('g-typ').textContent = figur ? `${figur.typ} · ${figur.text}` : '';
     const abz = [];
     if (ROLLEN[d.rolle]) abz.push(ROLLEN[d.rolle]);

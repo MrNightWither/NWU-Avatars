@@ -13,6 +13,8 @@
   document.body.style.setProperty('--haus', haus.css);
   $('hintergrund').style.backgroundImage = `linear-gradient(rgba(5,5,7,0.72), rgba(5,5,7,0.96)), url('assets/gebiet-${haus.id}.webp')`;
   $('h-wappen').src = haus.wappenBild;
+  // Das Zeichen, das die Mitglieder ab Level 2 am Gürtel tragen (der Mond trägt das alte Zeichen von Unity)
+  if (['haus2', 'haus3', 'haus4'].includes(haus.id)) { $('h-zeichen').src = `assets/symbol-${haus.id}.webp`; $('h-zeichen').alt = `Zeichen des ${haus.kurz}`; $('h-zeichen').hidden = false; }
   $('h-name').textContent = haus.name;
   $('h-reiter').textContent = haus.verloren ? 'Verborgen im Westen' : 'Ein Haus von NightWither Unity';
   $('h-wesen').textContent = haus.wesen;

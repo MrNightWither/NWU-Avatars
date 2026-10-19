@@ -224,17 +224,21 @@ public class CPHInline
 }
 ```
 
-## Streamer.bot: Befehl `!haare <farbe>`
+## Streamer.bot: Aussehen `!haare`, `!frisur`, `!kopf`, `!begleiter`
 
-Jeder ändert seine eigene Haarfarbe, sobald das Level reicht (steht in `data/aussehen.js`):
-ab Level 5 silber, weiss, schwarz, braun, blond, rot, kupfer · ab Level 25 auch blau, lila, gruen, rosa.
+Jeder ändert sein eigenes Aussehen, sobald das Level reicht (alles steht in `data/aussehen.js`):
+Haarfarbe ab Level 5 (seltene ab 25), Frisur ab 8 (mehr ab 18 und 35), Begleiter ab 20 (45, 70),
+Kopfschmuck ab 30 (60, 80). Name oder `keine` zum Ablegen, z. B. `!frisur pferdeschwanz`, `!kopf keine`.
+Dasselbe geht auf der Website unter „Mein Profil“ (`ich.html`).
 
-1. **Commands → Add:** Name `Haare`, Commands `!haare` und `!haarfarbe`, Location *Start*, Permissions: *Everyone*,
-   Cooldown pro Nutzer z. B. 30 Sekunden.
-2. **Action** mit **Execute C# Code**:
+1. **Commands → Add:** Name `Aussehen`, Commands `!haare`, `!haarfarbe`, `!frisur`, `!kopf`, `!kopfschmuck`, `!begleiter`
+   (je eine Zeile), Location *Start*, Permissions: *Everyone*, Cooldown pro Nutzer z. B. 20 Sekunden.
+2. **Action** mit **Execute C# Code**. Die Antwort beginnt mit „🪞 @Name“ – daran erkennt das Overlay, dass sich die
+   Figur sofort neu einkleiden soll (diesen Anfang nicht ändern):
 
 ```csharp
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using Newtonsoft.Json.Linq;
@@ -247,25 +251,33 @@ public class CPHInline
     public bool Execute()
     {
         string user = args["user"].ToString();
-        string farbe = args.ContainsKey("input0") ? args["input0"].ToString() : "";
-        var daten = new JObject { ["plattform"] = "twitch", ["plattformId"] = args["userId"].ToString(), ["haare"] = farbe };
+        string befehl = args["command"].ToString().ToLower();
+        string wunsch = args.ContainsKey("rawInput") ? args["rawInput"].ToString().Trim() : "";
+        string art = befehl.StartsWith("!haar") ? "haare" : befehl.StartsWith("!frisur") ? "frisur" : befehl.StartsWith("!kopf") ? "kopf" : "begleiter";
+        string wort = art == "haare" ? "Haarfarbe" : art == "frisur" ? "Frisur" : art == "kopf" ? "Kopfschmuck" : "Begleiter";
+        var daten = new JObject { ["plattform"] = "twitch", ["plattformId"] = args["userId"].ToString(), [art] = wunsch };
         var req = new HttpRequestMessage(HttpMethod.Post, URL);
         req.Headers.Add("Authorization", "Bearer " + CPH.GetGlobalVar<string>("nwuAvatarSecret", true));
         req.Content = new StringContent(daten.ToString(), Encoding.UTF8, "application/json");
         try
         {
-            var antwort = JObject.Parse(http.SendAsync(req).Result.Content.ReadAsStringAsync().Result);
-            string grund = (string)antwort["grund"];
-            if ((bool?)antwort["ok"] == true) CPH.SendMessage($"@{user} Deine Haare sind jetzt {antwort["haare"]}. (Im Overlay nach spätestens einer Minute)");
-            else if (grund == "level") CPH.SendMessage($"@{user} Haarfarbe gibt es ab Level {antwort["level"]}.");
+            var a = JObject.Parse(http.SendAsync(req).Result.Content.ReadAsStringAsync().Result);
+            string grund = (string)a["grund"];
+            string frei = a["frei"] != null ? string.Join(", ", a["frei"].Select(x => x.ToString())) : "";
+            if ((bool?)a["ok"] == true && art == "haare") CPH.SendMessage($"🪞 @{user} Deine Haare sind jetzt {a["haare"]}.");
+            else if ((bool?)a["ok"] == true) CPH.SendMessage(a["name"].Type == JTokenType.Null ? $"🪞 @{user} {wort} abgelegt." : $"🪞 @{user} {wort}: {a["name"]}.");
             else if (grund == "unbekannt") CPH.SendMessage($"@{user} Du hast noch keine Gestalt. Erst das Ritual!");
-            else CPH.SendMessage($"@{user} Farben: silber, weiss, schwarz, braun, blond, rot, kupfer, blau, lila, gruen, rosa");
+            else if (grund == "level") CPH.SendMessage($"@{user} {(a["name"] != null ? a["name"] + " gibt" : wort + " gibt")} es ab Level {a["level"]}." + (frei != "" ? $" Für dich frei: {frei}" : ""));
+            else if (art == "haare") CPH.SendMessage($"@{user} Farben: silber, weiss, schwarz, braun, blond, rot, kupfer, blau, lila, gruen, rosa");
+            else CPH.SendMessage(frei != "" ? $"@{user} {wort} für dich: {frei} (oder keine)" : $"@{user} {wort} gibt es erst mit höherem Level. Alles unter „Mein Profil“.");
         }
-        catch (Exception e) { CPH.LogWarn("NWU Haare: " + e.Message); }
+        catch (Exception e) { CPH.LogWarn("NWU Aussehen: " + e.Message); }
         return true;
     }
 }
 ```
+
+Hast du die alte Aktion „Haare“ schon angelegt: einfach durch diese ersetzen.
 
 ## Rollen: Wächter und Königin (von Hand, PowerShell)
 

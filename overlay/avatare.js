@@ -75,19 +75,20 @@
     }
     return v;
   }));
-  // Besucher-Figur für alle ohne Ritual (config.js → besucher). Fehlt das Bild, laufen sie als Silhouette.
-  let BESUCHER = null;
-  if (CFG.besucher && CFG.besucher.bild) {
+  // Besucher-Figuren für alle ohne Ritual (config.js → besucher). Fehlen die Bilder, laufen sie als Silhouette.
+  const BESUCHER = [];
+  for (const eintrag of [].concat(CFG.besucher || [])) {
     try {
-      BESUCHER = { haus: null, typ: 'besucher', ...CFG.besucher, tex: await laden(CFG.besucher.bild) };
-      BESUCHER.hoehe = BESUCHER.tex.height;
-      const def = !q.has('stufe1') && BESUCHER.rig && RIGS[BESUCHER.rig];
+      const v = { haus: null, typ: 'besucher', ...eintrag, tex: await laden(eintrag.bild) };
+      v.hoehe = v.tex.height;
+      const def = !q.has('stufe1') && v.rig && RIGS[v.rig];
       if (def && window.NWU_RIG) {
         const namen = [...new Set(def.teile.map((t) => t.bild))];
-        const tex = await Promise.all(namen.map((n) => laden(`figuren/${BESUCHER.rig}/${n}.webp`)));
-        BESUCHER.rigDef = def; BESUCHER.rigTex = Object.fromEntries(namen.map((n, i) => [n, tex[i]])); BESUCHER.hoehe = def.hoehe;
+        const tex = await Promise.all(namen.map((n) => laden(`figuren/${v.rig}/${n}.webp`)));
+        v.rigDef = def; v.rigTex = Object.fromEntries(namen.map((n, i) => [n, tex[i]])); v.hoehe = def.hoehe;
       }
-    } catch (e) { console.warn('Besucher-Figur fehlt, nehme Silhouette:', e.message); BESUCHER = null; }
+      BESUCHER.push(v);
+    } catch (e) { console.warn('Besucher-Figur fehlt:', e.message); }
   }
   const textur = (zeichnen) => {
     const g = new PIXI.Graphics(); zeichnen(g);
@@ -252,6 +253,87 @@
       || VORLAGEN[hashZahl(schluessel || String(Math.random())) % VORLAGEN.length];
   }
 
+  // ---------- Aussehen nach Level: Haus-Abzeichen, Frisur, Kopfschmuck, Begleiter ----------
+  // Die Bilder werden erst geladen, wenn jemand sie trägt, und dann an die fertige Figur gehängt.
+  const texCache = new Map();
+  const texHolen = (src) => { if (!texCache.has(src)) texCache.set(src, laden(src).catch(() => null)); return texCache.get(src); };
+  const RAHMEN = { b: 420, h: 520, nase: [300, 230] };        // Bezugsrahmen der Frisuren (tools/frisuren.py)
+  const SYMBOLE = { haus2: 'symbole/haus2-schnalle.webp', haus3: 'symbole/haus3-schnalle.webp', haus4: 'symbole/haus4-schnalle.webp' };
+  // Ein Bild, das dem Kopf folgt, aber im Körper davor (nach) oder dahinter (vor) einem Teil liegt
+  function kopfFolger(fi, tex, kr, nachTeil, vorTeil, id) {
+    const rig = fi.rig, kopf = rig.teile.kopf, ad = kopf.def.anker;
+    const ox = kr.nase[0] - RAHMEN.nase[0] * kr.s, oy = kr.nase[1] - RAHMEN.nase[1] * kr.s;
+    const sp = new PIXI.Sprite(tex);
+    sp.anchor.set((ad[0] - ox) / kr.s / RAHMEN.b, (ad[1] - oy) / kr.s / RAHMEN.h);
+    sp.scale.set(kr.s * RAHMEN.b / tex.width);
+    const k = rig.koerper;
+    const i = nachTeil ? k.getChildIndex(rig.teile[nachTeil].sprite) + 1 : k.getChildIndex(rig.teile[vorTeil].sprite);
+    k.addChildAt(sp, i);
+    (rig.folger = rig.folger || []).push({ sprite: sp, ziel: kopf.sprite });
+    rig.teile[id] = { def: { an: 'kopf', id }, sprite: sp, dreh: 0 };      // damit Abdunkeln (Spiele) es mitnimmt
+    return sp;
+  }
+  async function ausstatten(fi, aus, haarFarbe) {
+    const rig = fi.rig, def = fi.vorlage.rigDef;
+    if (!rig || !def) return;
+    const FREI = window.NWU_FREI || (() => false), WAHL = window.NWU_WAHL_FREI || (() => false);
+    const lebt = () => fi.root && !fi.root.destroyed;
+    // Haus-Abzeichen an der Gürtelschnalle (Mond trägt schon den Mond)
+    if (def.abzeichen && FREI(fi.level, 'abzeichen') && SYMBOLE[fi.vorlage.haus]) {
+      const t = await texHolen(SYMBOLE[fi.vorlage.haus]);
+      if (t && lebt()) {
+        const r = rig.teile.rumpf, [bx, by, d] = def.abzeichen, an = r.def.anker;
+        const sp = new PIXI.Sprite(t); sp.anchor.set(0.5); sp.scale.set(d / Math.max(t.width, t.height));
+        sp.position.set(bx - an[0], by - an[1]); r.sprite.addChild(sp);
+      }
+    }
+    const kr = def.kopfRahmen;
+    if (!kr || !aus) return;
+    const frisur = kr.frisur && WAHL(fi.level, 'frisur', aus.frisur) ? aus.frisur : null;
+    const schmuck = WAHL(fi.level, 'kopf', aus.kopf) ? aus.kopf : null;
+    if (frisur) {
+      const [kf, hf, fr] = await Promise.all([texHolen(`figuren/${fi.vorlage.rig}/kopf-frei.webp`), texHolen('frisuren/kopfform.webp'),
+        frisur === 'glatze' ? null : texHolen(`frisuren/${frisur}.webp`)]);
+      if (kf && hf && lebt()) {
+        rig.teile.kopf.sprite.texture = kf;
+        rig.teile.haare.sprite.visible = false;
+        kopfFolger(fi, hf, kr, null, 'kopf', 'kopfhaut');
+        if (fr) {
+          const sp = kopfFolger(fi, fr, kr, kr.frisur === 'vorne' ? 'haare' : null, kr.frisur === 'vorne' ? null : 'kopf', 'frisur');
+          if (haarFarbe) sp.tint = haarFarbe;
+        }
+      }
+    }
+    if (schmuck) {
+      const t = await texHolen(`kopfschmuck/${schmuck}.webp`);
+      if (t && lebt()) kopfFolger(fi, t, kr, rig.teile.frisur && kr.frisur === 'vorne' ? 'frisur' : 'haare', null, 'schmuck');
+    }
+    if (WAHL(fi.level, 'begleiter', aus.begleiter)) {
+      const t = await texHolen(`begleiter/${aus.begleiter}.webp`);
+      if (t && lebt()) {
+        const art = window.NWU_BEGLEITER[aus.begleiter];
+        const sp = new PIXI.Sprite(t); sp.anchor.set(0.5, 1);
+        const h = S.hoehe * (art.fliegt ? 0.32 : aus.begleiter === 'wolf' ? 0.5 : 0.38);
+        sp.scale.set(h / t.height);
+        if (art.leuchtet) sp.blendMode = 'add';
+        fi.root.addChildAt(sp, 1);
+        fi.begleiter = { sprite: sp, art, basis: h / t.height, t: Math.random() * 6 };
+      }
+    }
+  }
+  function begleiterBewegen(fi, dt) {
+    const b = fi.begleiter;
+    if (!b) return;
+    b.t += dt;
+    const r = fi.richtung || 1, lauf = fi.g.laufen;
+    const x = -r * S.hoehe * (b.art.fliegt ? 0.45 : 0.62);
+    const y = b.art.fliegt ? -S.hoehe * (0.85 + 0.08 * Math.sin(b.t * 2.4)) : -Math.abs(Math.sin(b.t * 9)) * S.hoehe * 0.06 * lauf;
+    b.sprite.position.set(b.sprite.x ? lerp(b.sprite.x, x, Math.min(1, dt * 4)) : x, y);
+    b.sprite.scale.x = Math.abs(b.basis) * r;
+    b.sprite.alpha = b.art.leuchtet ? 0.75 + 0.2 * Math.sin(b.t * 3) : 1;
+    if (b.art.fliegt) b.sprite.rotation = 0.05 * Math.sin(b.t * 4);
+  }
+
   function figurErzeugen(vorlage, info) {
     const root = new PIXI.Container();
     const schatten = new PIXI.Graphics().ellipse(0, 0, S.hoehe * 0.32, S.hoehe * 0.06).fill({ color: 0x000000, alpha: 0.35 });
@@ -313,6 +395,7 @@
       id: info.id || null, name: info.name || '', mod: !!info.mod, demo: !!info.demo, gast: !!info.gast,
       level, staub: !info.silhouette && FREI(level, 'staub'), funkenSpur: !info.silhouette && FREI(level, 'funken'), spurZeit: 0,
       ungebunden: !!(info.silhouette || info.besucher), pruefeBis: 0,
+      aussehenSchluessel: JSON.stringify(info.aussehen || {}) + level, profilZeit: zeit,
       s: info.s ?? Math.random() * umfang,
       richtung: Math.random() < 0.5 ? 1 : -1,
       tempo: 22 + Math.random() * 16,
@@ -329,6 +412,7 @@
     fi.einblenden = -0.6;                         // kurz warten, bis das Portal offen ist
     figuren.push(fi);
     if (fi.id) nachId.set(fi.id, fi);
+    if (!info.silhouette && !info.besucher) ausstatten(fi, aus, FARBEN[haarId] ? FARBEN[haarId].farbe : 0);
     return fi;
   }
 
@@ -391,10 +475,10 @@
   // ---------- Anwesenheit (Chat) ----------
   let zeit = 0;
   // Ergebnis: Profil · 'ungebunden' (Worker sagt: noch kein Ritual) · null (kein Worker oder nicht erreichbar)
-  async function profilLaden(u) {
+  async function profilLaden(u, frisch) {
     if (!S.api) return null;
     try {
-      const r = await fetch(`${S.api.replace(/\/$/, '')}/avatare/profil?plattform=twitch&id=${encodeURIComponent(u.id)}`, { credentials: 'omit' });
+      const r = await fetch(`${S.api.replace(/\/$/, '')}/avatare/profil?plattform=twitch&id=${encodeURIComponent(u.id)}`, { credentials: 'omit', cache: frisch ? 'no-store' : 'default' });
       const d = await r.json();
       return d.gefunden ? d : d.gefunden === false ? 'ungebunden' : null;
     } catch (e) { return null; }
@@ -416,6 +500,22 @@
     setTimeout(() => sammeln(neu, figuren.filter((f) => f.vorlage.haus === neu.vorlage.haus), 8, true), 2200);
   }
 
+  // Neues Aussehen (Chat-Befehl oder „Mein Profil“): die Figur kleidet sich neu ein. Nach einem Befehl sofort
+  // (Bot meldet „🪞 @Name …“), sonst prüft das Overlay höchstens alle 5 Minuten, wenn jemand schreibt.
+  async function umziehen(fi, sofort) {
+    if (!S.api || !fi.id || fi.ungebunden || fi.entfernen) return;
+    if (!sofort && zeit - (fi.profilZeit || 0) < 300) return;
+    fi.profilZeit = zeit;
+    const p = await profilLaden({ id: fi.id }, true);
+    if (!p || p === 'ungebunden' || fi.entfernen || fi.modus !== 'rahmen') return;
+    if (JSON.stringify(p.aussehen || {}) + p.level === fi.aussehenSchluessel) return;
+    fi.entfernen = true; fi.einblenden = Math.min(fi.einblenden, 0.3);
+    nachId.delete(fi.id);
+    const neu = figurErzeugen(vorlageFuer(p.haus, p.figur, fi.id), { id: fi.id, name: fi.name, mod: fi.mod || ['waechter', 'koenigin'].includes(p.rolle),
+      level: p.level, aussehen: p.aussehen, s: fi.s, rolle: p.rolle, jahrestag: p.jahrestag, lurker: fi.lurker });
+    setTimeout(() => { if (neu.root && !neu.root.destroyed) leuchten(neu); }, 900);
+  }
+
   async function chatter(u, art) {
     const text = (u.text || '').trim().toLowerCase();
     // Aufstieg: Mit Worker meldet Streamer.bot „✨ @Name steigt auf: jetzt Level 6!“ (Ruhm oder !levelup).
@@ -434,6 +534,8 @@
     }
     if (vomBot && pruefungNachricht(u.text || '')) return;
     if (vomBot && SPIELE.wurfNachricht(u.text || '')) return;
+    const spiegel = vomBot && (u.text || '').match(/🪞 @([A-Za-z0-9_]{2,25})/);
+    if (spiegel) { const f = figuren.find((x) => !x.entfernen && x.name === spiegel[1].toLowerCase()); if (f) umziehen(f, true); return; }
     if (SPIELE.darfStarten(u) && SPIELE.befehl(text)) return;
     if (vomBot && !u.broadcaster) return;                // Bot-Nachrichten erzeugen keine Figur
     if (!u.id || u.broadcaster) return;                 // Schattenkönig bekommt später eine eigene Figur
@@ -449,15 +551,15 @@
       else if (text.startsWith('!ruf') && !fi.ungebunden) { hausRuf(fi); }
       else if (text.startsWith('!wache') && fi.mod) { fi.wache = true; sammeln(fi, figuren.filter((f) => f.mod), 8, false); }
       else if (art === 'nachricht') { if (fi.lurker && !text.startsWith('!')) { fi.lurker = false; fi.zustandZeit = 0; } leuchten(fi); }
-      if (fi.ungebunden) bindungPruefen(fi, u);
+      if (fi.ungebunden) bindungPruefen(fi, u); else umziehen(fi, false);
       return;
     }
     nachId.set(u.id, { entfernen: false, letzte: zeit });   // Platzhalter gegen doppeltes Anlegen
     const ergebnis = await profilLaden(u);
     const ungebunden = ergebnis === 'ungebunden', profil = ungebunden ? null : ergebnis;
-    const vorlage = profil ? vorlageFuer(profil.haus, profil.figur, u.id) : ungebunden && BESUCHER ? BESUCHER : vorlageFuer(null, null, u.id);
+    const vorlage = profil ? vorlageFuer(profil.haus, profil.figur, u.id) : ungebunden && BESUCHER.length ? BESUCHER[hashZahl(u.id) % BESUCHER.length] : vorlageFuer(null, null, u.id);
     fi = figurErzeugen(vorlage, { id: u.id, name: u.name, mod: u.mod || (profil && ['waechter', 'koenigin'].includes(profil.rolle)), lurker: text.startsWith('!lurk'),
-      level: profil ? profil.level : 1, aussehen: profil ? profil.aussehen : null, silhouette: ungebunden && !BESUCHER, besucher: ungebunden && !!BESUCHER, rolle: profil ? profil.rolle : null,
+      level: profil ? profil.level : 1, aussehen: profil ? profil.aussehen : null, silhouette: ungebunden && !BESUCHER.length, besucher: ungebunden && BESUCHER.length > 0, rolle: profil ? profil.rolle : null,
       jahrestag: profil ? profil.jahrestag : 0 });
     if (ungebunden) fi.pruefeBis = zeit + 60;
     SPIELE.eingabe(fi, text, u);              // z. B. erste Nachricht ist gleich !dabei
@@ -910,6 +1012,7 @@
       if (fi.diadem) fi.diadem.y = fi.koerper.y - S.hoehe * 0.93 + (fi.koerper.pivot.y || 0) * fi.basis;
       if (fi.krone.visible) fi.krone.y = fi.koerper.y - S.hoehe * 0.95 + (fi.koerper.pivot.y || 0) * fi.basis;
       animieren(fi, dt, zeit);
+      begleiterBewegen(fi, dt);
       spur(fi, dt);
 
       if (fi.g.schlafen > 0.8 && !S.sparmodus) {

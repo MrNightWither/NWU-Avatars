@@ -258,18 +258,45 @@ async function haareSetzen(env, p, wunsch) {
   return { ok: true, haare: globalThis.NWU_HAARFARBEN[haare].name };
 }
 
+// Frisur, Kopfschmuck oder Begleiter wählen (Chat: !frisur / !kopf / !begleiter, Website: Mein Profil).
+// wunsch = id oder Name (z. B. "f10" oder "Pferdeschwanz"); "keine" / "aus" / "standard" nimmt es wieder ab.
+const WAHL = { frisur: 'NWU_FRISUREN', kopf: 'NWU_KOPFSCHMUCK', begleiter: 'NWU_BEGLEITER' };
+const einfach = (t) => String(t || '').trim().toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/[^a-z0-9]/g, '');
+async function wahlSetzen(env, p, art, wunsch) {
+  const liste = globalThis[WAHL[art]];
+  const w = einfach(wunsch);
+  let aussehen = {};
+  try { aussehen = p.aussehen ? JSON.parse(p.aussehen) : {}; } catch (e) { /* neu anfangen */ }
+  if (['keine', 'kein', 'aus', 'standard', 'nichts'].includes(w)) {
+    delete aussehen[art];
+    await env.DB.prepare('UPDATE profil SET aussehen = ? WHERE id = ?').bind(JSON.stringify(aussehen), p.id).run();
+    return { ok: true, art, name: null };
+  }
+  const id = Object.keys(liste).find((k) => k === w || einfach(liste[k].name) === w);
+  const frei = Object.keys(liste).filter((k) => globalThis.NWU_WAHL_FREI(p.level, art, k)).map((k) => liste[k].name);
+  if (!id) return { ok: false, grund: 'unbekannt_wahl', art, frei };
+  if (!globalThis.NWU_WAHL_FREI(p.level, art, id)) {
+    const f = globalThis.NWU_FREISCHALTUNGEN.find((x) => x.id === liste[id].ab);
+    return { ok: false, grund: 'level', art, level: f.level, name: liste[id].name, frei };
+  }
+  aussehen[art] = id;
+  await env.DB.prepare('UPDATE profil SET aussehen = ? WHERE id = ?').bind(JSON.stringify(aussehen), p.id).run();
+  return { ok: true, art, name: liste[id].name };
+}
+
 // Profil zu einem Chat-Konto (Streamer.bot schickt Plattform und feste ID)
 const profilVonKonto = (env, plattform, plattformId) => env.DB.prepare(`SELECT p.*, k.name FROM konto k JOIN profil p ON p.id = k.profil_id
   WHERE k.plattform = ? AND k.plattform_id = ?`).bind(plattform, plattformId).first();
 const kontoAnfrage = (d) => d && PLATTFORMEN.includes(d.plattform) && typeof d.plattformId === 'string' && d.plattformId && d.plattformId.length <= 64;
 
-// Von Streamer.bot: Chat-Befehl !haare <farbe> – jeder für sich selbst, erst ab dem freigeschalteten Level
+// Von Streamer.bot: !haare <farbe>, !frisur <name>, !kopf <name>, !begleiter <name> – jeder für sich selbst, ab dem Level
 async function aussehenSetzen(req, env) {
   if (!sbErlaubt(req, env)) return fehler('Nicht erlaubt', 401);
   const d = await jsonLesen(req);
   if (!kontoAnfrage(d)) return antwort({ ok: false, grund: 'ungueltig' }, 400);
   const p = await profilVonKonto(env, d.plattform, d.plattformId);
   if (!p) return antwort({ ok: false, grund: 'unbekannt' });
+  for (const art of Object.keys(WAHL)) if (typeof d[art] === 'string') return antwort(await wahlSetzen(env, p, art, d[art]));
   return antwort(await haareSetzen(env, p, d.haare));
 }
 
@@ -376,7 +403,10 @@ async function ich(req, env, cors, aktion) {
   if (!a) return fehler('Nicht angemeldet', 401, cors);
   const { p } = a;
   const d = req.method === 'POST' ? (await jsonLesen(req)) || {} : {};
-  if (aktion === 'aussehen') return antwort(await haareSetzen(env, p, d.haare), 200, cors);
+  if (aktion === 'aussehen') {
+    for (const art of Object.keys(WAHL)) if (typeof d[art] === 'string') return antwort(await wahlSetzen(env, p, art, d[art]), 200, cors);
+    return antwort(await haareSetzen(env, p, d.haare), 200, cors);
+  }
   if (aktion === 'anonym') {
     await env.DB.prepare('UPDATE profil SET anonym = ? WHERE id = ?').bind(d.an ? 1 : 0, p.id).run();
     return antwort({ ok: true, anonym: !!d.an }, 200, cors);

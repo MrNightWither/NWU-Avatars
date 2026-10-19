@@ -362,6 +362,19 @@ env.DB.roh.exec(`UPDATE profil SET level = 6, ruhm = ${globalThis.NWU_RUHM.ruhmF
 assert.equal((await mitToken('/ich/aussehen', token, { haare: 'kupfer' })).daten.ok, true);
 assert.equal((await mitToken('/ich/aussehen', token, { haare: 'lila' })).daten.grund, 'level', 'seltene Farbe erst ab 25');
 
+// Frisur, Kopfschmuck, Begleiter (Level 6: noch nichts davon)
+r = await mitToken('/ich/aussehen', token, { frisur: 'Pferdeschwanz' });
+assert.equal(r.daten.grund, 'level'); assert.equal(r.daten.level, 8);
+env.DB.roh.exec(`UPDATE profil SET level = 20, ruhm = ${globalThis.NWU_RUHM.ruhmFuerLevel(20)}`);
+assert.equal((await mitToken('/ich/aussehen', token, { frisur: 'Pferdeschwanz' })).daten.ok, true);
+assert.equal((await sb('/avatare/aussehen', { plattform: 'twitch', plattformId: '111', begleiter: 'katze' })).daten.name, 'Katze');
+assert.equal((await sb('/avatare/aussehen', { plattform: 'twitch', plattformId: '111', begleiter: 'wolf' })).daten.grund, 'level', 'Wolf erst ab 45');
+assert.equal((await sb('/avatare/aussehen', { plattform: 'twitch', plattformId: '111', kopf: 'hörner' })).daten.grund, 'level');
+assert.equal((await sb('/avatare/aussehen', { plattform: 'twitch', plattformId: '111', kopf: 'quatsch' })).daten.grund, 'unbekannt_wahl');
+assert.deepEqual((await mitToken('/ich', token)).daten.aussehen, { haare: 'kupfer', frisur: 'f10', begleiter: 'katze' });
+assert.equal((await sb('/avatare/aussehen', { plattform: 'twitch', plattformId: '111', frisur: 'keine' })).daten.ok, true);
+assert.equal((await ruf('/avatare/profil?plattform=twitch&id=111')).daten.aussehen.frisur, undefined);
+
 // Anonym: über Website und Chat; dann nicht per Name auffindbar, Chronik ohne Namen, Overlay (ID) findet weiter
 assert.equal((await mitToken('/ich/anonym', token, { an: true })).daten.anonym, true);
 assert.equal((await ruf('/avatare/profil?plattform=twitch&name=mrnightwither')).daten.gefunden, false);

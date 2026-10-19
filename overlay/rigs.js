@@ -5,11 +5,15 @@
 //   art:   welche Bewegung das Teil macht (beinV/beinH, armV/armH, kopf, rumpf, umhang)
 //   oben:  kippt mit dem Oberkörper · dunkel: hinteres Teil · dreh: Grundwinkel · an: hängt an diesem Teil
 //   haengt: zeigt immer nach unten und pendelt (Kette) · senkrecht: bleibt aufrecht (Stab) · s: Größe
+// kopfRahmen: wo der Bezugsrahmen der Frisuren und des Kopfschmucks (tools/frisuren.py) auf dem Kopf-Bild liegt:
+//   nase = Nasenspitze im Kopf-Bild, s = Größe; frisur: 'vorne' (vor dem Kopf), 'hinten' (hinter Hut/Kopf), null (Kapuze verdeckt)
+// abzeichen: Mitte der Gürtelschnalle im Rumpf-Bild und Durchmesser (Haus-Abzeichen ab Level 2)
 // Reihenfolge der Teile = Zeichenreihenfolge (erstes ganz hinten).
 window.NWU_RIGS = {
   // Haus des Mondes · Klinge (gebogener Säbel, blauer Umhang)
   'haus1-a': {
     hoehe: 403, huefte: [0, -145],
+    kopfRahmen: { nase: [154, 96], s: 0.54, frisur: 'vorne' }, abzeichen: [82, 101, 30],
     teile: [
       { id: 'umhang', bild: 'umhang', anker: [140, 8], pos: [-8, -240], art: 'umhang', oben: true },
       { id: 'armH', bild: 'armH', anker: [27, 15], pos: [-10, -232], art: 'armH', oben: true, dunkel: true },
@@ -24,6 +28,7 @@ window.NWU_RIGS = {
   // Haus des Mondes · Schatten (Kapuze, zwei Dolche)
   'haus1-c': {
     hoehe: 381, huefte: [0, -150],
+    kopfRahmen: { nase: [151, 57], s: 0.5, frisur: null }, abzeichen: [118, 96, 30],
     teile: [
       { id: 'umhang', bild: 'umhang', anker: [150, 12], pos: [-8, -228], art: 'umhang', oben: true },
       { id: 'armH', bild: 'armH', anker: [25, 12], pos: [-10, -214], art: 'armH', oben: true, dunkel: true },
@@ -39,6 +44,7 @@ window.NWU_RIGS = {
   // Haus des Mondes · Seher (Hut, Stab mit Kugel)
   'haus1-b': {
     hoehe: 424, huefte: [0, -120],
+    kopfRahmen: { nase: [154, 98], s: 0.5, frisur: 'hinten' }, abzeichen: [102, 103, 32],
     teile: [
       { id: 'umhang', bild: 'umhang', anker: [65, 10], pos: [-14, -262], art: 'umhang', oben: true },
       { id: 'armH', bild: 'armH', anker: [29, 12], pos: [-10, -248], art: 'armH', oben: true, dunkel: true },
@@ -53,6 +59,7 @@ window.NWU_RIGS = {
   // Haus des Mondes · Hüter (Rüstung, Morgenstern)
   'haus1-d': {
     hoehe: 436, huefte: [0, -190],
+    kopfRahmen: { nase: [139, 83], s: 0.54, frisur: 'vorne' }, abzeichen: [82, 93, 30],
     teile: [
       { id: 'armH', bild: 'armH', anker: [38, 30], pos: [-12, -270], art: 'armH', oben: true, dunkel: true },
       { id: 'beinH', bild: 'bein', anker: [34, 8], pos: [-8, -190], art: 'beinH', dunkel: true },
@@ -63,6 +70,34 @@ window.NWU_RIGS = {
       { id: 'waffeV', bild: 'waffeV', anker: [31, 8], an: 'armV', pos: [4, 132], s: 0.75, haengt: true },
     ],
   },
+  // Besucher: wer noch kein Ritual gemacht hat (Reisemantel, Kapuze, Tasche, keine Waffe)
+  'besucher': {
+    hoehe: 690, huefte: [0, -265],
+    teile: [
+      { id: 'umhang', bild: 'umhang', anker: [241, 22], pos: [-6, -452], art: 'umhang', oben: true, s: 0.85 },
+      { id: 'armH', bild: 'armH', anker: [50, 18], pos: [-8, -428], art: 'armH', oben: true, dunkel: true },
+      { id: 'beinH', bild: 'beinH', anker: [45, 12], pos: [-12, -265], art: 'beinH', dunkel: true },
+      { id: 'beinV', bild: 'beinV', anker: [45, 12], pos: [10, -265], art: 'beinV' },
+      { id: 'rumpf', bild: 'rumpf', anker: [95, 200], pos: [0, -285], art: 'rumpf', oben: true },
+      { id: 'tasche', bild: 'tasche', anker: [140, 18], pos: [22, -440], art: 'rumpf', oben: true },
+      { id: 'kopf', bild: 'kopf', anker: [175, 292], pos: [6, -452], art: 'kopf', oben: true, s: 0.82 },
+      { id: 'armV', bild: 'armV', anker: [48, 18], pos: [22, -428], art: 'armV', oben: true },
+    ],
+  },
+  // Besucherin (graue Haare unter der Kapuze, braune Tasche)
+  'besucherin': {
+    hoehe: 857, huefte: [0, -372],
+    teile: [
+      { id: 'umhang', bild: 'umhang', anker: [194, 25], pos: [-12, -598], art: 'umhang', oben: true },
+      { id: 'armH', bild: 'armH', anker: [55, 20], pos: [-46, -522], art: 'armH', oben: true, dunkel: true },
+      { id: 'beinH', bild: 'beinH', anker: [62, 22], pos: [-10, -372], art: 'beinH', dunkel: true },
+      { id: 'beinV', bild: 'beinV', anker: [70, 22], pos: [10, -372], art: 'beinV' },
+      { id: 'rumpf', bild: 'rumpf', anker: [95, 215], pos: [0, -392], art: 'rumpf', oben: true },
+      { id: 'tasche', bild: 'tasche', anker: [160, 16], pos: [18, -590], art: 'rumpf', oben: true },
+      { id: 'kopf', bild: 'kopf', anker: [150, 262], pos: [10, -598], art: 'kopf', oben: true },
+      { id: 'armV', bild: 'armV', anker: [55, 20], pos: [-36, -522], art: 'armV', oben: true },
+    ],
+  },
 };
 
 // Haare als eigene Ebene über dem Kopf (wird im Overlay pro Person eingefärbt), und dieselben
@@ -70,6 +105,7 @@ window.NWU_RIGS = {
 (function () {
   const R = window.NWU_RIGS;
   for (const id of Object.keys(R)) {
+    if (id.startsWith('besucher')) continue;   // Kapuze, keine eigene Haar-Ebene
     const teile = R[id].teile, i = teile.findIndex((t) => t.id === 'kopf');
     if (i >= 0 && !teile.some((t) => t.id === 'haare')) teile.splice(i + 1, 0, { ...teile[i], id: 'haare', bild: 'haare', haare: true });
   }

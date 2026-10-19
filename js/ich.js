@@ -28,7 +28,7 @@
     return r.json();
   }
 
-  const KARTEN = ['stand', 'k-haare', 'k-anonym', 'k-konten', 'k-loeschen', 'abmelden-zeile'];
+  const KARTEN = ['stand', 'k-haare', 'k-frisur', 'k-kopf', 'k-begleiter', 'k-anonym', 'k-konten', 'k-loeschen', 'abmelden-zeile'];
   function abgemeldet(text) {
     KARTEN.forEach((id) => { $(id).hidden = true; });
     $('warten').hidden = true; $('anmelden').hidden = false;
@@ -101,6 +101,12 @@
       b.addEventListener('click', () => haareWaehlen(id));
       return b;
     }));
+    // Frisur, Kopfschmuck, Begleiter
+    const aus = d.aussehen || {};
+    wahlZeigen('frisur', window.NWU_FRISUREN, aus.frisur, (id) => id === 'glatze' ? ['overlay/frisuren/kopfform.webp'] : ['overlay/frisuren/kopfform.webp', `overlay/frisuren/${id}.webp`], level,
+      d.figur === 'c' ? 'Beim Schatten verbirgt die Kapuze die Frisur – sie zählt erst, wenn du eine andere Gestalt hast.' : 'Im Chat: !frisur <Name>.');
+    wahlZeigen('kopf', window.NWU_KOPFSCHMUCK, aus.kopf, (id) => ['overlay/frisuren/kopfform.webp', `overlay/kopfschmuck/${id}.webp`], level, 'Im Chat: !kopf <Name>.');
+    wahlZeigen('begleiter', window.NWU_BEGLEITER, aus.begleiter, (id) => [`overlay/begleiter/${id}.webp`], level, 'Läuft neben deiner Figur. Im Chat: !begleiter <Name>.');
     $('anonym').checked = !!d.anonym;
 
     // Konten
@@ -128,12 +134,41 @@
   async function laden() {
     if (beispiel) {
       $('beispiel').hidden = false;
-      zeigen({ haus: 'haus3', figur: 'b', level: 12, ruhm: RUHM.ruhmFuerLevel(12) + 300, aussehen: { haare: 'kupfer' }, anonym: false,
+      zeigen({ haus: 'haus3', figur: 'b', level: 32, ruhm: RUHM.ruhmFuerLevel(32) + 300, aussehen: { haare: 'kupfer', frisur: 'f10', begleiter: 'katze' }, anonym: false,
         konten: [{ plattform: 'twitch', name: 'Nachtfalke' }, { plattform: 'kick', name: 'nachtfalke_kick' }], verknuepfbar: ['kick', 'youtube'] });
       return;
     }
     if (!api || !schluessel) { abgemeldet(''); return; }
     try { zeigen(await rufen('/ich')); } catch (e) { if (e.message !== 'abgemeldet') abgemeldet('Morrígan ist gerade nicht erreichbar.'); }
+  }
+
+  const ZIEL = { frisur: 'frisuren', kopf: 'kopfschmuck', begleiter: 'begleiter' };
+  function wahlZeigen(art, liste, aktuell, bilder, level, text) {
+    const ab = (id) => (window.NWU_FREISCHALTUNGEN.find((f) => f.id === liste[id].ab) || {}).level;
+    const erstes = Math.min(...Object.keys(liste).map(ab));
+    $(`${art}-text`).textContent = level < erstes ? `Ab Level ${erstes}. ${text}` : text;
+    const knopf = (id, name, srcs, frei, lv) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.disabled = !frei; b.setAttribute('aria-pressed', String((aktuell || null) === id));
+      const bild = document.createElement('span'); bild.className = 'bild';
+      for (const src of srcs) { const i = document.createElement('img'); i.src = src; i.alt = ''; i.loading = 'lazy'; bild.append(i); }
+      const n = document.createElement('span'); n.textContent = name;
+      b.append(bild, n);
+      if (!frei) { const l = document.createElement('span'); l.className = 'lv'; l.textContent = `Lv ${lv}`; b.append(l); }
+      b.addEventListener('click', () => waehlen(art, id || 'keine'));
+      return b;
+    };
+    $(ZIEL[art]).replaceChildren(knopf(null, art === 'frisur' ? 'Standard' : 'Keiner', [], true, 0),
+      ...Object.entries(liste).map(([id, e]) => knopf(id, e.name, bilder(id), window.NWU_WAHL_FREI(level, art, id), ab(id))));
+  }
+  async function waehlen(art, id) {
+    if (beispiel) { ich.aussehen = { ...ich.aussehen, [art]: id === 'keine' ? undefined : id }; zeigen(ich); return; }
+    try {
+      const d = await rufen('/ich/aussehen', { [art]: id });
+      $(`${art}-hinweis`).textContent = d.ok ? (d.name ? `${d.name} – im Stream sichtbar, sobald du das nächste Mal schreibst.` : 'Abgelegt.')
+        : d.grund === 'level' ? `Erst ab Level ${d.level}.` : 'Das gibt es nicht.';
+      if (d.ok) { ich.aussehen = { ...ich.aussehen, [art]: id === 'keine' ? undefined : id }; zeigen(ich); }
+    } catch (e) { /* abgemeldet */ }
   }
 
   async function haareWaehlen(id) {
