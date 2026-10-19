@@ -79,6 +79,9 @@ Ebenfalls am 18.10. (getestet im Browser und mit Worker-Tests, nicht live):
 - **`!anonym`**: in Chronik/Rangliste Name verschwommen bzw. „Unbekannte Seele“, Figurenseite nicht per Name auffindbar.
 - **Besucher-Figur** für alle ohne Ritual (normale Kleidung, keine Waffe) statt Silhouette – Gemini-Prompt schreiben, Bild am PC.
 - **Profil selbst löschen** (`!löschen`, Rückfrage `!löschen ja`, oder Knopf auf der Website + Code im Chat) – löscht sofort in Cloudflare.
+- **Anmelden auf der Website per Code** (Name eingeben → Code → `!anmelden 1234` im Chat → Gerät ist ~30 Tage angemeldet):
+  dort Haarfarbe, Anonym, Kick/YouTube verknüpfen, Profil löschen. Spielstand liegt immer im Worker, nicht im Browser.
+  Anonym-Anzeige: verschwommen oder „Unbekannte Seele“. Im Chat markiert der Bot weiter mit @Name (das ist ok).
 - Danach Datenschutztext (Kurzfassung) an alles anpassen.
 
 ## Gewünschte Features (Reihenfolge-Vorschlag, ursprünglich)
