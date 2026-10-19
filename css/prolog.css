@@ -79,3 +79,13 @@ body.offen .kugelglanz { opacity: 0; width: 160vmax; height: 160vmax; }
 }
 body.endet .erzaehlung { bottom: 24vh; }
 .ende { gap: 10px; }
+
+/* Bilder zwischen den Kamerafahrten (Morrígan, Unity-Fest, Spaltung, Westen) */
+.szene { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; z-index: 1; pointer-events: none;
+  transition: opacity 1.6s ease; transform-origin: 50% 45%; }
+.szene.an { opacity: 1; animation: naeher 14s ease-out forwards; }
+@keyframes naeher { from { transform: scale(1.02); } to { transform: scale(1.09); } }
+@media (prefers-reduced-motion: reduce) { .szene.an { animation: none; } }
+.erzaehlung, .wappen, .kugelglanz { z-index: 2; }
+.ende, .ueberspringen, .ton { z-index: 4; }
+.vorhang { z-index: 5; }

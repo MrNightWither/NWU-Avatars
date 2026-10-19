@@ -1,5 +1,5 @@
 // Prolog „Die Spaltung“: Morrígan erzählt, wie aus NightWither Unity vier Häuser wurden.
-// Alles aus vorhandenen Bildern: Karte (ohne Nebel), Wappen, Kamerafahrten, Risse, Nebel, Klang.
+// Karte (ohne Nebel), Wappen, Kamerafahrten, Risse, Nebel, Klang – dazwischen vier Bilder (assets/prolog-*.webp).
 // Texte stehen direkt im Ablauf unten. Vorlesen: Sprachdateien assets/stimme/prolog-01.mp3 … prolog-13.mp3
 // (Reihenfolge und Texte: docs/PROLOG-TEXT.md). Ist eine Datei da, wartet der Film, bis der Satz gesprochen ist.
 'use strict';
@@ -105,6 +105,11 @@
     text.classList.remove('an');
     await warte(1400);
   }
+  // Ganze Bilder zwischen den Kamerafahrten
+  const szene = $('szene');
+  for (const n of ['morrigan', 'unity', 'spaltung', 'westen']) new Image().src = `assets/prolog-${n}.webp`;   // vorladen
+  function bild(name) { szene.src = `assets/prolog-${name}.webp`; szene.classList.remove('an'); void szene.offsetWidth; szene.classList.add('an'); }
+  const bildWeg = () => { szene.classList.remove('an'); return warte(1600); };
   function wappenZeigen(id) {
     const h = HAEUSER.find((x) => x.id === id);
     if (h && h.wappenBild) { wappen.src = h.wappenBild; wappen.classList.add('an'); }
@@ -117,14 +122,17 @@
     stimmen.forEach((a) => a.pause());
     satzNr = 0;
     body.className = '';
+    szene.classList.remove('an');
     $('ende').hidden = true; $('ueberspringen').hidden = false;
     risseZeichnen();
     await fahren(ORT.weit, 0);
 
-    body.classList.add('kugel');
+    bild('morrigan');
     await warte(1800); if (!weiter()) return;
     await sag('Hör zu. Ich bin Morrígan. In der Kugel des Königs habe ich alles gesehen, was in jener Nacht geschah.', 6500);
     if (!weiter()) return;
+    body.classList.add('kugel');                  // in die Kugel hinein: das Bild weicht dem Blick auf die Welt
+    await bildWeg(); if (!weiter()) return;
 
     body.classList.add('offen');
     TON.glocke();
@@ -133,7 +141,9 @@
     if (!weiter()) return;
 
     await fahren(ORT.zitadelle, 4500); if (!weiter()) return;
+    bild('unity');
     await sag('In der Zitadelle herrschte der Schattenkönig. Sein Banner war schwarz und gold, und der Mond war sein Zeichen.', 7000);
+    await bildWeg();
     if (!weiter()) return;
     body.classList.add('dunkel');
     await sag('Doch Stolz und Misstrauen wuchsen in den Hallen. Und eines Nachts wurde ein Schwur gebrochen.', 6500);
@@ -148,8 +158,10 @@
     body.classList.add('gespalten');
     await warte(2200); if (!weiter()) return;
     body.classList.remove('blitzt', 'bebt');
-    await sag('In jener Nacht zerbrach Unity.', 4200);
+    bild('spaltung');
+    await sag('In jener Nacht zerbrach Unity.', 5200);
     body.classList.add('verglueht');
+    await bildWeg();
     if (!weiter()) return;
 
     const reise = [
@@ -170,7 +182,9 @@
     body.classList.add('westen');
     await sag('Zwei Häuser – die Raben und die Dornen – verschwanden in jener Nacht im Westen. Seitdem liegt dort Nebel.', 7000);
     if (!weiter()) return;
-    await sag('Man sagt, sie sind nicht tot. Man sagt, sie warten.', 5000);
+    bild('westen');
+    await sag('Man sagt, sie sind nicht tot. Man sagt, sie warten.', 5500);
+    await bildWeg();
     if (!weiter()) return;
 
     await fahren(ORT.weit, 4500); if (!weiter()) return;
