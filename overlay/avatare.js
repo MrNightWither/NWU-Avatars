@@ -532,7 +532,7 @@
       duell.sieger = sieger;
       sieger.jubelBis = zeit + 3; huepfen(sieger); leuchten(sieger);
       verlierer.zustand = 'sitzen'; verlierer.g.sitzen = 0.5;
-      const t = new PIXI.Text({ text: `⚔ ${sieger.name || 'Sieg'}`, style: duellStil });
+      const t = new PIXI.Text({ text: '⚔ Sieg', style: duellStil });
       t.anchor.set(0.5);
       const p = versetzt(sieger.root.x, sieger.root.y, sieger.winkel, S.hoehe * 1.35);
       t.position.set(p.x, p.y);
@@ -568,7 +568,7 @@
     const sieg = text.match(/@([A-Za-z0-9_]{2,25}) hat Morrígans Prüfung bestanden/i);
     if (sieg) {
       const name = sieg[1].toLowerCase();
-      karte.querySelector('.fuss').textContent = `✦ ${sieg[1]} hat bestanden ✦`;
+      karte.querySelector('.fuss').textContent = '✦ Bestanden ✦';
       if (zeitAnim) zeitAnim.finish();
       clearTimeout(karteZu); karteZu = setTimeout(() => karte.classList.remove('an'), 7000);
       const fi = figuren.find((f) => !f.entfernen && f.name === name);

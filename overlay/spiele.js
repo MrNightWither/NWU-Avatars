@@ -149,7 +149,7 @@ window.NWU_SPIELE = function (K) {
               funken(ziel.x, ziel.y, 0xb88cff, 14); funken(ziel.x, ziel.y, 0xe8c96d, 8);
               faenger.jubelBis = K.zeit() + 3; huepfen(faenger); faenger.puls = 1;
               ueberFigur(faenger, `+${plus('rabe')} Ruhm`);
-              karteFuss(`✦ ${faenger.name || 'Jemand'} hat den Raben gefangen ✦`, 5);
+              karteFuss('✦ Der Rabe ist gefangen ✦', 5);
               melden('rabe', [faenger]);
             }
             sitzt += dt; x = ziel.x; y = ziel.y; r.rotation = faenger.winkel;
@@ -389,9 +389,9 @@ window.NWU_SPIELE = function (K) {
             if (s) {
               s.jubelBis = K.zeit() + 4; huepfen(s); s.puls = 1;
               const p = ueberKopf(s, 0.6); funken(p.x, p.y, 0xe8c96d, 24); funken(p.x, p.y, s.farbe, 12);
-              ansage(`${(s.name || 'Einer').toUpperCase()} STEHT`, 3.2);
+              ansage('DER LETZTE STEHT', 3.2);
               ueberFigur(s, `+${plus('letzter')} Ruhm`);
-              karteFuss(`✦ ${s.name || 'Einer'} steht als Letzter ✦`, 7);
+              karteFuss('✦ Einer steht als Letzter ✦', 7);
               melden('letzter', [s]);
             } else karteFuss('Niemand ist übrig geblieben.', 5);
           } else if (t > naechster) {

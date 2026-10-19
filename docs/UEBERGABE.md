@@ -70,6 +70,17 @@ Ebenfalls am 18.10. (getestet im Browser und mit Worker-Tests, nicht live):
   Offen: am PC WebSocket-Server einschalten, `streamerbot` in `overlay/config.js` eintragen, Aktionen anlegen.
   Tauziehen läuft an der **oberen** Kante (unten hängen die Figuren kopfüber).
 
+## Beschlossen 19.10. (nachts), noch zu bauen
+
+- **Keine Namen im Overlay** – über Figuren und in eingeblendeten Texten steht nie ein Name (umgesetzt). Namen nur im Chat (Bot).
+- **Nur Twitch beim Ritual**, danach auf der Figurenseite optional Kick/YouTube verknüpfen (neuer Code im jeweiligen Chat,
+  gleiches Profil). TikTok nie (nur Zahlen für die Reise-Karte).
+- **Ritual-Antworten nach der Bindung nicht mehr speichern** (Datensparsamkeit).
+- **`!anonym`**: in Chronik/Rangliste Name verschwommen bzw. „Unbekannte Seele“, Figurenseite nicht per Name auffindbar.
+- **Besucher-Figur** für alle ohne Ritual (normale Kleidung, keine Waffe) statt Silhouette – Gemini-Prompt schreiben, Bild am PC.
+- **Profil selbst löschen** (`!löschen`, Rückfrage `!löschen ja`, oder Knopf auf der Website + Code im Chat) – löscht sofort in Cloudflare.
+- Danach Datenschutztext (Kurzfassung) an alles anpassen.
+
 ## Gewünschte Features (Reihenfolge-Vorschlag, ursprünglich)
 
 1. **Ruhm automatisch** (Grundlage für alles) – inkl. Anwesenheit für stille Zuschauer
