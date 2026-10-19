@@ -82,7 +82,96 @@ public class CPHInline
 }
 ```
 
-Für Kick/YouTube später: `"twitch"` durch die Plattform ersetzen und eine eigene Action anlegen.
+Das Ritual geht nur über Twitch. Kick und YouTube werden danach unter „Mein Profil“ verknüpft (siehe unten, `!verknüpfen`).
+
+## Streamer.bot: Profil-Befehle `!anmelden`, `!anonym`, `!löschen`, `!verknüpfen`
+
+Alle vier nutzen dieselbe Vorlage. **Eine Action pro Befehl**, Trigger = Command (Everyone), Code einfügen und
+oben `PFAD` und die Texte anpassen. Die Plattform kommt aus `commandSource` (Twitch/Kick/YouTube) – bei `!anmelden`
+nur Twitch, bei `!verknüpfen` nur Kick und YouTube (im Command die Plattformen entsprechend anhaken).
+
+| Befehl | Commands | Was passiert |
+|---|---|---|
+| `!anmelden 1234` | `!anmelden` | Anmelden auf der Website (ich.html). Nur für die Website – im Chat ist man immer erkannt. |
+| `!anonym` | `!anonym` | Name in Chronik/Rangliste verbergen, nochmal = wieder zeigen |
+| `!löschen` / `!löschen ja` | `!löschen`, `!loeschen` | ohne „ja“ nur Rückfrage, mit „ja“ ist das Profil sofort gelöscht |
+| `!verknüpfen 1234` | `!verknüpfen`, `!verknuepfen` | im Kick- oder YouTube-Chat: Konto mit dem Profil verbinden (Code von ich.html) |
+
+```csharp
+using System;
+using System.Net.Http;
+using System.Text;
+using System.Text.RegularExpressions;
+using Newtonsoft.Json.Linq;
+
+public class CPHInline
+{
+    static readonly HttpClient http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+    const string BASIS = "https://nwu-avatare.DEIN-NAME.workers.dev";
+
+    JObject Post(string pfad, JObject daten)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Post, BASIS + pfad);
+        req.Headers.Add("Authorization", "Bearer " + CPH.GetGlobalVar<string>("nwuAvatarSecret", true));
+        req.Content = new StringContent(daten.ToString(), Encoding.UTF8, "application/json");
+        return JObject.Parse(http.SendAsync(req).Result.Content.ReadAsStringAsync().Result);
+    }
+
+    public bool Execute()
+    {
+        string befehl = args["command"].ToString().ToLower();
+        string eingabe = args.ContainsKey("rawInput") ? args["rawInput"].ToString().Trim().ToLower() : "";
+        string user = args["user"].ToString();
+        // Plattform: twitch, kick oder youtube (in deiner Streamer.bot-Version ggf. prüfen, wie das Argument heißt)
+        string plattform = args.ContainsKey("commandSource") ? args["commandSource"].ToString().ToLower() : "twitch";
+        string code = Regex.Match(eingabe, @"\d{4}").Value;
+        var daten = new JObject { ["plattform"] = plattform, ["plattformId"] = args["userId"].ToString(), ["name"] = user };
+        try
+        {
+            if (befehl.StartsWith("!anmelden"))
+            {
+                if (plattform != "twitch") return true;
+                if (code == "") { CPH.SendMessage($"@{user} So meldest du dich auf der Website an: Code unter „Mein Profil“ holen, dann !anmelden 1234."); return true; }
+                daten["code"] = code;
+                var a = Post("/sitzung/bestaetigen", daten);
+                if ((bool?)a["ok"] == true) CPH.SendMessage($"🔮 @{user} Morrígan hat dich erkannt. Die Seite meldet dich jetzt an.");
+                else if ((string)a["grund"] == "unbekannt") CPH.SendMessage($"@{user} Du gehörst noch keinem Haus an. Vollende zuerst das Ritual.");
+                else CPH.SendMessage($"@{user} Der Code passt nicht oder ist abgelaufen. Hol dir auf der Seite einen neuen.");
+            }
+            else if (befehl.StartsWith("!anonym"))
+            {
+                var a = Post("/avatare/anonym", daten);
+                if ((string)a["grund"] == "unbekannt") CPH.SendMessage($"@{user} Du gehörst noch keinem Haus an.");
+                else if ((bool?)a["anonym"] == true) CPH.SendMessage($"@{user} Du bist jetzt eine unbekannte Seele. In der Chronik steht dein Name nicht mehr. (Nochmal !anonym = wieder sichtbar)");
+                else CPH.SendMessage($"@{user} Dein Name steht wieder in der Chronik.");
+            }
+            else if (befehl.StartsWith("!l"))   // !löschen / !loeschen
+            {
+                if (eingabe != "ja") { CPH.SendMessage($"@{user} Damit löschst du deine Figur, dein Level und deinen Ruhm für immer. Wirklich? Dann schreib: !löschen ja"); return true; }
+                var a = Post("/avatare/loeschen", daten);
+                if ((bool?)a["ok"] == true) CPH.SendMessage($"@{user} Morrígan hat dich vergessen. Dein Profil ist gelöscht.");
+                else CPH.SendMessage($"@{user} Zu dir gibt es kein Profil.");
+            }
+            else if (befehl.StartsWith("!verkn"))
+            {
+                if (plattform == "twitch") { CPH.SendMessage($"@{user} !verknüpfen schreibst du im Kick- oder YouTube-Chat. Den Code gibt es unter „Mein Profil“."); return true; }
+                if (code == "") return true;
+                daten["code"] = code;
+                var a = Post("/verknuepfen/bestaetigen", daten);
+                if ((bool?)a["ok"] == true) CPH.SendMessage($"@{user} Verknüpft! Dein Ruhm von hier zählt jetzt für deine Figur.");
+                else if ((string)a["grund"] == "schon_gebunden") CPH.SendMessage($"@{user} Dieses Konto ist schon verknüpft.");
+                else CPH.SendMessage($"@{user} Der Code passt nicht oder ist abgelaufen.");
+            }
+        }
+        catch (Exception e) { CPH.LogWarn("NWU Profil: " + e.Message); }
+        return true;
+    }
+}
+```
+
+**Wichtig bei `!anmelden`:** Morrígan sagt nie „schreib mal diesen Code“ von sich aus. Wer einen Code von jemand
+anderem eintippt, meldet diese Person auf ihrem Gerät mit dem eigenen Profil an – deshalb steht auf der Website
+„Schreib das als <dein Name>“.
 
 ## Streamer.bot: Befehl `!levelup @Name`
 

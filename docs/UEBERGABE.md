@@ -70,19 +70,21 @@ Ebenfalls am 18.10. (getestet im Browser und mit Worker-Tests, nicht live):
   Offen: am PC WebSocket-Server einschalten, `streamerbot` in `overlay/config.js` eintragen, Aktionen anlegen.
   Tauziehen läuft an der **oberen** Kante (unten hängen die Figuren kopfüber).
 
-## Beschlossen 19.10. (nachts), noch zu bauen
+## Gebaut 19.10. (getestet mit Worker-Tests und im Browser, nicht live)
 
-- **Keine Namen im Overlay** – über Figuren und in eingeblendeten Texten steht nie ein Name (umgesetzt). Namen nur im Chat (Bot).
-- **Nur Twitch beim Ritual**, danach auf der Figurenseite optional Kick/YouTube verknüpfen (neuer Code im jeweiligen Chat,
-  gleiches Profil). TikTok nie (nur Zahlen für die Reise-Karte).
-- **Ritual-Antworten nach der Bindung nicht mehr speichern** (Datensparsamkeit).
-- **`!anonym`**: in Chronik/Rangliste Name verschwommen bzw. „Unbekannte Seele“, Figurenseite nicht per Name auffindbar.
-- **Besucher-Figur** für alle ohne Ritual (normale Kleidung, keine Waffe) statt Silhouette – Gemini-Prompt schreiben, Bild am PC.
-- **Profil selbst löschen** (`!löschen`, Rückfrage `!löschen ja`, oder Knopf auf der Website + Code im Chat) – löscht sofort in Cloudflare.
-- **Anmelden auf der Website per Code** (Name eingeben → Code → `!anmelden 1234` im Chat → Gerät ist ~30 Tage angemeldet):
-  dort Haarfarbe, Anonym, Kick/YouTube verknüpfen, Profil löschen. Spielstand liegt immer im Worker, nicht im Browser.
-  Anonym-Anzeige: verschwommen oder „Unbekannte Seele“. Im Chat markiert der Bot weiter mit @Name (das ist ok).
-- Danach Datenschutztext (Kurzfassung) an alles anpassen.
+- **Keine Namen im Overlay** – Namen nur im Chat (Bot markiert mit @Name).
+- **Nur Twitch beim Ritual**; Kick/YouTube unter „Mein Profil“ verknüpfen (`!verknüpfen <code>` im jeweiligen Chat). TikTok nie.
+- **Ritual-Antworten werden nach der Bindung nicht gespeichert** (Profil `quiz` = NULL, Anmeldung geleert, nach 7 Tagen gelöscht).
+- **Mein Profil** (`ich.html`): Anmelden per Code (`!anmelden 1234`, 30 Tage pro Gerät, nur Hash des Schlüssels in der DB),
+  Haarfarbe, Anonym, Konten, Profil löschen, Abmelden.
+- **`!anonym`**: Chronik zeigt „Unbekannte Seele“, Figurenseite nicht per Name auffindbar.
+- **`!löschen` → `!löschen ja`** und Löschen-Knopf auf der Website: löscht sofort alles in Cloudflare.
+- **Besucher-Figur** vorbereitet (`besucher` in `overlay/config.js`), Prompt in `GEMINI-PROMPTS.md` Abschnitt 13. Bis das Bild
+  da ist: Silhouette.
+- Streamer.bot-Code für `!anmelden`, `!anonym`, `!löschen`, `!verknüpfen`: `worker/README.md`.
+- Offen: **Datenschutztext** (Kurzfassung) anpassen – auf Wunsch erst später. Am PC prüfen, wie in deiner
+  Streamer.bot-Version das Plattform-Argument heißt (`commandSource`).
+- Offen: eigene Figuren für dich (Schattenkönig) und die Partnerin (Prompts: `GEMINI-PROMPTS.md` Abschnitt 14).
 
 ## Gewünschte Features (Reihenfolge-Vorschlag, ursprünglich)
 

@@ -15,10 +15,9 @@ window.NWU_SEITE = {
   impressum: 'https://impressum.nightwither.de',
   datenschutz: 'https://datenschutz.nightwither.de',
 
+  // Ritual und Anmelden nur über Twitch. Kick und YouTube verknüpft man danach unter „Mein Profil“ (ich.html).
+  // TikTok nie (dort gibt es keine Figuren, nur Zahlen für die Reise-Karte).
   plattformen: [
     { id: 'twitch',  name: 'Twitch' },
-    { id: 'kick',    name: 'Kick' },
-    { id: 'youtube', name: 'YouTube' },
-    { id: 'tiktok',  name: 'TikTok' },
   ],
 };

@@ -468,3 +468,37 @@ Same painted dark fantasy style as the uploaded map. A wall of dense grey fog ov
 silhouettes of a raven tower and a thorn forest barely visible inside the fog, two pairs of glowing eyes
 watching from the mist. Eerie, quiet, cinematic. No text.
 ```
+
+## 13. Besucher-Figur (für alle ohne Ritual, Stand 19.10.2026)
+
+Wer noch kein Ritual gemacht hat, läuft als **Besucher** um die Kamera: eine einfache Reisende oder ein einfacher
+Reisender, **ohne Waffe, ohne Stab, ohne Schild, ohne Rüstung und ohne Haus-Zeichen** (Haus und Mond gibt es erst
+mit dem Ritual). Neuer Chat, Stil-Block (Abschnitt 0) zuerst, eine Mond-Figur als Stil-Referenz hochladen.
+
+**a) Seitenansicht** · Datei `besucher.png` · Format 1:1:
+
+```
+Use the uploaded character only as STYLE reference (same chibi proportions, line art, shading and sticker look).
+Draw a NEW character: a simple traveler who has just arrived at the citadel – a visitor, not a warrior.
+Plain hooded travel cloak in muted grey-brown, simple linen shirt, trousers, worn leather boots,
+a small satchel bag at the hip. Gender-neutral, friendly curious face, short hair mostly under the hood.
+NO weapon, NO staff, NO shield, NO armor, NO emblem, NO moon symbol, NO jewelry.
+Pure side view facing right, full body, standing, arms relaxed.
+Thick dark outline, white sticker border around the figure.
+Plain flat solid #00FF00 green background, no shadows, no text.
+```
+
+**b) Teile-Bogen** (wenn die Seitenansicht passt): Prompt aus Abschnitt 4, die Seitenansicht hochladen.
+Teile 8 und 9 (Waffen) fallen weg, statt des Umhangs gern die Tasche als eigenes Teil.
+
+Danach: Bild nach `overlay/figuren/besucher.webp` (oder Teile nach `overlay/figuren/besucher/`) und in
+`overlay/config.js` `besucher: { bild: 'figuren/besucher.webp' }` eintragen. Bis dahin laufen Besucher als Silhouette.
+
+## 14. Eigene Figuren für den Schattenkönig und die Partnerin
+
+Beide bekommen eine **eigene** Figur, nicht eine der 16 Haus-Figuren. Ablauf wie bei den Haus-Figuren:
+1. Vorderansicht im neuen Stil (Abschnitt 3, Stil-Block zuerst), eigene Beschreibung statt Haus-Rüstung.
+2. Seitenansicht, Blick nach rechts (Abschnitt 3).
+3. Teile-Bogen (Abschnitt 4). **Kopf und Haare getrennt** zeichnen lassen („head without hair“ und „hair alone“) –
+   dann kann ich Frisuren tauschen und die Haarfarbe frei einfärben, genau wie bei den Haus-Figuren.
+Frisuren (lang, mittel, kurz, Zopf, Glatze …) kommen aus Abschnitt 9, Haarfarben mache ich per Programm.

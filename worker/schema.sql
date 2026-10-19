@@ -12,8 +12,9 @@ CREATE TABLE IF NOT EXISTS profil (
   aussehen      TEXT,                       -- JSON, z. B. { "haare": "rot" } (freigeschaltet nach Level)
   wurf_am       TEXT,                       -- letzter !wurf (Würfel der Morrígan)
   doppelt_bis   TEXT,                       -- doppelter Ruhm bis (Würfel: 6)
+  anonym        INTEGER NOT NULL DEFAULT 0, -- 1 = Name in Chronik/Rangliste verborgen (!anonym)
   punkte        INTEGER NOT NULL DEFAULT 0,
-  quiz          TEXT NOT NULL,              -- JSON { fragen, antworten }
+  quiz          TEXT,                       -- nicht mehr gespeichert (NULL); Antworten liegen nur 7 Tage in anmeldung
   gesperrt      INTEGER NOT NULL DEFAULT 0,
   erstellt_am   TEXT NOT NULL
 );
@@ -107,3 +108,30 @@ CREATE TABLE IF NOT EXISTS spiel_log (
   verlierer     INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS spiel_log_zeit ON spiel_log (spiel, zeit);
+
+-- Anmelden auf der Website (!anmelden <code> im Twitch-Chat). Gespeichert wird nur ein Hash des Tokens.
+CREATE TABLE IF NOT EXISTS sitzung (
+  id            TEXT PRIMARY KEY,           -- zum Abfragen des Status (Website)
+  name_klein    TEXT NOT NULL,              -- Twitch-Name, der sich anmelden will
+  code          TEXT NOT NULL,
+  status        TEXT NOT NULL DEFAULT 'offen',   -- offen | bestaetigt | aktiv | abgelaufen
+  profil_id     TEXT,
+  token_hash    TEXT,
+  ip_hash       TEXT NOT NULL,              -- nur für das Rate-Limit
+  gueltig_bis   TEXT NOT NULL,              -- offen: 15 Minuten, aktiv: 30 Tage
+  erstellt_am   TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS sitzung_token ON sitzung (token_hash);
+CREATE INDEX IF NOT EXISTS sitzung_ip ON sitzung (ip_hash, erstellt_am);
+
+-- Weiteres Konto verknüpfen (Kick, YouTube): Code von der Website, !verknüpfen <code> im jeweiligen Chat
+CREATE TABLE IF NOT EXISTS verknuepfung (
+  id            TEXT PRIMARY KEY,
+  profil_id     TEXT NOT NULL,
+  plattform     TEXT NOT NULL,
+  name_klein    TEXT NOT NULL,
+  code          TEXT NOT NULL,
+  status        TEXT NOT NULL DEFAULT 'offen',
+  gueltig_bis   TEXT NOT NULL,
+  erstellt_am   TEXT NOT NULL
+);

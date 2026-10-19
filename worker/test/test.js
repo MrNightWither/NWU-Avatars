@@ -329,6 +329,85 @@ env.DB.roh.exec("UPDATE anmeldung SET erstellt_am = '2020-01-01T00:00:00.000Z'")
 await anmeldung('Aufraeumtest', { ip: '9.9.9.9' });
 assert.equal(env.DB.roh.prepare("SELECT COUNT(*) AS n FROM anmeldung WHERE erstellt_am < '2021-01-01'").get().n, 0, 'alte Anmeldungen weg');
 
+// ---------- Nur Twitch beim Ritual, Antworten werden nicht gespeichert ----------
+assert.equal((await anmeldung('KickName', { plattform: 'kick', ip: '7.7.7.1' })).status, 400, 'Ritual nur über Twitch');
+assert.equal(env.DB.roh.prepare("SELECT quiz FROM profil").get().quiz, null, 'Ritual-Antworten nicht im Profil');
+assert.equal(env.DB.roh.prepare("SELECT COUNT(*) AS n FROM anmeldung WHERE status = 'bestaetigt' AND quiz != '{}'").get().n, 0, 'auch nicht in der Anmeldung');
+
+// ---------- Anmelden auf der Website ----------
+const mitToken = (pfad, token, body) => ruf(pfad, body === undefined ? { headers: { Authorization: 'Bearer ' + token } }
+  : { method: 'POST', body: JSON.stringify(body), headers: { Authorization: 'Bearer ' + token } });
+assert.equal((await ruf('/ich')).status, 401, 'ohne Anmeldung nichts');
+assert.equal((await ruf('/sitzung/start', { method: 'POST', body: JSON.stringify({ name: 'x!' }) })).status, 400);
+r = await ruf('/sitzung/start', { method: 'POST', body: JSON.stringify({ name: 'MrNightWither' }), ip: '7.7.7.2' });
+assert.equal(r.status, 200); assert.match(r.daten.code, /^\d{4}$/);
+const sitz = r.daten;
+assert.equal((await ruf('/sitzung/' + sitz.id)).daten.status, 'offen');
+assert.equal((await sb('/sitzung/bestaetigen', { plattform: 'twitch', plattformId: '999', name: 'MrNightWither', code: sitz.code })).daten.grund, 'unbekannt', 'fremdes Konto');
+assert.equal((await sb('/sitzung/bestaetigen', { plattform: 'twitch', plattformId: '111', name: 'jemandanders', code: sitz.code })).daten.grund, 'kein_code', 'Name muss passen');
+assert.equal((await sb('/sitzung/bestaetigen', { plattform: 'twitch', plattformId: '111', name: 'MrNightWither', code: sitz.code }, 'falsch')).status, 401);
+r = await sb('/sitzung/bestaetigen', { plattform: 'twitch', plattformId: '111', name: 'MrNightWither', code: sitz.code });
+assert.equal(r.daten.ok, true);
+r = await ruf('/sitzung/' + sitz.id);
+assert.equal(r.daten.status, 'bestaetigt'); const token = r.daten.token; assert.ok(token.length > 30);
+assert.equal((await ruf('/sitzung/' + sitz.id)).daten.token, undefined, 'Schlüssel nur einmal');
+assert.ok(!env.DB.roh.prepare('SELECT token_hash FROM sitzung').all().some((x) => x.token_hash === token), 'nur Hash gespeichert');
+r = await mitToken('/ich', token);
+assert.equal(r.status, 200); assert.equal(r.daten.haus, 'haus1'); assert.deepEqual(r.daten.konten.map((k) => k.plattform), ['twitch']);
+assert.equal((await mitToken('/ich', 'x'.repeat(43))).status, 401, 'falscher Schlüssel');
+assert.equal(r.kopf.get('access-control-allow-headers'), 'Content-Type, Authorization');
+
+// Haare über die Website (gleiche Regeln wie !haare)
+env.DB.roh.exec(`UPDATE profil SET level = 6, ruhm = ${globalThis.NWU_RUHM.ruhmFuerLevel(6)}`);
+assert.equal((await mitToken('/ich/aussehen', token, { haare: 'kupfer' })).daten.ok, true);
+assert.equal((await mitToken('/ich/aussehen', token, { haare: 'lila' })).daten.grund, 'level', 'seltene Farbe erst ab 25');
+
+// Anonym: über Website und Chat; dann nicht per Name auffindbar, Chronik ohne Namen, Overlay (ID) findet weiter
+assert.equal((await mitToken('/ich/anonym', token, { an: true })).daten.anonym, true);
+assert.equal((await ruf('/avatare/profil?plattform=twitch&name=mrnightwither')).daten.gefunden, false);
+assert.equal((await ruf('/avatare/profil?plattform=twitch&id=111')).daten.gefunden, true);
+assert.equal((await ruf('/avatare/profil?plattform=twitch&id=111')).daten.anonym, undefined, 'Flag nicht nach außen');
+const chronikNamen = async () => (await ruf('/chronik')).daten.listen.haus1.map((x) => x.name);
+assert.ok(!(await chronikNamen()).includes('mrnightwither') && (await chronikNamen()).includes(null), 'anonym: Name fehlt, Platz bleibt');
+r = await sb('/avatare/anonym', { plattform: 'twitch', plattformId: '111' });
+assert.equal(r.daten.anonym, false, '!anonym schaltet um');
+assert.ok((await chronikNamen()).includes('mrnightwither'));
+
+// Kick verknüpfen: Code auf der Website, !verknüpfen im Kick-Chat
+assert.equal((await mitToken('/ich/verknuepfen', token, { plattform: 'tiktok', name: 'abc' })).status, 400, 'TikTok nie');
+r = await mitToken('/ich/verknuepfen', token, { plattform: 'kick', name: 'NightKick' });
+const vcode = r.daten.code;
+assert.equal((await sb('/verknuepfen/bestaetigen', { plattform: 'kick', plattformId: 'k1', name: 'Andere', code: vcode })).daten.grund, 'kein_code');
+assert.equal((await sb('/verknuepfen/bestaetigen', { plattform: 'kick', plattformId: 'k1', name: 'NightKick', code: vcode })).daten.ok, true);
+assert.deepEqual((await mitToken('/ich', token)).daten.konten.map((k) => k.plattform), ['twitch', 'kick']);
+env.DB.roh.exec('UPDATE profil SET doppelt_bis = NULL');      // Würfel-Tests oben können eine 6 hinterlassen
+vorher = await stand();
+await ruhm({ plattform: 'kick', quelle: 'chat', nutzer: ['k1'] });
+assert.equal((await stand()).ruhm, vorher.ruhm + 5, 'Ruhm von Kick zählt aufs selbe Profil');
+assert.equal((await mitToken('/ich/trennen', token, { plattform: 'twitch' })).status, 400, 'Twitch bleibt');
+assert.equal((await mitToken('/ich/trennen', token, { plattform: 'kick' })).daten.ok, true);
+assert.deepEqual((await mitToken('/ich', token)).daten.konten.map((k) => k.plattform), ['twitch']);
+
+// Abmelden
+assert.equal((await mitToken('/ich/abmelden', token, {})).daten.ok, true);
+assert.equal((await mitToken('/ich', token)).status, 401);
+
+// Löschen über den Chat (!löschen ja) und über die Website
+await anmeldung('Loeschmich', { ip: '7.7.7.3' });
+const lcode = env.DB.roh.prepare("SELECT code FROM anmeldung WHERE name_klein = 'loeschmich'").get().code;
+await bestaetigen({ plattform: 'twitch', plattformId: '555', name: 'Loeschmich', code: lcode });
+assert.equal((await sb('/avatare/loeschen', { plattform: 'twitch', plattformId: '555' })).daten.ok, true);
+assert.equal((await ruf('/avatare/profil?plattform=twitch&id=555')).daten.gefunden, false);
+assert.equal(env.DB.roh.prepare("SELECT COUNT(*) AS n FROM anmeldung WHERE name_klein = 'loeschmich'").get().n, 0, 'auch die Anmeldung weg');
+r = await ruf('/sitzung/start', { method: 'POST', body: JSON.stringify({ name: 'MrNightWither' }), ip: '7.7.7.4' });
+await sb('/sitzung/bestaetigen', { plattform: 'twitch', plattformId: '111', name: 'mrnightwither', code: r.daten.code });
+const token2 = (await ruf('/sitzung/' + r.daten.id)).daten.token;
+assert.equal((await mitToken('/ich/loeschen', token2, {})).status, 400, 'nur mit Bestätigung');
+assert.equal((await mitToken('/ich/loeschen', token2, { bestaetigen: true })).daten.ok, true);
+assert.equal((await ruf('/avatare/profil?plattform=twitch&id=111')).daten.gefunden, false);
+assert.equal(env.DB.roh.prepare('SELECT COUNT(*) AS n FROM sitzung').get().n, 0, 'Sitzungen gelöscht');
+assert.equal((await mitToken('/ich', token2)).status, 401);
+
 // Unbekannter Pfad
 assert.equal((await ruf('/gibtsnicht')).status, 404);
 

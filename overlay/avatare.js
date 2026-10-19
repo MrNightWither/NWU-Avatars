@@ -75,6 +75,20 @@
     }
     return v;
   }));
+  // Besucher-Figur für alle ohne Ritual (config.js → besucher). Fehlt das Bild, laufen sie als Silhouette.
+  let BESUCHER = null;
+  if (CFG.besucher && CFG.besucher.bild) {
+    try {
+      BESUCHER = { haus: null, typ: 'besucher', ...CFG.besucher, tex: await laden(CFG.besucher.bild) };
+      BESUCHER.hoehe = BESUCHER.tex.height;
+      const def = !q.has('stufe1') && BESUCHER.rig && RIGS[BESUCHER.rig];
+      if (def && window.NWU_RIG) {
+        const namen = [...new Set(def.teile.map((t) => t.bild))];
+        const tex = await Promise.all(namen.map((n) => laden(`figuren/${BESUCHER.rig}/${n}.webp`)));
+        BESUCHER.rigDef = def; BESUCHER.rigTex = Object.fromEntries(namen.map((n, i) => [n, tex[i]])); BESUCHER.hoehe = def.hoehe;
+      }
+    } catch (e) { console.warn('Besucher-Figur fehlt, nehme Silhouette:', e.message); BESUCHER = null; }
+  }
   const textur = (zeichnen) => {
     const g = new PIXI.Graphics(); zeichnen(g);
     const t = app.renderer.generateTexture({ target: g, resolution: 2 }); g.destroy(); return t;
@@ -265,7 +279,7 @@
     }
     // Zeichen der Zitadelle: Wächter (Mods) tragen einen goldenen Ring zu ihren Füßen,
     // die Königin (Rolle koenigin) zusätzlich ein Diadem und einen violett-goldenen Schimmer
-    const waechter = !info.silhouette && (info.mod || ['waechter', 'koenigin'].includes(info.rolle));
+    const waechter = !info.silhouette && !info.besucher && (info.mod || ['waechter', 'koenigin'].includes(info.rolle));
     const koenigin = !info.silhouette && info.rolle === 'koenigin';
     let zeichen = null, diadem = null;
     if (waechter) {
@@ -298,7 +312,7 @@
       root, koerper, rig, schatten, basis, vorlage, jubel: 0, winken: 0, farbe: HAUSFARBE[vorlage.haus] || 0xc9a84c,
       id: info.id || null, name: info.name || '', mod: !!info.mod, demo: !!info.demo, gast: !!info.gast,
       level, staub: !info.silhouette && FREI(level, 'staub'), funkenSpur: !info.silhouette && FREI(level, 'funken'), spurZeit: 0,
-      ungebunden: !!info.silhouette, pruefeBis: 0,
+      ungebunden: !!(info.silhouette || info.besucher), pruefeBis: 0,
       s: info.s ?? Math.random() * umfang,
       richtung: Math.random() < 0.5 ? 1 : -1,
       tempo: 22 + Math.random() * 16,
@@ -441,9 +455,9 @@
     nachId.set(u.id, { entfernen: false, letzte: zeit });   // Platzhalter gegen doppeltes Anlegen
     const ergebnis = await profilLaden(u);
     const ungebunden = ergebnis === 'ungebunden', profil = ungebunden ? null : ergebnis;
-    const vorlage = profil ? vorlageFuer(profil.haus, profil.figur, u.id) : vorlageFuer(null, null, u.id);
+    const vorlage = profil ? vorlageFuer(profil.haus, profil.figur, u.id) : ungebunden && BESUCHER ? BESUCHER : vorlageFuer(null, null, u.id);
     fi = figurErzeugen(vorlage, { id: u.id, name: u.name, mod: u.mod || (profil && ['waechter', 'koenigin'].includes(profil.rolle)), lurker: text.startsWith('!lurk'),
-      level: profil ? profil.level : 1, aussehen: profil ? profil.aussehen : null, silhouette: ungebunden, rolle: profil ? profil.rolle : null,
+      level: profil ? profil.level : 1, aussehen: profil ? profil.aussehen : null, silhouette: ungebunden && !BESUCHER, besucher: ungebunden && !!BESUCHER, rolle: profil ? profil.rolle : null,
       jahrestag: profil ? profil.jahrestag : 0 });
     if (ungebunden) fi.pruefeBis = zeit + 60;
     SPIELE.eingabe(fi, text, u);              // z. B. erste Nachricht ist gleich !dabei

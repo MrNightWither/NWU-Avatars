@@ -4,8 +4,12 @@
   {
     gruppe: 'Dein Weg', befehle: [
       { befehl: '!bestätigen <Code>', text: 'Bindet dich nach dem Ritual an dein Haus. Den Code zeigt dir die Website.' },
-      { befehl: '!haare <Farbe>', text: 'Ändert die Haarfarbe deiner Figur (ab Level 5, seltene Farben ab Level 25).', z: '!haare kupfer' },
+      { befehl: '!haare <Farbe>', text: 'Ändert die Haarfarbe deiner Figur (ab Level 5, seltene Farben ab Level 25). Geht auch unter „Mein Profil“.', z: '!haare kupfer' },
       { befehl: '!nwu', text: 'Morrígan schickt dir den Link zum Ritual und zu dieser Seite.' },
+      { befehl: '!anonym', text: 'Dein Name verschwindet aus der Chronik („Unbekannte Seele“). Nochmal schreiben = wieder sichtbar.' },
+      { befehl: '!löschen', text: 'Löscht dein Profil endgültig. Morrígan fragt einmal nach, dann: !löschen ja' },
+      { befehl: '!anmelden <Code>', text: 'Nur für die Website: meldet dich unter „Mein Profil“ an (Code gibt es dort).' },
+      { befehl: '!verknüpfen <Code>', text: 'Im Kick- oder YouTube-Chat: verbindet das Konto mit deiner Figur (Code unter „Mein Profil“).' },
     ],
   },
   {

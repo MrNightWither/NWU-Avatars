@@ -16,8 +16,8 @@
     fuss.append(a);
   });
   const ziel = () => {
-    // Seiten ohne Scrollen (Ritual-Film): klein unten rechts festhalten, sonst normal am Seitenende
-    if (document.documentElement.scrollHeight <= innerHeight + 2) {
+    // Ritual-Film (body data-fuss-fest): klein unten rechts festhalten, sonst normal am Seitenende
+    if ('fussFest' in document.body.dataset) {
       Object.assign(fuss.style, { position: 'fixed', right: '12px', bottom: '8px', padding: '0', zIndex: '5' });
     }
     document.body.append(fuss);

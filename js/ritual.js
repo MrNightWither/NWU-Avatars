@@ -194,11 +194,6 @@
 
   // ---------- 5. Bindung ----------
   function bindungZeigen() {
-    const sel = $('plattform');
-    if (!sel.options.length) {
-      for (const p of SEITE.plattformen) sel.add(new Option(p.name, p.id));
-    }
-    if (st.plattform) sel.value = st.plattform;
     if (st.name) $('name').value = st.name;
     $('name-fehler').textContent = '';
   }
@@ -212,7 +207,7 @@
   }
 
   $('b-code').addEventListener('click', async () => {
-    const plattform = $('plattform').value;
+    const plattform = 'twitch';                         // Ritual nur über Twitch
     const name = $('name').value.trim().replace(/^@/, '');
     if (!nameGueltig(plattform, name)) {
       $('name-fehler').textContent = 'Bitte gib deinen Namen genau so ein, wie er im Chat steht.';
@@ -253,7 +248,7 @@
     const befehl = `${SEITE.befehl} ${a.code}`;
     $('befehl').textContent = befehl;
     $('code-text').textContent =
-      `Schreibe diesen Befehl als ${st.name} im ${SEITE.plattformen.find((p) => p.id === st.plattform).name}-Chat. ` +
+      `Schreibe diesen Befehl als ${st.name} im Twitch-Chat. ` +
       `Ohne Umlaut geht auch: ${SEITE.befehlOhneUmlaut} ${a.code}`;
     $('demo').hidden = !!SEITE.api;
     $('b-neu-code').hidden = true;

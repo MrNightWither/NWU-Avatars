@@ -77,6 +77,7 @@
 
   const sel = $('plattform');
   for (const p of SEITE.plattformen || [{ id: 'twitch', name: 'Twitch' }]) sel.add(new Option(p.name, p.id));
+  sel.hidden = sel.options.length < 2;
   $('suche').addEventListener('submit', (e) => {
     e.preventDefault();
     const name = $('name').value.trim().replace(/^@/, '');

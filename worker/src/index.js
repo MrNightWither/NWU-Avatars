@@ -25,6 +25,9 @@ const REISE = globalThis.NWU_REISE;
 const reiseStand = globalThis.NWU_REISE_STAND;
 
 const PLATTFORMEN = ['twitch', 'kick', 'youtube', 'tiktok'];
+const RITUAL_PLATTFORM = 'twitch';                    // Ritual und Anmelden auf der Website nur über Twitch
+const VERKNUEPFBAR = ['kick', 'youtube'];             // weitere Konten, auf der Website verknüpfbar (TikTok nie)
+const SITZUNG_TAGE = 30;
 const FIGUREN = ['a', 'b', 'c', 'd'];
 const ROLLEN = ['waechter', 'koenigin', 'koenigskreis', 'verbuendet', 'koenig', 'morrigan'];
 const WAECHTER_ROLLEN = ['waechter', 'koenigin'];   // gehören zur Zitadelle (Mods, Partnerin)
@@ -67,7 +70,7 @@ function corsKopf(req, env) {
   return {
     'Access-Control-Allow-Origin': herkunft,
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Max-Age': '86400',
     Vary: 'Origin',
   };
@@ -108,7 +111,7 @@ async function anmeldungAnlegen(req, env, cors) {
   const d = await jsonLesen(req);
   if (!d) return fehler('Ungültige Anfrage', 400, cors);
   const plattform = d.plattform, name = typeof d.name === 'string' ? d.name.trim().replace(/^@/, '') : '';
-  if (!PLATTFORMEN.includes(plattform)) return fehler('Unbekannte Plattform', 400, cors);
+  if (plattform !== RITUAL_PLATTFORM) return fehler('Das Ritual geht nur über Twitch', 400, cors);
   if (!nameGueltig(plattform, name)) return fehler('Ungültiger Name', 400, cors);
   if (!FIGUREN.includes(d.figur)) return fehler('Ungültige Figur', 400, cors);
   if (!quizPruefen(d.fragen, d.antworten)) return fehler('Ungültiges Quiz', 400, cors);
@@ -152,7 +155,7 @@ async function bestaetigen(req, env) {
   const auth = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
   if (!env.STREAMERBOT_SECRET || !gleich(auth, env.STREAMERBOT_SECRET)) return fehler('Nicht erlaubt', 401);
   const d = await jsonLesen(req);
-  if (!d || !PLATTFORMEN.includes(d.plattform) || typeof d.plattformId !== 'string' || !d.plattformId
+  if (!d || d.plattform !== RITUAL_PLATTFORM || typeof d.plattformId !== 'string' || !d.plattformId
       || typeof d.name !== 'string' || !/^\d{4}$/.test(String(d.code))) return antwort({ ok: false, grund: 'ungueltig' }, 400);
 
   const klein = d.name.trim().replace(/^@/, '').toLowerCase();
@@ -169,10 +172,11 @@ async function bestaetigen(req, env) {
 
   const profilId = crypto.randomUUID(), t = jetzt();
   await env.DB.batch([
-    env.DB.prepare('INSERT INTO profil (id, haus, rolle, figur, quiz, erstellt_am) VALUES (?, ?, NULL, ?, ?, ?)').bind(profilId, a.haus, a.figur, a.quiz, t),
+    // Die Antworten aus dem Ritual werden nicht ins Profil übernommen (nur das Haus zählt)
+    env.DB.prepare('INSERT INTO profil (id, haus, rolle, figur, erstellt_am) VALUES (?, ?, NULL, ?, ?)').bind(profilId, a.haus, a.figur, t),
     env.DB.prepare('INSERT INTO konto (plattform, plattform_id, name, name_klein, profil_id, bestaetigt_am) VALUES (?, ?, ?, ?, ?, ?)')
       .bind(d.plattform, d.plattformId, d.name.trim(), klein, profilId, t),
-    env.DB.prepare("UPDATE anmeldung SET status = 'bestaetigt' WHERE id = ?").bind(a.id),
+    env.DB.prepare("UPDATE anmeldung SET status = 'bestaetigt', quiz = '{}' WHERE id = ?").bind(a.id),
   ]);
   const haus = HAEUSER.find((h) => h.id === a.haus);
   return antwort({ ok: true, haus: haus ? haus.name : a.haus });
@@ -184,17 +188,18 @@ async function profil(url, env, cors) {
   const id = url.searchParams.get('id');
   const name = (url.searchParams.get('name') || '').toLowerCase();
   if (!PLATTFORMEN.includes(plattform) || (!id && !name)) return fehler('Ungültige Anfrage', 400, cors);
-  const sql = `SELECT k.name, p.haus, p.rolle, p.figur, p.level, p.ruhm, p.aussehen, p.erstellt_am FROM konto k JOIN profil p ON p.id = k.profil_id
+  const sql = `SELECT k.name, p.haus, p.rolle, p.figur, p.level, p.ruhm, p.aussehen, p.anonym, p.erstellt_am FROM konto k JOIN profil p ON p.id = k.profil_id
                WHERE k.plattform = ? AND ${id ? 'k.plattform_id = ?' : 'k.name_klein = ?'} AND p.gesperrt = 0`;
   const p = await env.DB.prepare(sql).bind(plattform, id || name).first();
-  if (!p) return antwort({ gefunden: false }, 200, { ...cors, 'Cache-Control': 'max-age=60' });
+  // Wer anonym ist, lässt sich nicht über den Namen finden (das Overlay fragt über die ID)
+  if (!p || (p.anonym && !id)) return antwort({ gefunden: false }, 200, { ...cors, 'Cache-Control': 'max-age=60' });
   let aussehen = {};
   try { aussehen = p.aussehen ? JSON.parse(p.aussehen) : {}; } catch (e) { /* kaputt = Standard */ }
   // Jahrestag der Bindung: heute derselbe Tag wie bei der Bindung, mindestens ein Jahr her
   const heute = jetzt(), seit = p.erstellt_am || heute;
   const jahre = seit.slice(5, 10) === heute.slice(5, 10) ? Number(heute.slice(0, 4)) - Number(seit.slice(0, 4)) : 0;
   const haus = HAEUSER.find((h) => h.id === p.haus);
-  const { erstellt_am, ...rest } = p;
+  const { erstellt_am, anonym, ...rest } = p;
   // Platz im eigenen Haus (nach Ruhm) – für die Figurenseite
   const platz = p.haus ? (await env.DB.prepare('SELECT COUNT(*) AS n FROM profil WHERE haus = ? AND gesperrt = 0 AND ruhm > ?').bind(p.haus, p.ruhm).first()).n + 1 : null;
   return antwort({ gefunden: true, ...rest, aussehen, hausName: haus ? haus.name : null, jahrestag: Math.max(0, jahre), platz, seit: seit.slice(0, 10) },
@@ -236,28 +241,201 @@ async function levelAendern(req, env) {
   return antwort({ ok: true, name: k.name, level, ruhm });
 }
 
-// Von Streamer.bot: Chat-Befehl !haare <farbe> – jeder für sich selbst, erst ab dem freigeschalteten Level
-async function aussehenSetzen(req, env) {
-  const auth = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
-  if (!env.STREAMERBOT_SECRET || !gleich(auth, env.STREAMERBOT_SECRET)) return fehler('Nicht erlaubt', 401);
-  const d = await jsonLesen(req);
-  if (!d || !PLATTFORMEN.includes(d.plattform) || typeof d.plattformId !== 'string' || !d.plattformId) return antwort({ ok: false, grund: 'ungueltig' }, 400);
-  const haare = typeof d.haare === 'string' ? d.haare.trim().toLowerCase().replace('ü', 'ue').replace('ß', 'ss') : '';
-  if (!globalThis.NWU_HAARFARBEN[haare]) return antwort({ ok: false, grund: 'farbe', farben: Object.keys(globalThis.NWU_HAARFARBEN) });
-  const p = await env.DB.prepare('SELECT p.id, p.level, p.aussehen FROM konto k JOIN profil p ON p.id = k.profil_id WHERE k.plattform = ? AND k.plattform_id = ?')
-    .bind(d.plattform, d.plattformId).first();
-  if (!p) return antwort({ ok: false, grund: 'unbekannt' });
+// Haarfarbe prüfen und setzen (Chat und Website)
+async function haareSetzen(env, p, wunsch) {
+  const haare = typeof wunsch === 'string' ? wunsch.trim().toLowerCase().replace('ü', 'ue').replace('ß', 'ss') : '';
+  if (!globalThis.NWU_HAARFARBEN[haare]) return { ok: false, grund: 'farbe', farben: Object.keys(globalThis.NWU_HAARFARBEN) };
   const frei = globalThis.NWU_FREISCHALTUNGEN.find((f) => f.id === 'haare');
-  if (!globalThis.NWU_FREI(p.level, 'haare')) return antwort({ ok: false, grund: 'level', level: frei.level });
+  if (!globalThis.NWU_FREI(p.level, 'haare')) return { ok: false, grund: 'level', level: frei.level };
   if (!globalThis.NWU_HAARFARBE_FREI(p.level, haare)) {
     const selten = globalThis.NWU_FREISCHALTUNGEN.find((f) => f.id === 'haare_selten');
-    return antwort({ ok: false, grund: 'level', level: selten.level });
+    return { ok: false, grund: 'level', level: selten.level };
   }
   let aussehen = {};
   try { aussehen = p.aussehen ? JSON.parse(p.aussehen) : {}; } catch (e) { /* neu anfangen */ }
   aussehen.haare = haare;
   await env.DB.prepare('UPDATE profil SET aussehen = ? WHERE id = ?').bind(JSON.stringify(aussehen), p.id).run();
-  return antwort({ ok: true, haare: globalThis.NWU_HAARFARBEN[haare].name });
+  return { ok: true, haare: globalThis.NWU_HAARFARBEN[haare].name };
+}
+
+// Profil zu einem Chat-Konto (Streamer.bot schickt Plattform und feste ID)
+const profilVonKonto = (env, plattform, plattformId) => env.DB.prepare(`SELECT p.*, k.name FROM konto k JOIN profil p ON p.id = k.profil_id
+  WHERE k.plattform = ? AND k.plattform_id = ?`).bind(plattform, plattformId).first();
+const kontoAnfrage = (d) => d && PLATTFORMEN.includes(d.plattform) && typeof d.plattformId === 'string' && d.plattformId && d.plattformId.length <= 64;
+
+// Von Streamer.bot: Chat-Befehl !haare <farbe> – jeder für sich selbst, erst ab dem freigeschalteten Level
+async function aussehenSetzen(req, env) {
+  if (!sbErlaubt(req, env)) return fehler('Nicht erlaubt', 401);
+  const d = await jsonLesen(req);
+  if (!kontoAnfrage(d)) return antwort({ ok: false, grund: 'ungueltig' }, 400);
+  const p = await profilVonKonto(env, d.plattform, d.plattformId);
+  if (!p) return antwort({ ok: false, grund: 'unbekannt' });
+  return antwort(await haareSetzen(env, p, d.haare));
+}
+
+// Von Streamer.bot: !anonym – Name in Chronik und Rangliste verbergen (nochmal = wieder zeigen, oder an: true/false)
+async function anonymSetzen(req, env) {
+  if (!sbErlaubt(req, env)) return fehler('Nicht erlaubt', 401);
+  const d = await jsonLesen(req);
+  if (!kontoAnfrage(d)) return antwort({ ok: false, grund: 'ungueltig' }, 400);
+  const p = await profilVonKonto(env, d.plattform, d.plattformId);
+  if (!p) return antwort({ ok: false, grund: 'unbekannt' });
+  const an = typeof d.an === 'boolean' ? d.an : !p.anonym;
+  await env.DB.prepare('UPDATE profil SET anonym = ? WHERE id = ?').bind(an ? 1 : 0, p.id).run();
+  return antwort({ ok: true, anonym: an });
+}
+
+// Alles zu einem Profil löschen (Konten, Sitzungen, Verknüpfungen, Prüfungs-Antworten, Profil). Der Haus-Pokal behält
+// seine Summen (die sind nicht persönlich).
+async function profilLoeschen(env, profilId) {
+  const namen = (await env.DB.prepare('SELECT name_klein FROM konto WHERE profil_id = ?').bind(profilId).all()).results.map((r) => r.name_klein);
+  await env.DB.batch([
+    env.DB.prepare('DELETE FROM konto WHERE profil_id = ?').bind(profilId),
+    env.DB.prepare('DELETE FROM sitzung WHERE profil_id = ?').bind(profilId),
+    env.DB.prepare('DELETE FROM verknuepfung WHERE profil_id = ?').bind(profilId),
+    env.DB.prepare('DELETE FROM pruefung_antwort WHERE profil_id = ?').bind(profilId),
+    env.DB.prepare('UPDATE pruefung SET gewinner_id = NULL, gewinner_name = NULL WHERE gewinner_id = ?').bind(profilId),
+    env.DB.prepare('DELETE FROM profil WHERE id = ?').bind(profilId),
+    ...namen.map((n) => env.DB.prepare('DELETE FROM anmeldung WHERE name_klein = ?').bind(n)),
+  ]);
+}
+
+// Von Streamer.bot: !löschen ja – das eigene Profil sofort löschen (die Rückfrage macht Streamer.bot)
+async function loeschenChat(req, env) {
+  if (!sbErlaubt(req, env)) return fehler('Nicht erlaubt', 401);
+  const d = await jsonLesen(req);
+  if (!kontoAnfrage(d)) return antwort({ ok: false, grund: 'ungueltig' }, 400);
+  const p = await profilVonKonto(env, d.plattform, d.plattformId);
+  if (!p) return antwort({ ok: false, grund: 'unbekannt' });
+  await profilLoeschen(env, p.id);
+  return antwort({ ok: true });
+}
+
+// ---------- Anmelden auf der Website (!anmelden <code> im Twitch-Chat) ----------
+async function sitzungStarten(req, env, cors) {
+  const d = await jsonLesen(req);
+  const name = typeof d?.name === 'string' ? d.name.trim().replace(/^@/, '') : '';
+  if (!nameGueltig(RITUAL_PLATTFORM, name)) return fehler('Ungültiger Name', 400, cors);
+  const ipHash = await sha256((req.headers.get('CF-Connecting-IP') || 'unbekannt') + '|nwu');
+  const vorEinerStunde = new Date(Date.now() - 3600e3).toISOString();
+  const n = await env.DB.prepare('SELECT COUNT(*) AS n FROM sitzung WHERE ip_hash = ? AND erstellt_am > ?').bind(ipHash, vorEinerStunde).first();
+  if (n.n >= 10) return fehler('Zu viele Versuche, bitte später erneut', 429, cors);
+  const id = zufallsId(), code = zufallsCode(), bis = new Date(Date.now() + CODE_MINUTEN * 60e3).toISOString();
+  await env.DB.batch([
+    env.DB.prepare('DELETE FROM sitzung WHERE gueltig_bis < ?').bind(jetzt()),          // Abgelaufenes aufräumen
+    env.DB.prepare('INSERT INTO sitzung (id, name_klein, code, ip_hash, gueltig_bis, erstellt_am) VALUES (?, ?, ?, ?, ?, ?)')
+      .bind(id, name.toLowerCase(), code, ipHash, bis, jetzt()),
+  ]);
+  // Ob es den Namen gibt, verrät die Antwort nicht – das zeigt sich erst im Chat
+  return antwort({ id, code, gueltigBis: bis }, 200, cors);
+}
+
+// Von Streamer.bot: !anmelden <code> im Twitch-Chat
+async function sitzungBestaetigen(req, env) {
+  if (!sbErlaubt(req, env)) return fehler('Nicht erlaubt', 401);
+  const d = await jsonLesen(req);
+  if (!d || d.plattform !== RITUAL_PLATTFORM || !kontoAnfrage(d) || typeof d.name !== 'string' || !/^\d{4}$/.test(String(d.code)))
+    return antwort({ ok: false, grund: 'ungueltig' }, 400);
+  const p = await profilVonKonto(env, d.plattform, d.plattformId);
+  if (!p) return antwort({ ok: false, grund: 'unbekannt' });
+  const klein = d.name.trim().replace(/^@/, '').toLowerCase();
+  const s = await env.DB.prepare("SELECT * FROM sitzung WHERE name_klein = ? AND status = 'offen' AND gueltig_bis > ? ORDER BY erstellt_am DESC LIMIT 1")
+    .bind(klein, jetzt()).first();
+  if (!s || !gleich(s.code, String(d.code))) return antwort({ ok: false, grund: 'kein_code' });
+  await env.DB.prepare("UPDATE sitzung SET status = 'bestaetigt', profil_id = ? WHERE id = ?").bind(p.id, s.id).run();
+  return antwort({ ok: true, name: p.name });
+}
+
+// Website fragt nach: ist der Code im Chat angekommen? Dann gibt es einmalig den Schlüssel für 30 Tage.
+async function sitzungStatus(id, env, cors) {
+  if (!/^[A-Za-z0-9_-]{10,40}$/.test(id)) return fehler('Nicht gefunden', 404, cors);
+  const s = await env.DB.prepare('SELECT status, gueltig_bis FROM sitzung WHERE id = ?').bind(id).first();
+  if (!s || (s.status === 'offen' && s.gueltig_bis < jetzt())) return antwort({ status: 'abgelaufen' }, 200, cors);
+  if (s.status !== 'bestaetigt') return antwort({ status: s.status === 'aktiv' ? 'abgeholt' : s.status }, 200, cors);
+  const token = zufallsId(32);
+  const bis = new Date(Date.now() + SITZUNG_TAGE * 86400e3).toISOString();
+  const r = await env.DB.prepare("UPDATE sitzung SET status = 'aktiv', token_hash = ?, gueltig_bis = ?, code = '' WHERE id = ? AND status = 'bestaetigt'")
+    .bind(await sha256(token), bis, id).run();
+  if (!r.meta.changes) return antwort({ status: 'abgeholt' }, 200, cors);
+  return antwort({ status: 'bestaetigt', token, gueltigBis: bis }, 200, cors);
+}
+
+// Angemeldet? Bearer-Token aus dem Browser → Profil
+async function angemeldet(req, env) {
+  const token = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+  if (!/^[A-Za-z0-9_-]{30,60}$/.test(token)) return null;
+  const s = await env.DB.prepare("SELECT id, profil_id FROM sitzung WHERE token_hash = ? AND status = 'aktiv' AND gueltig_bis > ?")
+    .bind(await sha256(token), jetzt()).first();
+  if (!s) return null;
+  const p = await env.DB.prepare('SELECT * FROM profil WHERE id = ? AND gesperrt = 0').bind(s.profil_id).first();
+  return p ? { sitzung: s.id, p } : null;
+}
+
+async function ich(req, env, cors, aktion) {
+  const a = await angemeldet(req, env);
+  if (!a) return fehler('Nicht angemeldet', 401, cors);
+  const { p } = a;
+  const d = req.method === 'POST' ? (await jsonLesen(req)) || {} : {};
+  if (aktion === 'aussehen') return antwort(await haareSetzen(env, p, d.haare), 200, cors);
+  if (aktion === 'anonym') {
+    await env.DB.prepare('UPDATE profil SET anonym = ? WHERE id = ?').bind(d.an ? 1 : 0, p.id).run();
+    return antwort({ ok: true, anonym: !!d.an }, 200, cors);
+  }
+  if (aktion === 'abmelden') {
+    await env.DB.prepare('DELETE FROM sitzung WHERE id = ?').bind(a.sitzung).run();
+    return antwort({ ok: true }, 200, cors);
+  }
+  if (aktion === 'loeschen') {
+    if (d.bestaetigen !== true) return fehler('Bitte bestätigen', 400, cors);
+    await profilLoeschen(env, p.id);
+    return antwort({ ok: true }, 200, cors);
+  }
+  if (aktion === 'verknuepfen') {
+    const name = typeof d.name === 'string' ? d.name.trim().replace(/^@/, '') : '';
+    if (!VERKNUEPFBAR.includes(d.plattform) || !nameGueltig(d.plattform, name)) return fehler('Ungültige Angabe', 400, cors);
+    const offen = await env.DB.prepare('SELECT COUNT(*) AS n FROM verknuepfung WHERE profil_id = ? AND erstellt_am > ?')
+      .bind(p.id, new Date(Date.now() - 3600e3).toISOString()).first();
+    if (offen.n >= 5) return fehler('Zu viele Versuche, bitte später erneut', 429, cors);
+    const id = zufallsId(), code = zufallsCode(), bis = new Date(Date.now() + CODE_MINUTEN * 60e3).toISOString();
+    await env.DB.batch([
+      env.DB.prepare('DELETE FROM verknuepfung WHERE gueltig_bis < ?').bind(jetzt()),
+      env.DB.prepare('INSERT INTO verknuepfung (id, profil_id, plattform, name_klein, code, gueltig_bis, erstellt_am) VALUES (?, ?, ?, ?, ?, ?, ?)')
+        .bind(id, p.id, d.plattform, name.toLowerCase(), code, bis, jetzt()),
+    ]);
+    return antwort({ ok: true, code, gueltigBis: bis }, 200, cors);
+  }
+  if (aktion === 'trennen') {
+    if (!VERKNUEPFBAR.includes(d.plattform)) return fehler('Dieses Konto lässt sich nicht trennen', 400, cors);
+    await env.DB.prepare('DELETE FROM konto WHERE profil_id = ? AND plattform = ?').bind(p.id, d.plattform).run();
+    return antwort({ ok: true }, 200, cors);
+  }
+  // GET /ich: eigener Stand mit allen Konten
+  const { results: konten } = await env.DB.prepare('SELECT plattform, name FROM konto WHERE profil_id = ? ORDER BY bestaetigt_am').bind(p.id).all();
+  let aussehen = {};
+  try { aussehen = p.aussehen ? JSON.parse(p.aussehen) : {}; } catch (e) { /* Standard */ }
+  const haus = HAEUSER.find((h) => h.id === p.haus);
+  return antwort({ ok: true, haus: p.haus, hausName: haus ? haus.name : null, figur: p.figur, level: p.level, ruhm: p.ruhm, rolle: p.rolle,
+    aussehen, anonym: !!p.anonym, seit: (p.erstellt_am || '').slice(0, 10), konten, verknuepfbar: VERKNUEPFBAR }, 200, cors);
+}
+
+// Von Streamer.bot: !verknüpfen <code> im Kick- oder YouTube-Chat
+async function verknuepfenBestaetigen(req, env) {
+  if (!sbErlaubt(req, env)) return fehler('Nicht erlaubt', 401);
+  const d = await jsonLesen(req);
+  if (!kontoAnfrage(d) || !VERKNUEPFBAR.includes(d.plattform) || typeof d.name !== 'string' || !/^\d{4}$/.test(String(d.code)))
+    return antwort({ ok: false, grund: 'ungueltig' }, 400);
+  if (await profilVonKonto(env, d.plattform, d.plattformId)) return antwort({ ok: false, grund: 'schon_gebunden' });
+  const klein = d.name.trim().replace(/^@/, '').toLowerCase();
+  const v = await env.DB.prepare("SELECT * FROM verknuepfung WHERE plattform = ? AND name_klein = ? AND status = 'offen' AND gueltig_bis > ? ORDER BY erstellt_am DESC LIMIT 1")
+    .bind(d.plattform, klein, jetzt()).first();
+  if (!v || !gleich(v.code, String(d.code))) return antwort({ ok: false, grund: 'kein_code' });
+  await env.DB.batch([
+    env.DB.prepare('DELETE FROM konto WHERE profil_id = ? AND plattform = ?').bind(v.profil_id, d.plattform),   // höchstens ein Konto pro Plattform
+    env.DB.prepare('INSERT INTO konto (plattform, plattform_id, name, name_klein, profil_id, bestaetigt_am) VALUES (?, ?, ?, ?, ?, ?)')
+      .bind(d.plattform, d.plattformId, d.name.trim().replace(/^@/, ''), klein, v.profil_id, jetzt()),
+    env.DB.prepare('DELETE FROM verknuepfung WHERE id = ?').bind(v.id),
+  ]);
+  return antwort({ ok: true });
 }
 
 // ---------- Ruhm, Haus-Pokal, Chronik ----------
@@ -332,7 +510,7 @@ async function pokalDaten(env) {
 async function chronik(env, cors) {
   const listen = {};
   for (const h of globalThis.NWU_AKTIVE_HAEUSER) {
-    const { results } = await env.DB.prepare(`SELECT MIN(k.name) AS name, p.figur, p.level, p.ruhm FROM profil p JOIN konto k ON k.profil_id = p.id
+    const { results } = await env.DB.prepare(`SELECT CASE WHEN p.anonym = 1 THEN NULL ELSE MIN(k.name) END AS name, p.figur, p.level, p.ruhm FROM profil p JOIN konto k ON k.profil_id = p.id
       WHERE p.haus = ? AND p.gesperrt = 0 GROUP BY p.id ORDER BY p.ruhm DESC LIMIT 10`).bind(h.id).all();
     listen[h.id] = results;
   }
@@ -599,6 +777,16 @@ export default {
       if (req.method === 'POST' && url.pathname === '/avatare/rolle') return await rolleSetzen(req, env);
       if (req.method === 'POST' && url.pathname === '/avatare/level') return await levelAendern(req, env);
       if (req.method === 'POST' && url.pathname === '/avatare/aussehen') return await aussehenSetzen(req, env);
+      if (req.method === 'POST' && url.pathname === '/avatare/anonym') return await anonymSetzen(req, env);
+      if (req.method === 'POST' && url.pathname === '/avatare/loeschen') return await loeschenChat(req, env);
+      if (req.method === 'POST' && url.pathname === '/sitzung/start') return await sitzungStarten(req, env, cors);
+      if (req.method === 'POST' && url.pathname === '/sitzung/bestaetigen') return await sitzungBestaetigen(req, env);
+      const ms = url.pathname.match(/^\/sitzung\/([^/]+)$/);
+      if (req.method === 'GET' && ms) return await sitzungStatus(decodeURIComponent(ms[1]), env, cors);
+      if (req.method === 'GET' && url.pathname === '/ich') return await ich(req, env, cors, null);
+      const mi = url.pathname.match(/^\/ich\/(aussehen|anonym|abmelden|loeschen|verknuepfen|trennen)$/);
+      if (req.method === 'POST' && mi) return await ich(req, env, cors, mi[1]);
+      if (req.method === 'POST' && url.pathname === '/verknuepfen/bestaetigen') return await verknuepfenBestaetigen(req, env);
       if (req.method === 'POST' && url.pathname === '/ruhm') return await ruhmMelden(req, env);
       if (req.method === 'GET' && url.pathname === '/pokal') return antwort(await pokalDaten(env), 200, { ...cors, 'Cache-Control': 'max-age=30' });
       if (req.method === 'GET' && url.pathname === '/chronik') return await chronik(env, cors);

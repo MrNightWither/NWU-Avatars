@@ -1,0 +1,23 @@
+/* Mein Profil: baut auf css/stufen.css und css/seiten.css auf */
+.code-karte { text-align: center; }
+.befehl code { display: inline-block; font-family: Consolas, 'Courier New', monospace; font-size: 1.6rem; color: var(--gold-hi);
+  background: rgba(201,168,76,0.08); border: 1px solid rgba(201,168,76,0.4); border-radius: 10px; padding: 8px 18px; margin: 6px 0 10px; user-select: all; }
+.links-klein a { color: var(--gold); text-decoration: none; font-size: 0.9rem; }
+.farben { display: flex; flex-wrap: wrap; gap: 8px; }
+.farbe { display: inline-flex; align-items: center; gap: 6px; background: #0d0d11; color: var(--text); border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 999px; padding: 5px 12px 5px 6px; font: inherit; font-size: 0.88rem; cursor: pointer; }
+.farbe i { width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.35); }
+.farbe[aria-pressed="true"] { border-color: var(--gold-hi); box-shadow: 0 0 0 1px var(--gold-hi); }
+.farbe:disabled { opacity: 0.45; cursor: not-allowed; }
+.farbe:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
+.schalter { display: flex; gap: 10px; align-items: flex-start; font-size: 0.92rem; color: #d8d2c4; cursor: pointer; }
+.schalter input { width: 20px; height: 20px; margin-top: 2px; accent-color: #c9a84c; flex: none; }
+.konten { list-style: none; display: grid; gap: 6px; margin-bottom: 10px; }
+.konten li { display: flex; justify-content: space-between; align-items: center; gap: 8px; background: rgba(255,255,255,0.04); border-radius: 8px; padding: 6px 10px; }
+.konten li span b { font-family: var(--kopf); letter-spacing: 0.08em; color: var(--gold); margin-right: 6px; }
+.konten button { background: none; border: 0; color: var(--muted); font: inherit; font-size: 0.85rem; cursor: pointer; text-decoration: underline; }
+.gefahr { border-color: rgba(179,18,46,0.45); }
+.sicher { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.sicher p { width: 100%; }
+.knopf.rot { background: linear-gradient(#d0243f, #8f1024); color: #fff; }
+.hinweis.gut { color: var(--gold-hi); }

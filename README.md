@@ -110,6 +110,11 @@ jubelt, der Verlierer setzt sich kurz. Höheres Level hilft etwas (höchstens 70
 **Flüstern aus dem Westen:** etwa alle 25 Minuten (`fluesternMinuten` in `config.js`) erscheint am linken Rand Nebel
 mit violetten Augen, dazu ein Rabe oder eine Dornenranke – ein leiser Hinweis auf die verborgenen Häuser.
 
+**Mein Profil** (`ich.html`): anmelden per Code (`!anmelden 1234` im Twitch-Chat, 30 Tage pro Gerät), dann Haarfarbe,
+Anonym, Kick/YouTube verknüpfen, Profil löschen. Test ohne Worker: `ich.html?beispiel=1`. Das Ritual geht nur über Twitch,
+Ritual-Antworten werden nach der Bindung nicht gespeichert. Ohne Ritual läuft man als Besucher (`besucher` in
+`overlay/config.js`, bis das Bild da ist als Silhouette). Im Overlay stehen nie Namen.
+
 Alle Chat-Befehle für Zuschauer stehen auf `befehle.html` (Quelle: `data/befehle.js`), `!nwu` schickt den Link.
 Die Spiele stehen in `overlay/spiele.js`.
 

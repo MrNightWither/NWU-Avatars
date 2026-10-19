@@ -29,3 +29,4 @@
 }
 .liste h3 a, .liste a.name { color: inherit; text-decoration: none; }
 .liste h3 a:hover, .liste a.name:hover { color: var(--gold-hi); }
+.liste .name.anonym { color: var(--muted); font-style: italic; filter: blur(0.3px); }

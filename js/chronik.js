@@ -16,7 +16,7 @@
     const namen = ['Nachtfalke', 'luna_lurkt', 'Ascheherz', 'Rabenkind', 'Silberklinge', 'ember_fox', 'Schattentanz', 'Mondwache', 'Nebelgeist', 'Glutfee'];
     const listen = {};
     HAEUSER.forEach((h, i) => {
-      listen[h.id] = namen.slice(0, 7 - i).map((n, k) => ({ name: n + (i ? '_' + i : ''), figur: 'abcd'[(k + i) % 4], level: 18 - k * 2 - i, ruhm: 15300 - k * 2100 - i * 900 }));
+      listen[h.id] = namen.slice(0, 7 - i).map((n, k) => ({ name: k === 2 ? null : n + (i ? '_' + i : ''), figur: 'abcd'[(k + i) % 4], level: 18 - k * 2 - i, ruhm: 15300 - k * 2100 - i * 900 }));
     });
     const m = new Date().toISOString().slice(0, 7);
     return { pokal: { monat: m, haeuser: { haus1: 8420, haus2: 9130, haus3: 6210, haus4: 7780 }, fuehrend: 'haus2',
@@ -61,7 +61,10 @@
         const li = document.createElement('li');
         const nr = document.createElement('span'); nr.className = 'platz'; nr.textContent = i + 1;
         const img = document.createElement('img'); img.src = `assets/figur-${h.id}-${e.figur}.webp`; img.alt = ''; img.loading = 'lazy';
-        const name = document.createElement('a'); name.className = 'name'; name.href = `figur.html?p=twitch&n=${encodeURIComponent(e.name)}`; name.textContent = e.name;
+        // Anonym (!anonym): kein Name, kein Link – nur Platz, Figur und Level
+        const name = document.createElement(e.name ? 'a' : 'span'); name.className = e.name ? 'name' : 'name anonym';
+        if (e.name) name.href = `figur.html?p=twitch&n=${encodeURIComponent(e.name)}`;
+        name.textContent = e.name || 'Unbekannte Seele';
         const lv = document.createElement('span'); lv.className = 'lv'; lv.textContent = 'Lv ' + e.level;
         li.append(nr, img, name, lv);
         li.title = zahl(e.ruhm) + ' Ruhm';

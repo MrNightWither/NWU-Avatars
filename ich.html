@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mein Profil — NightWither Unity</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self' https://*.workers.dev; base-uri 'none'; form-action 'none'">
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="preload" href="fonts/rajdhani-700.woff" as="font" type="font/woff" crossorigin>
+<link rel="stylesheet" href="css/stufen.css">
+<link rel="stylesheet" href="css/seiten.css">
+<link rel="stylesheet" href="css/ich.css">
+</head>
+<body>
+<div class="hintergrund" id="hintergrund" aria-hidden="true"></div>
+
+<header class="kopf">
+  <a class="zurueck" href="./">← Zum Ritual</a>
+  <h1 id="t-name">Mein Profil</h1>
+  <p class="unter" id="t-unter">Morrígan erkennt die Ihren</p>
+</header>
+
+<main class="inhalt">
+  <p class="beispiel" id="beispiel" hidden>Beispiel: Sobald der Server läuft, meldest du dich hier wirklich an.</p>
+
+  <!-- Anmelden -->
+  <section class="karte" id="anmelden" aria-labelledby="t-anmelden" hidden>
+    <h2 id="t-anmelden">Anmelden</h2>
+    <p class="erklaerung">Gib deinen Twitch-Namen ein. Morrígan gibt dir einen Code, den schreibst du im Twitch-Chat.
+      Danach bleibst du auf diesem Gerät 30 Tage angemeldet. Dein Spielstand liegt nicht im Browser, er geht nie verloren.</p>
+    <form class="suche" id="f-anmelden">
+      <input id="a-name" type="text" placeholder="Dein Twitch-Name" autocomplete="username" autocapitalize="off" spellcheck="false" maxlength="25" aria-label="Dein Twitch-Name">
+      <button class="knopf" type="submit">Code holen</button>
+    </form>
+    <p class="hinweis" id="a-hinweis"></p>
+  </section>
+
+  <section class="karte code-karte" id="warten" hidden aria-live="polite">
+    <h2>Schreib im Twitch-Chat</h2>
+    <p class="befehl"><code id="w-befehl"></code></p>
+    <p class="erklaerung">Schreib das als <b id="w-name"></b>. Diese Seite merkt es von selbst. Der Code gilt 15 Minuten.</p>
+    <p class="hinweis" id="w-hinweis">Morrígan wartet …</p>
+    <button class="knopf leise" id="w-abbrechen" type="button">Abbrechen</button>
+  </section>
+
+  <!-- Angemeldet -->
+  <section class="karte gestalt" id="stand" hidden>
+    <img class="gross" id="s-bild" alt="">
+    <div class="g-text">
+      <p class="haus" id="s-haus"></p>
+      <p class="level"><span>Level</span> <b id="s-level"></b></p>
+      <p class="ruhm" id="s-ruhm"></p>
+      <div class="balken" aria-hidden="true"><span id="s-balken"></span></div>
+      <p class="links-klein"><a id="s-figurenseite" href="figur.html">Öffentliche Figurenseite →</a></p>
+    </div>
+  </section>
+
+  <section class="karte" id="k-haare" hidden aria-labelledby="t-haare">
+    <h2 id="t-haare">Haarfarbe</h2>
+    <p class="erklaerung" id="haare-text"></p>
+    <div class="farben" id="farben"></div>
+    <p class="hinweis" id="haare-hinweis"></p>
+  </section>
+
+  <section class="karte" id="k-anonym" hidden aria-labelledby="t-anonym">
+    <h2 id="t-anonym">Sichtbarkeit</h2>
+    <label class="schalter">
+      <input type="checkbox" id="anonym">
+      <span>Anonym: In der Chronik steht statt deines Namens „Unbekannte Seele“, und deine Figurenseite lässt sich nicht über den Namen finden.
+        Dein Haus bekommt deinen Ruhm weiterhin. Im Chat geht das auch mit <code>!anonym</code>.</span>
+    </label>
+    <p class="hinweis" id="anonym-hinweis"></p>
+  </section>
+
+  <section class="karte" id="k-konten" hidden aria-labelledby="t-konten">
+    <h2 id="t-konten">Deine Konten</h2>
+    <p class="erklaerung">Schaust du auch auf Kick oder YouTube zu? Verknüpfe das Konto, dann zählt dein Ruhm von dort für dieselbe Figur.</p>
+    <ul class="konten" id="konten"></ul>
+    <form class="suche" id="f-verknuepfen">
+      <select id="v-plattform" aria-label="Plattform"></select>
+      <input id="v-name" type="text" placeholder="Dein Name dort" autocapitalize="off" spellcheck="false" maxlength="40" aria-label="Dein Name auf der Plattform">
+      <button class="knopf" type="submit">Verknüpfen</button>
+    </form>
+    <p class="hinweis" id="v-hinweis"></p>
+  </section>
+
+  <section class="karte gefahr" id="k-loeschen" hidden aria-labelledby="t-loeschen">
+    <h2 id="t-loeschen">Profil löschen</h2>
+    <p class="erklaerung">Löscht deine Figur, deinen Ruhm, dein Level und alle verknüpften Konten sofort und endgültig. Im Chat geht das auch mit <code>!löschen</code>.</p>
+    <button class="knopf leise" id="b-loeschen" type="button">Profil löschen …</button>
+    <div class="sicher" id="sicher" hidden>
+      <p><b>Wirklich?</b> Das lässt sich nicht rückgängig machen.</p>
+      <button class="knopf rot" id="b-wirklich" type="button">Ja, endgültig löschen</button>
+      <button class="knopf leise" id="b-doch-nicht" type="button">Doch nicht</button>
+    </div>
+    <p class="hinweis" id="l-hinweis"></p>
+  </section>
+
+  <p class="links" id="abmelden-zeile" hidden><button class="knopf leise" id="b-abmelden" type="button">Abmelden</button></p>
+  <p class="links"><a href="befehle.html">Die Befehle →</a> · <a href="stufen.html">Die Stufen →</a> · <a href="chronik.html">Die Chronik →</a></p>
+</main>
+
+<script src="data/haeuser.js"></script>
+<script src="data/aussehen.js"></script>
+<script src="data/ruhm.js"></script>
+<script src="js/einstellungen.js"></script>
+<script src="js/fuss.js"></script>
+<script src="js/ich.js"></script>
+</body>
+</html>

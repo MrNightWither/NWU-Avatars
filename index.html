@@ -14,7 +14,7 @@
 <link rel="preload" href="fonts/rajdhani-700.woff" as="font" type="font/woff" crossorigin>
 <link rel="stylesheet" href="css/ritual.css">
 </head>
-<body>
+<body data-fuss-fest>
 <!-- Film: Karte, Szenen, Nebel, Kinobalken -->
 <div id="kamera" aria-hidden="true"><div id="weltbild"><img id="karte" data-gross="assets/karte.webp" data-klein="assets/karte-klein.webp" alt=""><canvas id="kartennebel"></canvas></div></div>
 <div id="szenen" aria-hidden="true">
@@ -51,6 +51,7 @@
     <a class="reise-link" href="stufen.html">Die Stufen →</a>
     <a class="reise-link" href="chronik.html">Die Chronik →</a>
     <a class="reise-link" href="befehle.html">Die Befehle →</a>
+    <a class="reise-link" href="ich.html">Mein Profil →</a>
   </section>
 
   <!-- 2. Fragen -->
@@ -96,11 +97,7 @@
     <p class="unter">Verbinde deine Gestalt mit deinem Namen im Chat</p>
     <div class="karte">
       <label class="feld">
-        <span>Plattform</span>
-        <select id="plattform"></select>
-      </label>
-      <label class="feld">
-        <span>Dein Name im Chat</span>
+        <span>Dein Twitch-Name</span>
         <input id="name" type="text" autocomplete="username" autocapitalize="off" spellcheck="false" maxlength="40" required>
       </label>
       <p class="fehler" id="name-fehler" role="alert"></p>
