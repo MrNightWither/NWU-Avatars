@@ -4,11 +4,10 @@
 // Gilt für Website, Stream-Szene und Worker.
 //
 // ort: Position auf der Karte als Anteil von Breite/Höhe (0–1).
-// Die Orte passen grob auf die PLATZHALTER-Karte (assets/karte.webp) und werden neu gesetzt,
-// sobald die eigene Reise-Karte da ist.
+// Die Orte sitzen auf den Landmarken der Reise-Karte (assets/reise-karte.webp).
 (function (ziel) {
   ziel.NWU_REISE = {
-    karte: 'assets/karte.webp',
+    karte: 'assets/reise-karte.webp',
 
     // Wie viel Essenz bringt was? Standard für Twitch, YouTube und Kick (anpassbar).
     // Ein Pfad kann eigene Regeln haben (siehe TikTok unten).
@@ -23,37 +22,37 @@
     },
 
     // Gemeinsames Ziel in der Mitte
-    zitadelle: { name: 'Die Zitadelle', ort: { x: 0.50, y: 0.42 }, text: 'Der Thron des Schattenkönigs. Erst wenn alle vier Pfade ankommen, öffnen sich die Tore.' },
+    zitadelle: { name: 'Die Zitadelle', ort: { x: 0.50, y: 0.50 }, text: 'Der Thron des Schattenkönigs. Erst wenn alle vier Pfade ankommen, öffnen sich die Tore.' },
 
     pfade: [
       {
         id: 'twitch', name: 'Pfad der Raben', plattform: 'Twitch', farbe: '#a970ff',
         meilensteine: [
-          { id: 'tw1', name: 'Das Erwachen',      essenz: 0,     ort: { x: 0.10, y: 0.20 }, text: 'Hier begann alles. Aus dem Schatten trat eine Krone.' },
-          { id: 'tw2', name: 'Die Gräberklippe',  essenz: 500,   ort: { x: 0.14, y: 0.42 }, text: 'Die Toten flüstern jedem, der vorbeigeht, einen Namen zu.' },
-          { id: 'tw3', name: 'Brücke der Raben',  essenz: 2500,  ort: { x: 0.25, y: 0.33 }, text: 'Die Raben zählen jeden, der hinübergeht.' },
-          { id: 'tw4', name: 'Sumpf der Flüche',  essenz: 5000,  ort: { x: 0.32, y: 0.47 }, text: 'Wer hier stehen bleibt, versinkt.' },
-          { id: 'tw5', name: 'Das Rabentor',      essenz: 10000, ort: { x: 0.43, y: 0.42 }, text: 'Das erste Tor der Zitadelle. Schwarz wie Federn.' },
+          { id: 'tw1', name: 'Das Erwachen',      essenz: 0,     ort: { x: 0.130, y: 0.21 }, text: 'Hier begann alles. Aus dem Schatten trat eine Krone.' },
+          { id: 'tw2', name: 'Die Gräberklippe',  essenz: 500,   ort: { x: 0.165, y: 0.30 }, text: 'Die Toten flüstern jedem, der vorbeigeht, einen Namen zu.' },
+          { id: 'tw3', name: 'Brücke der Raben',  essenz: 2500,  ort: { x: 0.230, y: 0.43 }, text: 'Die Raben zählen jeden, der hinübergeht.' },
+          { id: 'tw4', name: 'Sumpf der Flüche',  essenz: 5000,  ort: { x: 0.315, y: 0.36 }, text: 'Wer hier stehen bleibt, versinkt.' },
+          { id: 'tw5', name: 'Das Rabentor',      essenz: 10000, ort: { x: 0.385, y: 0.44 }, text: 'Das erste Tor der Zitadelle. Schwarz wie Federn.' },
         ],
       },
       {
         id: 'youtube', name: 'Pfad des Blutes', plattform: 'YouTube', farbe: '#ff4e45',
         meilensteine: [
-          { id: 'yt1', name: 'Die Rote Stadt',    essenz: 0,     ort: { x: 0.84, y: 0.17 }, text: 'Hinter roten Mauern schwört man ewige Treue.' },
-          { id: 'yt2', name: 'Die Blutfurt',      essenz: 500,   ort: { x: 0.70, y: 0.30 }, text: 'Das Wasser ist rot. Niemand fragt, warum.' },
-          { id: 'yt3', name: 'Die Bannerwacht',   essenz: 2500,  ort: { x: 0.64, y: 0.20 }, text: 'Hier weht jedes Banner, das je gefallen ist.' },
-          { id: 'yt4', name: 'Die Klingenschlucht', essenz: 5000, ort: { x: 0.60, y: 0.34 }, text: 'Ein Schritt daneben, und der Fels schneidet.' },
-          { id: 'yt5', name: 'Das Rote Tor',      essenz: 10000, ort: { x: 0.55, y: 0.38 }, text: 'Das zweite Tor der Zitadelle. Es glüht, wenn man es berührt.' },
+          { id: 'yt1', name: 'Die Rote Stadt',    essenz: 0,     ort: { x: 0.860, y: 0.21 }, text: 'Hinter roten Mauern schwört man ewige Treue.' },
+          { id: 'yt2', name: 'Die Blutfurt',      essenz: 500,   ort: { x: 0.775, y: 0.28 }, text: 'Das Wasser ist rot. Niemand fragt, warum.' },
+          { id: 'yt3', name: 'Die Bannerwacht',   essenz: 2500,  ort: { x: 0.690, y: 0.25 }, text: 'Hier weht jedes Banner, das je gefallen ist.' },
+          { id: 'yt4', name: 'Die Klingenschlucht', essenz: 5000, ort: { x: 0.645, y: 0.34 }, text: 'Ein Schritt daneben, und der Fels schneidet.' },
+          { id: 'yt5', name: 'Das Rote Tor',      essenz: 10000, ort: { x: 0.615, y: 0.44 }, text: 'Das zweite Tor der Zitadelle. Es glüht, wenn man es berührt.' },
         ],
       },
       {
         id: 'kick', name: 'Pfad der Dornen', plattform: 'Kick', farbe: '#53fc18',
         meilensteine: [
-          { id: 'ki1', name: 'Der Wurzelgrund',   essenz: 0,     ort: { x: 0.10, y: 0.82 }, text: 'Unter den Wurzeln schläft etwas Altes.' },
-          { id: 'ki2', name: 'Der Dornenwall',    essenz: 500,   ort: { x: 0.20, y: 0.70 }, text: 'Nur wer blutet, kommt hindurch.' },
-          { id: 'ki3', name: 'Die Runensteine',   essenz: 2500,  ort: { x: 0.30, y: 0.80 }, text: 'Alte Zeichen, die nur lesen kann, wer zusammenhält.' },
-          { id: 'ki4', name: 'Der Friedhof am Fluss', essenz: 5000, ort: { x: 0.38, y: 0.62 }, text: 'Die Steine stehen schief. Die Toten auch.' },
-          { id: 'ki5', name: 'Das Dornentor',     essenz: 10000, ort: { x: 0.45, y: 0.52 }, text: 'Das dritte Tor der Zitadelle. Es wächst jede Nacht ein Stück.' },
+          { id: 'ki1', name: 'Der Wurzelgrund',   essenz: 0,     ort: { x: 0.050, y: 0.73 }, text: 'Unter den Wurzeln schläft etwas Altes.' },
+          { id: 'ki2', name: 'Der Dornenwall',    essenz: 500,   ort: { x: 0.160, y: 0.72 }, text: 'Nur wer blutet, kommt hindurch.' },
+          { id: 'ki3', name: 'Die Runensteine',   essenz: 2500,  ort: { x: 0.240, y: 0.68 }, text: 'Alte Zeichen, die nur lesen kann, wer zusammenhält.' },
+          { id: 'ki4', name: 'Der Friedhof am Fluss', essenz: 5000, ort: { x: 0.300, y: 0.61 }, text: 'Die Steine stehen schief. Die Toten auch.' },
+          { id: 'ki5', name: 'Das Dornentor',     essenz: 10000, ort: { x: 0.405, y: 0.60 }, text: 'Das dritte Tor der Zitadelle. Es wächst jede Nacht ein Stück.' },
         ],
       },
       {
@@ -69,11 +68,11 @@
         streamStunde: 100,
       },
         meilensteine: [
-          { id: 'tt1', name: 'Die Nebelküste',    essenz: 0,     ort: { x: 0.90, y: 0.80 }, text: 'Hier endet das Land und beginnt der Nebel.' },
-          { id: 'tt2', name: 'Die Versunkenen Ruinen', essenz: 500,  ort: { x: 0.82, y: 0.62 }, text: 'Was der Nebel verschluckt, gibt er nicht zurück.' },
-          { id: 'tt3', name: 'Die Schwarze Schmiede', essenz: 2500, ort: { x: 0.63, y: 0.60 }, text: 'Hier wird geschmiedet, was die Zitadelle öffnen kann.' },
-          { id: 'tt4', name: 'Die Laternen',      essenz: 5000,  ort: { x: 0.60, y: 0.73 }, text: 'Folge dem Licht. Aber nicht jedem.' },
-          { id: 'tt5', name: 'Das Nebeltor',      essenz: 10000, ort: { x: 0.55, y: 0.52 }, text: 'Das vierte Tor der Zitadelle. Niemand hat es je ganz gesehen.' },
+          { id: 'tt1', name: 'Die Nebelküste',    essenz: 0,     ort: { x: 0.930, y: 0.79 }, text: 'Hier endet das Land und beginnt der Nebel.' },
+          { id: 'tt2', name: 'Die Versunkenen Ruinen', essenz: 500,  ort: { x: 0.800, y: 0.70 }, text: 'Was der Nebel verschluckt, gibt er nicht zurück.' },
+          { id: 'tt3', name: 'Die Schwarze Schmiede', essenz: 2500, ort: { x: 0.710, y: 0.78 }, text: 'Hier wird geschmiedet, was die Zitadelle öffnen kann.' },
+          { id: 'tt4', name: 'Die Laternen',      essenz: 5000,  ort: { x: 0.600, y: 0.70 }, text: 'Folge dem Licht. Aber nicht jedem.' },
+          { id: 'tt5', name: 'Das Nebeltor',      essenz: 10000, ort: { x: 0.625, y: 0.59 }, text: 'Das vierte Tor der Zitadelle. Niemand hat es je ganz gesehen.' },
         ],
       },
     ],
