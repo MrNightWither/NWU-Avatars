@@ -23,12 +23,12 @@ window.NWU_CONFIG = {
   },
 
   // Twitch-Kanal, dessen Chat mitgelesen wird (leer = Demo-Figuren). Auch per ?kanal=… möglich.
-  kanal: '',
+  kanal: 'mrnightwither',
   // Adresse des Workers nwu-avatare (leer = Chatter bekommen eine zufällige Figur).
-  api: '',
+  api: 'https://nwu-avatare.nwu-brand.workers.dev',
   // Name(n) des Bot-Kontos, über das Streamer.bot schreibt (klein geschrieben), z. B. ['nwu_bot'].
   // Deren Nachrichten erzeugen keine Figur, „✨ @Name steigt auf …“ löst den Level-Up-Effekt aus.
-  botNamen: [],
+  botNamen: ['nwu_morrigan'],
 
   // Anwesenheit (Plan 6): so lange bleibt eine Figur nach der letzten Nachricht / !lurk
   anwesenheitMinuten: 15,
@@ -55,7 +55,7 @@ window.NWU_CONFIG = {
   },
   // WebSocket-Server von Streamer.bot (Servers/Clients → WebSocket Server, Autostart, ohne Passwort, nur 127.0.0.1),
   // z. B. 'ws://127.0.0.1:8080/'. Leer = Spiele laufen nur zum Spaß, ohne Ruhm. Auch per ?sb=… möglich.
-  streamerbot: '',
+  streamerbot: 'ws://127.0.0.1:8080/',
 
   // Großes Portal: automatisch alle X Minuten (0 = nur per Taste P), Dauer auf dem Terrain
   portal: { alleMinuten: 20, dauerSekunden: 150 },

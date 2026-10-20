@@ -15,7 +15,7 @@ npx wrangler secret put ADMIN_SECRET         # zweites, anderes Zufallspasswort,
 npx wrangler deploy
 ```
 
-Danach zeigt Wrangler die Adresse an, z. B. `https://nwu-avatare.DEIN-NAME.workers.dev`.
+Danach zeigt Wrangler die Adresse an, z. B. `https://nwu-avatare.nwu-brand.workers.dev`.
 Diese Adresse eintragen in:
 - `js/einstellungen.js` → `api: '…'` (dann ist die Website nicht mehr im Demo-Modus)
 - `overlay/config.js` → `api: '…'` (dann zeigt das Overlay die echten Figuren der Chatter)
@@ -41,7 +41,7 @@ using Newtonsoft.Json.Linq;
 public class CPHInline
 {
     static readonly HttpClient http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
-    const string URL = "https://nwu-avatare.DEIN-NAME.workers.dev/avatare/bestaetigen";
+    const string URL = "https://nwu-avatare.nwu-brand.workers.dev/avatare/bestaetigen";
 
     public bool Execute()
     {
@@ -107,7 +107,7 @@ using Newtonsoft.Json.Linq;
 public class CPHInline
 {
     static readonly HttpClient http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
-    const string BASIS = "https://nwu-avatare.DEIN-NAME.workers.dev";
+    const string BASIS = "https://nwu-avatare.nwu-brand.workers.dev";
 
     JObject Post(string pfad, JObject daten)
     {
@@ -193,7 +193,7 @@ using Newtonsoft.Json.Linq;
 public class CPHInline
 {
     static readonly HttpClient http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
-    const string URL = "https://nwu-avatare.DEIN-NAME.workers.dev/avatare/level";
+    const string URL = "https://nwu-avatare.nwu-brand.workers.dev/avatare/level";
 
     public bool Execute()
     {
@@ -246,7 +246,7 @@ using Newtonsoft.Json.Linq;
 public class CPHInline
 {
     static readonly HttpClient http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
-    const string URL = "https://nwu-avatare.DEIN-NAME.workers.dev/avatare/aussehen";
+    const string URL = "https://nwu-avatare.nwu-brand.workers.dev/avatare/aussehen";
 
     public bool Execute()
     {
@@ -287,7 +287,7 @@ nachdem sie das Ritual gemacht hat. Ihre Twitch-ID findest du z. B. in Streamer.
 
 ```powershell
 $h = @{ Authorization = "Bearer DEIN_ADMIN_SECRET" }
-Invoke-RestMethod -Method Post -Uri "https://nwu-avatare.DEIN-NAME.workers.dev/avatare/rolle" -Headers $h `
+Invoke-RestMethod -Method Post -Uri "https://nwu-avatare.nwu-brand.workers.dev/avatare/rolle" -Headers $h `
   -ContentType "application/json" -Body '{"plattform": "twitch", "plattformId": "IHRE_TWITCH_ID", "rolle": "koenigin"}'
 ```
 
@@ -311,7 +311,7 @@ using Newtonsoft.Json.Linq;
 public class CPHInline
 {
     static readonly HttpClient http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
-    const string URL = "https://nwu-avatare.DEIN-NAME.workers.dev/avatare/profil?plattform=twitch&id=";
+    const string URL = "https://nwu-avatare.nwu-brand.workers.dev/avatare/profil?plattform=twitch&id=";
 
     public bool Execute()
     {
@@ -361,7 +361,7 @@ using Newtonsoft.Json.Linq;
 public class CPHInline
 {
     static readonly HttpClient http = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
-    const string URL = "https://nwu-avatare.DEIN-NAME.workers.dev/ruhm";
+    const string URL = "https://nwu-avatare.nwu-brand.workers.dev/ruhm";
     static readonly Dictionary<string, DateTime> letzterChat = new Dictionary<string, DateTime>();
 
     public bool Execute()
@@ -436,7 +436,7 @@ using Newtonsoft.Json.Linq;
 public class CPHInline
 {
     static readonly HttpClient http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
-    const string BASIS = "https://nwu-avatare.DEIN-NAME.workers.dev";
+    const string BASIS = "https://nwu-avatare.nwu-brand.workers.dev";
 
     JObject Post(string pfad)
     {
@@ -477,7 +477,7 @@ using Newtonsoft.Json.Linq;
 public class CPHInline
 {
     static readonly HttpClient http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
-    const string URL = "https://nwu-avatare.DEIN-NAME.workers.dev/pruefung/antwort";
+    const string URL = "https://nwu-avatare.nwu-brand.workers.dev/pruefung/antwort";
     static readonly HashSet<string> schonErinnert = new HashSet<string>();
 
     public bool Execute()
@@ -519,7 +519,7 @@ using Newtonsoft.Json.Linq;
 public class CPHInline
 {
     static readonly HttpClient http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
-    const string URL = "https://nwu-avatare.DEIN-NAME.workers.dev/prophezeiung";
+    const string URL = "https://nwu-avatare.nwu-brand.workers.dev/prophezeiung";
 
     public bool Execute()
     {
@@ -576,7 +576,7 @@ using Newtonsoft.Json.Linq;
 public class CPHInline
 {
     static readonly HttpClient http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
-    const string URL = "https://nwu-avatare.DEIN-NAME.workers.dev/spiel";
+    const string URL = "https://nwu-avatare.nwu-brand.workers.dev/spiel";
 
     public bool Execute()
     {
@@ -635,7 +635,7 @@ using Newtonsoft.Json.Linq;
 public class CPHInline
 {
     static readonly HttpClient http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
-    const string URL = "https://nwu-avatare.DEIN-NAME.workers.dev/wurf";
+    const string URL = "https://nwu-avatare.nwu-brand.workers.dev/wurf";
 
     public bool Execute()
     {
@@ -705,7 +705,7 @@ using Newtonsoft.Json.Linq;
 public class CPHInline
 {
     static readonly HttpClient http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
-    const string URL = "https://nwu-avatare.DEIN-NAME.workers.dev/reise/essenz";
+    const string URL = "https://nwu-avatare.nwu-brand.workers.dev/reise/essenz";
 
     public bool Execute()
     {
@@ -736,7 +736,7 @@ public class CPHInline
 
 **Von Hand** (z. B. nach einem Event), PowerShell:
 ```powershell
-Invoke-RestMethod -Method Post -Uri "https://nwu-avatare.DEIN-NAME.workers.dev/reise/hand" `
+Invoke-RestMethod -Method Post -Uri "https://nwu-avatare.nwu-brand.workers.dev/reise/hand" `
   -Headers @{ Authorization = "Bearer DEIN_ADMIN_SECRET" } -ContentType "application/json" -Body '{"plattform": "twitch", "menge": 500}'
 ```
 Negative Menge zieht ab. `plattform` ist Pflicht.
@@ -748,7 +748,7 @@ Eigene Karte `erfolge.html`, unabhängig von Avataren und Essenz. Pro Plattform 
 **1. Einmal deinen heutigen Stand eintragen** (PowerShell, je Plattform und Weg):
 ```powershell
 $h = @{ Authorization = "Bearer DEIN_ADMIN_SECRET" }
-$u = "https://nwu-avatare.DEIN-NAME.workers.dev/erfolge/setzen"
+$u = "https://nwu-avatare.nwu-brand.workers.dev/erfolge/setzen"
 # Follower, Stand 18.10.2026
 Invoke-RestMethod -Method Post -Uri $u -Headers $h -ContentType "application/json" -Body '{"weg":"follower","plattform":"tiktok","wert":782}'
 Invoke-RestMethod -Method Post -Uri $u -Headers $h -ContentType "application/json" -Body '{"weg":"follower","plattform":"twitch","wert":91}'
@@ -778,7 +778,7 @@ using Newtonsoft.Json.Linq;
 public class CPHInline
 {
     static readonly HttpClient http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
-    const string URL = "https://nwu-avatare.DEIN-NAME.workers.dev/erfolge/plus";
+    const string URL = "https://nwu-avatare.nwu-brand.workers.dev/erfolge/plus";
 
     public bool Execute()
     {

@@ -2,11 +2,12 @@
 name = "nwu-avatare"
 main = "src/index.js"
 compatibility_date = "2026-10-01"
+preview_urls = false
 
 [[d1_databases]]
 binding = "DB"
 database_name = "nwu-avatare"
-database_id = "HIER_DIE_ID_EINTRAGEN"   # kommt von: npx wrangler d1 create nwu-avatare
+database_id = "146f36ae-659f-4dd6-aaa8-e30bf2f22e90"   # angelegt am 20.10.2026 (npx wrangler d1 create nwu-avatare)
 
 [vars]
 # Erlaubte Website-Adressen (ohne Pfad, mit Komma trennen). Später die Subdomain ergänzen.

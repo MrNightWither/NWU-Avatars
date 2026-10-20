@@ -2,7 +2,7 @@
 window.NWU_SEITE = {
   // Adresse des Cloudflare Workers, z. B. 'https://nwu-anmeldung.nwu-brand.workers.dev'.
   // Leer = Demo-Modus: Die Seite funktioniert, speichert aber nichts und kann nicht bestätigt werden.
-  api: '',
+  api: 'https://nwu-avatare.nwu-brand.workers.dev',
 
   // Chat-Befehl zum Bestätigen (Plan 5). Streamer.bot sollte beide Schreibweisen annehmen.
   befehl: '!bestätigen',
