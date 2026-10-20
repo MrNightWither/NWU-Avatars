@@ -697,6 +697,26 @@
     duell = { a, b, phase: 'anlauf', t: 0, schlaege: 0 };
     return true;
   }
+  // Duelle von selbst: begegnen sich zwei Figuren aus verschiedenen Häusern am Rahmen, kommt es ab und zu zum Kampf.
+  // Höchstens alle CFG.duell.autoMinuten (Standard 4), 0 = aus. Schlafende und Lurker lassen sich nicht herausfordern.
+  let autoDuellAb = q.has('duelltest') ? -1 : 60, autoDuellPruefen = 0;     // ?duelltest: erstes Duell sofort möglich
+  function autoDuell(dt) {
+    const minuten = CFG.duell?.autoMinuten ?? 4;
+    if (!minuten || duell || zeit < autoDuellAb || (autoDuellPruefen -= dt) > 0) return;
+    autoDuellPruefen = 2;
+    const wach = (f) => darfDuellieren(f) && f.vorlage.haus && !f.lurker && f.zustand !== 'schlafen' && f.zustand !== 'sitzen' && (f.duellPause || 0) <= zeit;
+    const da = figuren.filter(wach);
+    for (let i = 0; i < da.length; i++) {
+      for (let j = i + 1; j < da.length; j++) {
+        const a = da[i], b = da[j];
+        if (a.vorlage.haus === b.vorlage.haus) continue;
+        let d = Math.abs(norm(b.s - a.s)); d = Math.min(d, umfang - d);
+        if (d > S.hoehe * 0.8 || Math.random() > (CFG.duell?.autoChance ?? 0.3)) continue;
+        if (duellStarten(a, b)) { autoDuellAb = zeit + minuten * 60 * (0.7 + Math.random() * 0.6); return; }
+      }
+    }
+  }
+
   function duellSchritt(dt) {
     if (!duell) return;
     const { a, b } = duell;
@@ -1020,6 +1040,7 @@
     raidPruefen();
     KAMPF.schritt(dt);
     duellSchritt(dt);
+    autoDuell(dt);
     SPIELE.schritt(dt);
     for (let i = laufende.length - 1; i >= 0; i--) if (!laufende[i](dt)) laufende.splice(i, 1);
     if (FLUESTERN > 0 && (fluesterIn -= dt) <= 0) { fluestern(); fluesterIn = FLUESTERN * (0.6 + Math.random() * 0.8); }
@@ -1256,7 +1277,7 @@
   });
 
   demoSetzen(S.demo);
-  window.NWU = { S, figuren, chatter, hausRuf, sammeln, fluestern, formation, portalStarten, portalBeenden, levelUp, EV, demoSetzen, figurErzeugen, VORLAGEN, duellStarten, duellLaeuft: () => !!duell,
+  window.NWU = { S, figuren, chatter, hausRuf, sammeln, fluestern, formation, portalStarten, portalBeenden, levelUp, EV, demoSetzen, figurErzeugen, VORLAGEN, duellStarten, duellLaeuft: () => !!duell, autoDuell,
     rabeStarten: SPIELE.rabe, rennenStarten: SPIELE.rennen, tauziehenStarten: SPIELE.tauziehen, letzterStarten: SPIELE.letzter,
     kampfStarten: portalStarten, kampfStand: KAMPF.stand, kampfEingabe: KAMPF.eingabe, kampfBefehl: KAMPF.befehl,
     schatzStarten: SPIELE.schatz, wurfZeigen: SPIELE.wurfZeigen, spielLaeuft: () => (SPIELE.laeuft() ? SPIELE.laeuft().art : null), letzteMeldung: SPIELE.letzteMeldung };
