@@ -594,6 +594,7 @@
     // Aufstieg: Mit Worker meldet Streamer.bot „✨ @Name steigt auf: jetzt Level 6!“ (Ruhm oder !levelup).
     // Ohne Worker (Demo) reagiert das Overlay direkt auf !levelup @Name vom Streamer.
     const vomBot = u.broadcaster || BOTS.includes(u.name);
+    if (art === 'nachricht' && !vomBot) chatPuls();             // Chat-Aktivität zählt fürs nächste Portal
     const auf = vomBot && text.match(/@([a-z0-9_]{2,25}) steigt auf.*?level (\d+)/);
     const lv = !S.api && u.broadcaster && text.match(/^!(?:levelup|lvlup|lvl)\s+@?([a-z0-9_]{2,25})/);
     if (auf || lv) {
@@ -971,6 +972,20 @@
     figuren.forEach((f) => { if (f.modus === 'ins-portal' || f.modus === 'wartet') { f.modus = 'rueckkehr'; f.wartet = 0.3; } });
   }
 
+  // Chat-Aktivität: viele Nachrichten kurz hintereinander holen das nächste Portal nach vorne
+  const chatZeiten = [];
+  function chatPuls() {
+    const P = CFG.portal || {};
+    if (!P.chatNachrichten || !P.alleMinuten) return;
+    chatZeiten.push(zeit);
+    while (chatZeiten.length && zeit - chatZeiten[0] > (P.chatMinuten || 2) * 60) chatZeiten.shift();
+    const frei = zeit - (EV.letztesEnde ?? -Infinity) > (P.chatPauseMinuten ?? 8) * 60;
+    if (EV.phase === 'aus' && frei && chatZeiten.length >= P.chatNachrichten && EV.naechstes > 3) {
+      EV.naechstes = 3;                     // in ein paar Sekunden – die üblichen Prüfungen (Spiel, Duell, Figuren da) gelten weiter
+      chatZeiten.length = 0;
+    }
+  }
+
   function portalAblauf(dt) {
     // Boden fährt nach unten weg; der Hintergrund darüber (300 px hoch) würde sonst sichtbar bleiben → ausblenden
     const weg = EV.phase === 'aus' || EV.phase === 'schliessen';
@@ -992,7 +1007,7 @@
     }
     if (EV.phase === 'schliessen') {
       terrain.y = lerp(terrain.y, H + 10, Math.min(1, dt * 2));
-      if (EV.zeit > 1.6) EV.phase = 'aus';
+      if (EV.zeit > 1.6) { EV.phase = 'aus'; EV.letztesEnde = zeit; }
     }
   }
 
