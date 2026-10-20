@@ -68,6 +68,17 @@ window.NWU_CONFIG = {
   // Großes Portal: automatisch alle X Minuten (0 = nur per Taste P), Dauer auf dem Terrain
   portal: { alleMinuten: 20, dauerSekunden: 150 },
 
+  // Kreaturen-Kampf hinter dem großen Portal (Taste K, !portal [eis|stein|sumpf|feuer] [boss]). Welten und Bilder: data/welten.js
+  kampf: {
+    sekunden: 75,            // so lange haben alle Zeit, sonst ziehen sich die Kreaturen zurück (keine Strafe)
+    bossSekunden: 120,
+    bossChance: 0.12,        // so oft kommt von allein ein Boss (0.12 = etwa jedes 8. Portal)
+    maxKreaturen: 5,         // kleine Kreaturen pro Kampf höchstens (Sparmodus: 2)
+    angriffPause: 3,         // !angriff höchstens alle X Sekunden pro Person
+    partikel: 60,            // Schnee, Asche, Funken (Sparmodus: aus)
+    hintergrundDeckkraft: 0.8,   // Hintergrund hinter dem Terrain (0 = aus)
+  },
+
   // Figuren (Seitenansicht, Blick nach rechts), Größe im Stream in Pixeln.
   // bild = Stufe 1 (ein Bild). rig = Stufe 2 (Teile mit Gelenken aus rigs.js), wenn vorhanden.
   // Mit ?stufe1 in der Adresse laufen alle als Einzelbild.

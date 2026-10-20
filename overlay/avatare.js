@@ -118,6 +118,14 @@
     krone: textur((g) => g.poly([1, 15, 1, 4, 6, 9, 11, 1, 16, 9, 21, 4, 21, 15]).fill(0xe8c96d).stroke({ width: 1.6, color: 0x2a1d08 })
       .circle(11, 2, 1.6).fill(0xfff0b8).rect(1, 15, 20, 3).fill(0xc9a84c).stroke({ width: 1.2, color: 0x2a1d08 })),
   };
+  // Haus-Pokal-Krone als Bild (goldene Krone mit Tropfen); bis es geladen ist, gilt die gezeichnete von oben
+  const kronenGroesse = () => (S.hoehe * 0.42) / T.krone.width;
+  laden('symbole/krone.webp').then((t) => {
+    T.krone = t;
+    try {   // Figuren, die schon mit der gezeichneten Krone da sind, umstellen (figuren gibt es evtl. noch nicht)
+      for (const fi of figuren) if (fi.krone) { fi.krone.texture = t; fi.krone.scale.set(kronenGroesse()); }
+    } catch (e) { /* noch keine Figuren */ }
+  }).catch((e) => console.warn('Krone fehlt:', e.message));
 
   const lerp = (a, b, t) => a + (b - a) * t;
   const winkelLerp = (a, b, t) => a + (((b - a + Math.PI * 3) % (Math.PI * 2)) - Math.PI) * t;
@@ -230,23 +238,25 @@
   }
 
   // ---------- Portale (aufrechte Tore) ----------
-  function portalBauen(groesse) {
+  // f = Farben einer Portal-Welt (data/welten.js → portal), sonst Gold/Violett
+  function portalBauen(groesse, f) {
+    f = f || { ring: 0xc9a84c, glanz: 0x7a3cff, innen: 0x14081f, wirbel: [0x9b6bff, 0xb3122e], rand: 0xe8c96d };
     const root = new PIXI.Container();
-    const glanz = new PIXI.Sprite(T.glanz); glanz.anchor.set(0.5); glanz.tint = 0x7a3cff; glanz.scale.set(2.6 * groesse, 4.4 * groesse);
+    const glanz = new PIXI.Sprite(T.glanz); glanz.anchor.set(0.5); glanz.tint = f.glanz; glanz.scale.set(2.6 * groesse, 4.4 * groesse);
     const oval = new PIXI.Container(); oval.scale.set(1, 1.85);           // Kreis → aufrechtes Oval
-    const innen = new PIXI.Graphics().circle(0, 0, 44 * groesse).fill({ color: 0x14081f });
+    const innen = new PIXI.Graphics().circle(0, 0, 44 * groesse).fill({ color: f.innen });
     const wirbel = new PIXI.Container();
     for (let i = 0; i < 3; i++) {
-      const b = new PIXI.Graphics().arc(0, 0, (14 + i * 9) * groesse, i, i + 2.4).stroke({ width: 3 * groesse, color: i === 1 ? 0xb3122e : 0x9b6bff, alpha: 0.85 });
+      const b = new PIXI.Graphics().arc(0, 0, (14 + i * 9) * groesse, i, i + 2.4).stroke({ width: 3 * groesse, color: f.wirbel[i === 1 ? 1 : 0], alpha: 0.85 });
       wirbel.addChild(b);
     }
     const ring = new PIXI.Graphics()
-      .circle(0, 0, 46 * groesse).stroke({ width: 5 * groesse, color: 0xc9a84c })
-      .circle(0, 0, 51 * groesse).stroke({ width: 2 * groesse, color: 0xe8c96d, alpha: 0.6 });
+      .circle(0, 0, 46 * groesse).stroke({ width: 5 * groesse, color: f.ring })
+      .circle(0, 0, 51 * groesse).stroke({ width: 2 * groesse, color: f.rand || f.ring, alpha: 0.6 });
     oval.addChild(innen, wirbel, ring);
     root.addChild(glanz, oval);
     root.scale.set(0.001, 0.001);
-    return { root, wirbel, groesse, offen: 0, ziel: 0 };
+    return { root, wirbel, groesse, offen: 0, ziel: 0, funkenFarben: [f.rand || f.ring, f.wirbel[0]] };
   }
   function portalAktualisieren(p, dt, zeit) {
     p.offen = lerp(p.offen, p.ziel, Math.min(1, dt * 3));
@@ -258,7 +268,7 @@
       const w = Math.random() * Math.PI * 2;
       const x = p.root.x + Math.cos(w) * 46 * p.groesse, y = p.root.y + Math.sin(w) * 85 * p.groesse;
       if (effekte.length < PARTIKEL_MAX) {
-        const s = new PIXI.Sprite(T.punkt); s.anchor.set(0.5); s.tint = Math.random() < 0.6 ? 0xe8c96d : 0x9b6bff; s.scale.set(0.2);
+        const s = new PIXI.Sprite(T.punkt); s.anchor.set(0.5); s.tint = p.funkenFarben[Math.random() < 0.6 ? 0 : 1]; s.scale.set(0.2);
         effekt(s, { vx: (Math.random() - 0.5) * 20, vy: -20 - Math.random() * 30, leben: 1, max: 1 });
         s.position.set(x, y);
       }
@@ -284,10 +294,24 @@
   );
   terrain.position.set(TERRAIN.x, H + 10);
   terrainEbene.addChild(terrain);
-  const grossesPortal = portalBauen(1);
+  let grossesPortal = portalBauen(1);
   const PORTAL_X = TERRAIN.x + 70;
   grossesPortal.root.position.set(PORTAL_X, TERRAIN.y - 85);
   terrainEbene.addChild(grossesPortal.root);
+  // Portal in den Farben der Welt neu bauen (nur solange es zu ist), mit Rand-Bild aus data/welten.js, wenn vorhanden
+  function grossesPortalFaerben(w) {
+    const alt = grossesPortal, neu = portalBauen(1, w && w.portal);
+    neu.root.position.copyFrom(alt.root.position);
+    terrainEbene.addChildAt(neu.root, terrainEbene.getChildIndex(alt.root));
+    alt.root.destroy({ children: true });
+    grossesPortal = neu;
+    const src = w && w.bilder && w.bilder.portal;
+    if (src) texHolen(src).then((t) => {
+      if (!t || grossesPortal !== neu || neu.root.destroyed) return;
+      const sp = new PIXI.Sprite(t); sp.anchor.set(0.5); sp.scale.set(205 / t.height);
+      neu.root.addChild(sp);
+    });
+  }
   const EV = { phase: 'aus', zeit: 0, ende: 0, naechstes: (CFG.portal?.alleMinuten || 0) * 60 };
 
   // ---------- Figuren ----------
@@ -432,7 +456,7 @@
       root.addChildAt(gold, 1);
     }
     const krone = new PIXI.Sprite(T.krone);
-    krone.anchor.set(0.5, 1); krone.scale.set(S.hoehe / 70); krone.y = -S.hoehe * 1.04; krone.visible = false;
+    krone.anchor.set(0.5, 1); krone.scale.set(kronenGroesse()); krone.y = -S.hoehe * 1.04; krone.visible = false;
     root.addChild(krone);
     figurenEbene.addChild(root);
     const fi = {
@@ -582,7 +606,7 @@
     if (vomBot && SPIELE.wurfNachricht(u.text || '')) return;
     const spiegel = vomBot && (u.text || '').match(/🪞 @([A-Za-z0-9_]{2,25})/);
     if (spiegel) { const f = figuren.find((x) => !x.entfernen && x.name === spiegel[1].toLowerCase()); if (f) umziehen(f, true); return; }
-    if (SPIELE.darfStarten(u) && SPIELE.befehl(text)) return;
+    if (SPIELE.darfStarten(u) && (SPIELE.befehl(text) || KAMPF.befehl(text))) return;
     if (vomBot && !u.broadcaster) return;                // Bot-Nachrichten erzeugen keine Figur
     if (!u.id || (u.broadcaster && !KOENIG)) return;    // ohne Königs-Figur (Bild fehlt) bleibt der Streamer unsichtbar
     let fi = nachId.get(u.id);
@@ -591,7 +615,7 @@
       if (!fi.root) return;                               // Profil lädt noch
       const duellRuf = text.match(/^!duell\s+@?([a-z0-9_]{2,25})/);
       if (duellRuf) { duellStarten(fi, figuren.find((f) => !f.entfernen && f.name === duellRuf[1])); return; }
-      if (SPIELE.eingabe(fi, text, u)) return;
+      if (KAMPF.eingabe(fi, text) || SPIELE.eingabe(fi, text, u)) return;
       if (!S.api && text.startsWith('!wurf') && !fi.gewuerfelt && !fi.ungebunden) { fi.gewuerfelt = true; SPIELE.wurfZeigen(fi, 1 + Math.floor(Math.random() * 6)); return; }
       if (text.startsWith('!lurk')) { fi.lurker = true; fi.zustandZeit = 0; }
       else if (text.startsWith('!ruf') && !fi.ungebunden) { hausRuf(fi); }
@@ -612,7 +636,7 @@
       level: profil ? profil.level : 1, aussehen: profil ? profil.aussehen : null, silhouette: ungebunden && !BESUCHER.length, besucher: ungebunden && BESUCHER.length > 0, rolle: profil ? profil.rolle : null,
       jahrestag: profil ? profil.jahrestag : 0 });
     if (ungebunden) fi.pruefeBis = zeit + 60;
-    SPIELE.eingabe(fi, text, u);              // z. B. erste Nachricht ist gleich !dabei
+    if (!KAMPF.eingabe(fi, text)) SPIELE.eingabe(fi, text, u);   // z. B. erste Nachricht ist gleich !dabei oder !angriff
   }
 
   function leuchten(fi) {
@@ -658,7 +682,7 @@
   let duell = null;
   const darfDuellieren = (f) => f && f.root && !f.entfernen && !f.versteckt && !f.ungebunden && f.modus === 'rahmen';
   function duellStarten(a, b) {
-    if (duell || SPIELE.laeuft() || a === b || !darfDuellieren(a) || !darfDuellieren(b) || (a.duellPause || 0) > zeit) return false;
+    if (duell || SPIELE.laeuft() || KAMPF.laeuft() || a === b || !darfDuellieren(a) || !darfDuellieren(b) || (a.duellPause || 0) > zeit) return false;
     let d = norm(b.s - a.s); if (d > umfang / 2) d -= umfang;
     const mitte = a.s + d / 2, abstand = S.hoehe * 0.42, r = Math.sign(d) || 1;
     for (const [f, seite] of [[a, -1], [b, 1]]) {
@@ -884,6 +908,11 @@
     karte, karteZeigen, karteFuss, karteListe, karteHalten, laufende, leuchten, huepfen, figurErzeugen, vorlageFuer, rabeBauen, EV,
     zeit: () => zeit, duellLaeuft: () => !!duell,
   });
+  // Kreaturen-Kämpfe hinter dem großen Portal (overlay/kampf.js, Welten in data/welten.js)
+  const KAMPF = window.NWU_KAMPF({
+    CFG, S, W, H, TERRAIN, PORTAL_X, terrain, terrainEbene, figurenEbene, effektEbene, figuren, effekt, funken, T, textur, lerp, texHolen, EV,
+    karteZeigen, karteFuss, karteListe, karteHalten, huepfen, versetzt, melden: SPIELE.melden, portalStarten, zeit: () => zeit,
+  });
 
   // ---------- OBS-Szene → Laufweg (eine Quelle für Gaming/Shooter/NoCam, 20.10.2026) ----------
   const szeneWaehlen = (name) => {
@@ -916,17 +945,21 @@
   }
 
   // ---------- Großes Portal: Ablauf ----------
-  function portalStarten() {
-    if (EV.phase !== 'aus' || SPIELE.laeuft()) return;
+  // opt: { welt: 'mond'|'blut'|'nebel'|'flamme', boss: true } – ohne Angabe wählt der Kampf zufällig
+  function portalStarten(opt) {
+    if (EV.phase !== 'aus' || SPIELE.laeuft() || duell) return false;
+    grossesPortalFaerben(KAMPF.vorbereiten(opt));
     EV.phase = 'oeffnen'; EV.zeit = 0;
     grossesPortal.ziel = 1;
     const dabei = figuren.filter((f) => !f.entfernen && !f.versteckt && f.modus === 'rahmen');
     dabei.forEach((f, i) => { f.modus = 'ins-portal'; f.wartet = 1.2 + i * 0.12; f.reihe = i; });
     EV.ende = (CFG.portal?.dauerSekunden || 150);
+    return true;
   }
   function portalBeenden() {
     if (EV.phase === 'aus' || EV.phase === 'heimkehr' || EV.phase === 'schliessen') return;
     EV.phase = 'heimkehr';
+    KAMPF.abbrechen();
     figuren.forEach((f) => { if (f.modus === 'terrain') { f.modus = 'heim'; f.zustand = 'laufen'; f.eile = 2; } });
     figuren.forEach((f) => { if (f.modus === 'ins-portal' || f.modus === 'wartet') { f.modus = 'rueckkehr'; f.wartet = 0.3; } });
   }
@@ -956,6 +989,7 @@
     const dt = Math.min(0.1, ticker.deltaMS / 1000);
     zeit += dt;
     portalAblauf(dt);
+    KAMPF.schritt(dt);
     duellSchritt(dt);
     SPIELE.schritt(dt);
     for (let i = laufende.length - 1; i >= 0; i--) if (!laufende[i](dt)) laufende.splice(i, 1);
@@ -986,7 +1020,7 @@
       if (fi.versteckt) continue;
 
       fi.zustandZeit -= dt;
-      if (fi.zustandZeit <= 0 && fi.modus !== 'formation' && fi.modus !== 'duell' && fi.modus !== 'spiel') zustandWechseln(fi);
+      if (fi.zustandZeit <= 0 && fi.modus !== 'formation' && fi.modus !== 'duell' && fi.modus !== 'spiel' && fi.kampfX === undefined) zustandWechseln(fi);
       if (fi.dunkelBis && zeit > fi.dunkelBis) { fi.dunkelBis = 0; if (!fi.getroffen) { SPIELE.aufhellen(fi); funken(fi.root.x, fi.root.y - S.hoehe * 0.5, fi.farbe, 10); } }
       fi.eile = fi.modus === 'heim' ? 2 : fi.modus === 'formation' ? 3 : fi.modus === 'spiel' ? (fi.spielEile || 2.2) : 1;
 
@@ -1039,18 +1073,25 @@
         fi.wartet -= dt;
         if (fi.wartet <= 0) {
           fi.modus = 'austreten'; fi.x = PORTAL_X; fi.richtung = 1; fi.zustand = 'laufen'; fi.modusAlpha = 0;
-          fi.austrittZiel = PORTAL_X + 80 + Math.random() * (TERRAIN.breite - 200);
+          fi.austrittZiel = PORTAL_X + 80 + Math.random() * (KAMPF.laeuft() ? 160 : TERRAIN.breite - 200);   // im Kampf nur kurz heraus, dann in die Reihe
         }
       } else if (fi.modus === 'austreten' || fi.modus === 'terrain' || fi.modus === 'heim') {
         if (fi.modus === 'austreten') {
           fi.modusAlpha = Math.min(1, fi.modusAlpha + dt * 2.5);
-          fi.x += fi.tempo * 1.6 * dt;
+          fi.x += fi.tempo * 1.6 * dt; fi.zustand = 'laufen';
           if (fi.x > fi.austrittZiel) { fi.modus = 'terrain'; fi.zustandZeit = 0; }
         } else if (fi.modus === 'terrain') {
-          if (EV.phase === 'heimkehr') { fi.modus = 'heim'; fi.zustand = 'laufen'; }
-          if (fi.g.laufen > 0.05) fi.x += fi.richtung * fi.tempo * dt * fi.g.laufen;
-          if (fi.x < PORTAL_X + 50) fi.richtung = 1;
-          if (fi.x > TERRAIN.x + TERRAIN.breite - 30) fi.richtung = -1;
+          if (EV.phase === 'heimkehr') { fi.modus = 'heim'; fi.zustand = 'laufen'; fi.kampfX = undefined; }
+          if (fi.kampfX !== undefined) {
+            // Kreaturen-Kampf: zum Platz in der Reihe laufen, dann zur Kreatur schauen (kampf.js steuert die Schläge)
+            const d = fi.kampfX - fi.x;
+            if (Math.abs(d) > 3) { fi.richtung = Math.sign(d); fi.zustand = 'laufen'; fi.x += Math.sign(d) * Math.min(Math.abs(d), 140 * dt); }
+            else { fi.richtung = fi.kampfBlick || 1; fi.zustand = 'idle'; }
+          } else {
+            if (fi.g.laufen > 0.05) fi.x += fi.richtung * fi.tempo * dt * fi.g.laufen;
+            if (fi.x < PORTAL_X + 50) fi.richtung = 1;
+            if (fi.x > TERRAIN.x + TERRAIN.breite - 30) fi.richtung = -1;
+          }
         } else {
           fi.richtung = -1; fi.zustand = 'laufen';
           fi.x -= Math.max(170, fi.tempo * 5) * dt;          // zügig zurück ins Portal
@@ -1121,8 +1162,9 @@
     const da = figuren.filter((f) => !f.entfernen);
     hud.innerHTML =
       `<b>NWU Avatare</b> · ${Math.round(app.ticker.FPS)} FPS · ${da.filter((f) => !f.versteckt).length}/${da.length} Figuren · Chat: ${chatStatus}` +
-      `${S.sparmodus ? ' · <b>Sparmodus</b>' : ''}${EV.phase !== 'aus' ? ' · Portal: ' + EV.phase : ''}` +
-      `<div class="klein">T Test-Chatter · M Nachricht · K !lurk · R Raid · P Portal · U Level-Up · G Gruppenbild · J Jubeln · D Duell · F Haus-Ruf · W Westen · B Rabe · E Rennen · Z Tauziehen · L Letzter steht · X Schatz · Q Würfel · S Sparmodus · 1/2/3 Demo · H Anzeige</div>`;
+      `${S.sparmodus ? ' · <b>Sparmodus</b>' : ''}${EV.phase !== 'aus' ? ' · Portal: ' + EV.phase + (KAMPF.welt() ? ' (' + KAMPF.welt().kurz + ')' : '') : ''}` +
+      `${KAMPF.stand() ? ' · Kampf: ' + KAMPF.stand().phase : ''}` +
+      `<div class="klein">T Test-Chatter · M Nachricht · N !lurk · K Kreaturen-Kampf (Shift+K Boss) · R Raid · P Portal · U Level-Up · G Gruppenbild · J Jubeln · D Duell · F Haus-Ruf · W Westen · B Rabe · E Rennen · Z Tauziehen · L Letzter steht · X Schatz · Q Würfel · S Sparmodus · 1/2/3 Demo · H Anzeige</div>`;
   }
 
   let testNr = 0;
@@ -1146,7 +1188,8 @@
     const k = e.key.toLowerCase();
     if (k === 't') chatter(testUser(), 'nachricht');
     else if (k === 'm') { const f = zufallsFigur(); if (f) leuchten(f); }
-    else if (k === 'k') { const f = zufallsFigur(); if (f) { f.lurker = true; f.zustandZeit = 0; } }
+    else if (k === 'n') { const f = zufallsFigur(); if (f) { f.lurker = true; f.zustandZeit = 0; } }
+    else if (k === 'k') { if (EV.phase === 'aus') portalStarten({ boss: e.shiftKey ? true : undefined }); else portalBeenden(); }
     else if (k === 'r') formation(10, true);
     else if (k === 'g') formation(12, false);
     else if (k === 'p') { if (EV.phase === 'aus') portalStarten(); else portalBeenden(); }
@@ -1171,5 +1214,6 @@
   demoSetzen(S.demo);
   window.NWU = { S, figuren, chatter, hausRuf, sammeln, fluestern, formation, portalStarten, portalBeenden, levelUp, EV, demoSetzen, figurErzeugen, VORLAGEN, duellStarten, duellLaeuft: () => !!duell,
     rabeStarten: SPIELE.rabe, rennenStarten: SPIELE.rennen, tauziehenStarten: SPIELE.tauziehen, letzterStarten: SPIELE.letzter,
+    kampfStarten: portalStarten, kampfStand: KAMPF.stand, kampfEingabe: KAMPF.eingabe, kampfBefehl: KAMPF.befehl,
     schatzStarten: SPIELE.schatz, wurfZeigen: SPIELE.wurfZeigen, spielLaeuft: () => (SPIELE.laeuft() ? SPIELE.laeuft().art : null), letzteMeldung: SPIELE.letzteMeldung };
 })();

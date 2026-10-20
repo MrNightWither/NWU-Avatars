@@ -552,7 +552,7 @@ window.NWU_SPIELE = function (K) {
     darfStarten,
     eingabe: (fi, text, u) => !!spiel && spiel.eingabe(fi, text, u),
     laeuft: () => spiel,
-    wurfNachricht, wurfZeigen, aufhellen,
+    wurfNachricht, wurfZeigen, aufhellen, melden,
     rabe: rabeStarten, rennen: rennenStarten, tauziehen: tauziehenStarten, letzter: letzterStarten, schatz: schatzStarten,
     letzteMeldung: () => letzteMeldung,
   };
