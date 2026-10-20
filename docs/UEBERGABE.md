@@ -15,6 +15,20 @@ Erst `README.md`, `docs/GESCHICHTE.md`, `docs/FORTSCHRITT.md` lesen.
 - **Noch am PC zu tun:** Laufwege für die 3 Szenen in OBS ausmessen (`overlay/config.js` → `szenen`), Overlay als Browserquelle anlegen,
   Kick/YouTube/TikTok-Auslöser für Essenz/Erfolg (bisher nur Twitch), Rolle `koenigin` setzen, sobald sie das Ritual gemacht hat.
 
+## Gebaut 20.10.2026: Portal-Welten und Kreaturen-Kämpfe (getestet im Browser und mit Worker-Tests, nicht live)
+
+- **Vier Portal-Welten** (`data/welten.js`): Mond = Eis, Blut = roter Fels mit Blutfluss, Nebel = Sumpf mit Ruinen,
+  Flamme = Basalt mit Lava. Portal-Farbe, Boden, schwacher Hintergrund (Parallax) und Wetter (Schnee, Asche, Nebel, Funken) je Welt.
+- **Kreaturen-Kampf** (`overlay/kampf.js`): 2 kleine Arten + 1 Boss pro Welt, kommen aus einem Riss rechts, Lebensbalken,
+  Figuren greifen von selbst an (Wächter und hohe Level vorne), `!angriff` = starker Schlag (3 s Sperre pro Person),
+  Sieg = Ruhm für alle Mitkämpfer (`kreatur` +40, `boss` +150 in `data/ruhm.js`, Worker `/spiel`), Zeit um = Rückzug ohne Strafe.
+  Boss selten (12 %) mit Karte, Schattenkönig-Finisher bei 25 %, wenn du da bist. Start: großes Portal (alle 20 Min.),
+  Taste K (Shift+K Boss), `!portal [eis|stein|sumpf|feuer] [boss]`. Lurk-Testtaste ist jetzt **N** (vorher K).
+- Alles läuft mit **Platzhaltern** (PIXI.Graphics). Bilder: `GEMINI-PROMPTS.md` Abschnitt 15, danach nur Pfade in `data/welten.js`.
+- **Noch am PC zu tun:** Worker neu hochladen (`cd worker` → `npx wrangler deploy`), sonst lehnt er `kreatur`/`boss` ab.
+  Streamer.bot schließen und `nwu-avatare-einsetzen.js` laufen lassen, damit „NWU Spiel“ im Chat den Sieg meldet
+  (Code in `aktionen.cs` ist ergänzt, Sicherung `aktionen.cs.vor-kreaturen.bak`).
+
 ## Zeitplan und großer Bogen (Stand 19.10.2026)
 
 - **Release erst, wenn alles fertig ist – Ziel: in etwa einem Monat (ca. 19.11.2026).** Bis dahin in Ruhe testen.
@@ -136,8 +150,8 @@ Ebenfalls am 18.10. (getestet im Browser und mit Worker-Tests, nicht live):
 5. **Morrígans Prüfung** (Fragen zur Geschichte im Chat)
 6. **Ehrenduelle** (`!duell @Name`)
 7. **Auftritt des Schattenkönigs** bei Stream-Start (braucht seine Figur von der Seite + Teile-Bogen)
-8. **Kreaturen-Kämpfe** unten am Terrain, gemeinsam gegen Kreaturen der Spaltung, Untergrund je nach Portal
-   (Eis, roter Stein, Sumpf, Lava) – braucht Prompts für Kreaturen und Untergründe
+8. ✅ **Kreaturen-Kämpfe** unten am Terrain, gemeinsam gegen Kreaturen der Spaltung, Untergrund je nach Portal
+   (Eis, roter Stein, Sumpf, Lava) – gebaut 20.10. mit Platzhaltern, Prompts in `GEMINI-PROMPTS.md` Abschnitt 15
 
 ## Noch zu tun außerhalb des Codes
 
@@ -176,8 +190,8 @@ lassen (Idee für die Geschichte: Morrígan ist uralt, die Kugel hält sie jung)
   kurz auf dem Thron der Zitadelle sitzen). Streamer.bot → Reward Redemption → Bot-Nachricht, die das Overlay liest.
 - **Stream-Ende:** Alle Figuren verneigen sich, winken und gehen durch das Portal (Streamer.bot „Stream Offline“
   oder Taste/Befehl kurz vor Schluss).
-- **Kreaturen-Kämpfe:** alle Häuser gemeinsam gegen Kreaturen der Spaltung, Untergrund je nach Portal
-  (Eis, roter Stein, Sumpf, Lava). Braucht Gemini-Bilder (Kreaturen, Untergründe).
+- **Kreaturen-Kämpfe, Ausbau:** Heilen durch Wächter, Segen der Königin, Geister für Gefallene, Haus mit dem meisten
+  Schaden beim Boss (`PLAN.md` Abschnitt 10) – die Grundlage steht seit 20.10.
 - **Das Erwachen:** einmaliges Live-Event, wenn die Zitadelle auf der Reise-Karte erreicht ist – Nebel lichtet sich
   in Overlay und Website, Raben und Dornen werden wählbar (`verloren: true` entfernen, Quiz/Film ergänzen).
 - **Truhe oder Falle:** drei Truhen, der Chat stimmt ab, welche du öffnest; Belohnung für alle oder Strafe für dich.

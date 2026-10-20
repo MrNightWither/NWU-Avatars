@@ -31,12 +31,14 @@
       { befehl: '!grab oben / rechts / unten / links', text: 'Bei der Schatzsuche raten, wo die Truhe liegt. Richtig: +100 Ruhm, falsch: −20.' },
       { befehl: '!wurf', text: 'Würfel der Morrígan, einmal pro Stream: 6 = doppelter Ruhm, 1 = du verlierst kurz deine Gestalt.' },
       { befehl: '!a / !b / !c', text: 'Antwort bei Morrígans Prüfung. Wer zuerst richtig liegt, gewinnt 100 Ruhm.' },
+      { befehl: '!angriff', text: 'Beim Kampf gegen die Kreaturen der Spaltung: ein starker Schlag deiner Figur (alle 3 Sekunden). Sieg = Ruhm für alle Mitkämpfer.' },
     ],
   },
   {
     gruppe: 'Wächter der Zitadelle', wer: 'waechter', befehle: [
       { befehl: '!wache', text: 'Die Wächter stellen sich zusammen und bleiben bis zum Ende des Streams.' },
       { befehl: '!rennen · !tauziehen · !letzter · !schatz · !rabe', text: 'Startet ein Spiel. !tauziehen mond blut wählt die Häuser.' },
+      { befehl: '!portal [eis · stein · sumpf · feuer] [boss]', text: 'Öffnet das große Portal: alle kämpfen gemeinsam gegen die Kreaturen der Spaltung. Ohne Welt zufällig, mit boss ein Bosskampf.', z: '!portal eis boss' },
     ],
   },
   {

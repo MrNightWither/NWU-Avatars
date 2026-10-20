@@ -502,3 +502,143 @@ Beide bekommen eine **eigene** Figur, nicht eine der 16 Haus-Figuren. Ablauf wie
 3. Teile-Bogen (Abschnitt 4). **Kopf und Haare getrennt** zeichnen lassen („head without hair“ und „hair alone“) –
    dann kann ich Frisuren tauschen und die Haarfarbe frei einfärben, genau wie bei den Haus-Figuren.
 Frisuren (lang, mittel, kurz, Zopf, Glatze …) kommen aus Abschnitt 9, Haarfarben mache ich per Programm.
+
+---
+
+## 15. Portal-Welten und Kreaturen der Spaltung (Stand 20.10.2026)
+
+Das große Portal führt in eine von vier Welten – eine pro Haus-Gebiet. Dort kämpfen alle Häuser gemeinsam gegen die
+**Kreaturen der Spaltung**. Im Overlay läuft das schon komplett mit Platzhaltern (Taste **K**). Jedes Bild, das du
+machst, ersetzt einen Platzhalter – ich trage dann nur den Dateipfad in `data/welten.js` ein.
+
+**So gehst du vor:** Neuer Gemini-Chat, **zuerst den Stil-Block aus Abschnitt 0** schicken, dann eine fertige
+Haus-Figur (Seitenansicht, z. B. `seite-haus1-a.png`) als **Stil-Referenz** hochladen. Danach die Prompts unten
+nacheinander, pro Welt am besten im selben Chat. Ist ein Bild gut, beim nächsten schreiben:
+*„Exactly the same art style as the previous image.“* Dateien nach `assets/roh/` legen (Namen siehe unten).
+
+Gemeinsamer Look der Kreaturen: **dicker dunkler Umriss im Sticker-Stil wie die Figuren (Abschnitt 3)**, aber **ohne
+weißen Sticker-Rand** (die Kreaturen stehen auf dem Boden). Alle haben **violett leuchtende Augen** und irgendwo einen
+**violetten Splitter oder Riss** – das Zeichen der Spaltung. **Blick immer nach LINKS** (sie kommen von rechts auf die
+Figuren zu).
+
+| Welt | Haus | Untergrund | Kleine Kreaturen | Boss |
+|---|---|---|---|---|
+| `mond` | Mond | Eis, gefrorene Seen, Schnee | Frostling (schwebender Eissplitter-Geist), Eiswolf | Der Gefrorene Wächter (Eisriese) |
+| `blut` | Blut | roter Fels, Blutfluss, Glutasche | Blutkäfer, Blutschemen (schwebender Geist) | Der Blutkoloss (Felsriese mit Blutadern, Hörner) |
+| `nebel` | Nebel | Moor, Sumpf, versunkene Ruinen | Moorkröte, Irrlicht (schwebendes Licht) | Der Versunkene (Riese aus Ruinenstein und Moos) |
+| `flamme` | Flamme | Basalt mit Lavaadern, Funken | Glutling (Lava-Schnecke), Aschehund | Der Glutfürst (Basalt-Riese, Obsidian-Hörner) |
+
+### 15a) Kreaturen-Bogen pro Welt · Datei `kreaturen-mond.png` (… `-blut`, `-nebel`, `-flamme`) · Format 16:9
+
+Beispiel Mond (die Zeilen in eckigen Klammern pro Welt austauschen, siehe darunter):
+
+```
+Use the uploaded character ONLY as STYLE reference: same chibi cartoon proportions, bold thick dark outlines,
+flat cel shading with few large color areas, glossy sticker look, minimal small details.
+Draw 3 CREATURES of the rift ("creatures of the sundering") from a dark fantasy world, side by side
+with wide empty space between them, no creature touching another:
+1. [a small floating ice-shard spirit: body made of pale blue ice crystals, tiny claw arms, wispy tail, no legs]
+   – about as tall as the character
+2. [an ice wolf: grey-blue fur, ice crystals growing along its back, snarling jaw]
+   – about as tall as the character
+3. BOSS: [a huge ice golem, "the Frozen Warden": massive body of ancient blue ice, heavy fists, crystal spikes
+   on the shoulders] – about 2.5 times as tall as the character
+All three: glowing VIOLET eyes and a small glowing violet crack or shard somewhere on the body (mark of the rift).
+Menacing but still cartoon-cute, readable silhouettes, strong shapes.
+Pure side view, every creature FACING LEFT, neutral standing pose, whole body including feet visible.
+Thick dark outline, NO white sticker border.
+Plain flat solid #00FF00 green background, no ground, no shadows, no text, no letters.
+```
+
+Die anderen Welten – nur die drei Beschreibungen tauschen:
+- **Blut:** `1. a red rock beetle with a cracked shell glowing blood-red` · `2. a floating blood wraith: dark red
+  ghostly body, thin claw arms, wispy tail, no legs` · `3. BOSS: "the Blood Colossus", a giant made of red stone
+  with glowing blood veins, curved black horns, heavy fists`
+- **Nebel:** `1. a swamp toad with mossy warts, wide mouth` · `2. a will-o'-the-wisp: a floating pale green
+  glowing spirit with a small face, no legs` · `3. BOSS: "the Sunken One", a giant built from ruined temple stones
+  and columns, overgrown with moss and swamp weed`
+- **Flamme:** `1. a small lava slug: black basalt shell with glowing orange magma cracks` · `2. an ash hound: soot-black
+  dog with glowing ember cracks and spikes along the back` · `3. BOSS: "the Ember Lord", a giant of black basalt
+  with glowing lava cracks, obsidian horns, smoke rising from the shoulders`
+
+### 15b) Teile-Bogen pro Kreatur · Datei `teile-frostling.png`, `teile-eiswolf.png`, `teile-frostwaechter.png` … · Format 1:1
+
+Damit Beine, Arme und Maul sich bewegen (wie bei den Figuren: `overlay/rig.js`, Zerlegen mit `tools/teile.py`).
+**Die einzelne Kreatur aus 15a hochladen** und dazu:
+
+```
+Use the uploaded creature as exact reference: same design, colors, line art and art style.
+Create a 2D puppet parts sheet of this creature, pure side view FACING LEFT, same scale as the reference.
+Draw these parts SEPARATELY, arranged in a loose grid with wide empty space between them, no part touching another:
+1. body / torso alone (without legs, arms, head and tail)
+2. head alone, with the mouth CLOSED, without the lower jaw
+3. lower jaw alone
+4. each leg separately (front leg, back leg – for four-legged creatures all four legs), straight
+5. each arm separately (if it has arms), hanging straight down, hand or fist attached
+6. tail alone (if it has one)
+Each part complete and fully drawn, including areas normally hidden behind other parts.
+Do NOT draw the assembled creature. Do NOT add labels, numbers, arrows or text.
+Thick dark outline on every part, NO white sticker border.
+Plain flat solid #00FF00 green background, no shadows, no gradients.
+```
+
+Bei schwebenden Kreaturen (Frostling, Blutschemen, Irrlicht) fallen die Beine weg. Klebt Gemini Teile zusammen:
+**„Only the separate parts, no assembled creature, more space between the parts.“**
+Tipp: Erst nur die Kreaturen-Bögen (15a) machen – damit sehen die Kreaturen schon echt aus (sie federn und schlagen zu).
+Die Teile-Bögen sind die Kür.
+
+### 15c) Boden-Streifen pro Welt · Datei `boden-mond.png` (… `-blut`, `-nebel`, `-flamme`) · Format **16:3** (z. B. 1920 × 360)
+
+```
+Same art style as before (bold dark outlines, flat cel shading, cartoon). A very wide horizontal GROUND STRIP
+for a 2D side-scrolling game, seen exactly from the side (like a cross-section of the ground).
+[Frozen lake ice with cracks and glossy highlights, small snow drifts along the top edge.]
+The TOP EDGE is the walking surface: almost flat and straight, near the very top of the image.
+Below it the ground material continues down to the bottom edge of the image.
+SEAMLESSLY TILEABLE horizontally: the left and right edges must match exactly.
+No sky, no background, no characters, no plants taller than a few pixels, no text.
+Above the top edge: plain flat solid #00FF00 green.
+```
+
+Austauschen in `[…]`:
+- **Blut:** `Red rock with dark chunks and a narrow river of blood running horizontally through the middle, a few glowing embers.`
+- **Nebel:** `Dark swampy moor ground with small puddles reflecting light, short reeds along the top edge, old sunken stones.`
+- **Flamme:** `Black basalt rock with glowing orange lava veins and cracks, a few sparks.`
+
+### 15d) Hintergrund pro Welt · Datei `hintergrund-mond.png` (… ) · Format **16:9**
+
+Wird nur **schwach und weich** hinter dem Boden-Streifen gezeigt (oben ausgeblendet), damit die Figuren davor lesbar bleiben.
+
+```
+Same art style as before, but SOFT and DARK: a distant fantasy landscape at night, low contrast, slightly blurred
+like far away, muted colors, no bright spots in the lower half.
+[Frozen lakes and tall thin ice towers and icy mountains under a pale blue moonlit sky.]
+The horizon sits in the lower third of the image. Nothing important in the very bottom strip (it will be covered).
+No characters, no creatures, no text, no letters, no frame.
+```
+
+Austauschen in `[…]`:
+- **Blut:** `The red city with dark pointed towers on red cliffs, a blood river in the distance, dark red sky with ash.`
+- **Nebel:** `Sunken temple ruins, broken columns and arches in a misty swamp, pale green fog.`
+- **Flamme:** `Black volcanoes with glowing craters, rivers of lava in the distance, smoke and an orange sky.`
+
+### 15e) Portal-Rand pro Welt · Datei `portal-mond.png` (… ) · Format **1:2** (hochkant)
+
+```
+Same art style as before. An UPRIGHT magical portal gate frame (tall oval, about twice as high as wide),
+seen straight from the front. [The frame is made of jagged pale blue ice crystals with frost.]
+The INSIDE of the portal is EMPTY: plain flat solid #00FF00 green (the swirl is animated by the overlay).
+Also around the frame: plain flat solid #00FF00 green background. No characters, no text.
+```
+
+Austauschen in `[…]`:
+- **Blut:** `The frame is made of rough red stone with dripping blood-red runes.`
+- **Nebel:** `The frame is made of mossy ancient ruin stones with hanging swamp weed and a pale green glow.`
+- **Flamme:** `The frame is made of black basalt with glowing orange lava cracks.`
+
+### Danach (mache ich)
+
+- Hintergrund `#00FF00` entfernen (`tools/freistellen.py`), Kreaturen einzeln ausschneiden, Teile zerlegen (`tools/teile.py`),
+  als WebP nach `overlay/welten/` und `overlay/kreaturen/<welt>/` legen.
+- In `data/welten.js` nur die Pfade eintragen: `bilder: { boden, hintergrund, portal }` pro Welt und `bild` (oder `teile`)
+  pro Kreatur. Leere Pfade bleiben Platzhalter – du kannst also Welt für Welt nachliefern.

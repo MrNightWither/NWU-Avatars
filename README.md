@@ -19,7 +19,7 @@ der aktuelle Stand mit allen offenen Entscheidungen in [`docs/UEBERGABE.md`](doc
 | **2** | Website | 🟡 Ritual als Film über die Karte (Quiz, Haus, Gestalt, Bindung per Code, Ton), Demo-Modus bis der Worker steht |
 | **3** | Figuren-Overlay | 🟡 Alle 4 Häuser × 4 Gestalten aus Teilen mit Gelenken (laufen, sitzen, jubeln, winken). Blut, Nebel, Flamme sind umgefärbte Mond-Figuren (`tools/umfaerben.py`), Haare pro Person einfärbbar |
 | 4 | Level und Items | 🟡 `!levelup @Name [Anzahl]` nur für den Streamer. Freischaltungen (`data/aussehen.js`): Level 3 Staubspur, Level 5 Haarfarbe (`!haare rot`), Level 10 Funkenspur. Items fehlen noch |
-| 5 | Portal und Terrain | 🟡 aufrechtes Portal, Figuren laufen aufs Terrain; Kämpfe und Terrain-Bilder fehlen noch |
+| 5 | Portal und Terrain | 🟡 aufrechtes Portal in 4 Welten (Eis, roter Stein, Sumpf, Lava), Kreaturen-Kämpfe mit Boss (`overlay/kampf.js`, `data/welten.js`); Bilder fehlen noch (Platzhalter) |
 | ➕ | Meilensteinkarte | 🟡 vier Pfade (Twitch, YouTube, Kick, TikTok) zur Zitadelle, `reise.html` (Website) und `reise.html?szene=1` (OBS), Essenz pro Plattform im Worker; eigene Reise-Karte fehlt noch |
 | ➕ | Erfolgskarte | 🟡 `erfolge.html`: Follower-Weg bis 100.000 und Unterstützer-Weg bis 2.000, pro Plattform; eigene Karte fehlt noch |
 | 6 | Haus-Duelle | – |
@@ -48,6 +48,7 @@ data/haeuser.js       Die Häuser (4 aktiv, Dornen/Raben verloren) – EINE Quel
 data/quiz.js          24 Fragen, pro Durchgang 12 zufällig
 data/auswertung.js    Quiz-Auswertung (gleich für Seite und Worker)
 data/erfolge.js       Erfolgskarte: Stufen der beiden Wege, Plattformen
+data/welten.js        Portal-Welten und Kreaturen der Spaltung (Farben, Namen, Bildpfade für das Overlay)
 data/aussehen.js      Haarfarben und Freischaltungen, die schon funktionieren (Overlay + Worker)
 data/fortschritt.js   Der ganze Stufenplan für die Website (fertig/bald)
 data/meilensteine.js  Reise: vier Pfade, Meilensteine, Essenz-Regeln, Orte auf der Karte
@@ -96,8 +97,21 @@ Mods bleiben als Wächter 2 Stunden (`!wache` = bis zum Ende). Wer noch kein Rit
 und jubeln. Sub → Level-Up-Effekt bei der Figur. Ist `api` eingetragen, bekommt jeder Chatter
 seine echte Figur aus dem Ritual, sonst eine zufällige.
 
-**Großes Portal:** aufrechtes Tor am Terrain-Streifen unten, die Figuren laufen heraus und nach
-2,5 Minuten wieder hinein. Automatisch alle 20 Minuten (`portal` in `config.js`) oder per Taste.
+**Großes Portal und Kreaturen-Kämpfe:** aufrechtes Tor am Terrain-Streifen unten. Es führt in eine von vier Welten
+(zufällig oder per Befehl): **Mond** = Eis und gefrorene Seen (Schnee), **Blut** = roter Fels und Blutfluss (Glutasche),
+**Nebel** = Sumpf und versunkene Ruinen (Nebelschwaden), **Flamme** = Basalt mit Lavaadern (Funken). Portal, Boden,
+Hintergrund und Wetter haben die Farben der Welt. Die Figuren laufen heraus, rechts öffnet sich ein Riss, und die
+**Kreaturen der Spaltung** kriechen heraus (pro Welt 2 kleine Arten und 1 Boss). Alle Häuser kämpfen **gemeinsam** und
+von selbst; Wächter (Mods) und hohe Level stehen vorne, der Rest greift aus der Ferne an. **`!angriff`** im Chat = starker
+Schlag (1× pro 3 Sekunden pro Person, auch vom Rahmen aus). Sieg = alle jubeln, **+40 Ruhm** für alle Mitkämpfer (Boss
+**+150**, Quelle `kreatur`/`boss` in `data/ruhm.js`, gemeldet über Streamer.bot „NWU Spiel“). Läuft die Zeit ab (75 s, Boss
+120 s), ziehen sich die Kreaturen zurück – ohne Strafe. Selten (etwa jedes 8. Portal) kommt ein **Boss** mit Ankündigung;
+ist der Schattenkönig (du) da, macht er bei 25 % den großen Finisher. Start: automatisch alle 20 Minuten (`portal` in
+`config.js`), Taste **K** (Shift+K mit Boss) oder `!portal` / `!portal eis` / `stein` / `sumpf` / `feuer` (mit `boss`
+dahinter = Bosskampf) durch dich und – wie bei den Spielen – Mods. Einstellungen: `kampf` in `config.js`. Bilder: nur
+Pfade in `data/welten.js` eintragen, bis dahin zeichnet das Overlay Platzhalter (Prompts: `docs/GEMINI-PROMPTS.md`
+Abschnitt 15). Während eines Kampfes gibt es keine Duelle und keine Spiele; der Sparmodus (S) schaltet das Wetter ab
+und lässt höchstens 2 Kreaturen kommen.
 
 **Ehrenduelle:** `!duell @Name` – beide laufen am Rahmen aufeinander zu, drei Schlagabtausche mit Funken, der Sieger
 jubelt, der Verlierer setzt sich kurz. Höheres Level hilft etwas (höchstens 70 : 30). Pro Person alle 2 Minuten.
@@ -139,8 +153,8 @@ großes Portal.
 **Zeichen der Zitadelle:** Mods (Wächter) tragen einen goldenen Ring zu ihren Füßen, die Rolle `koenigin`
 (Partnerin) zusätzlich Diadem und violetten Schimmer. Das Siegerhaus des Vormonats trägt Kronen.
 
-Tasten (OBS: Rechtsklick → Interagieren): `T` Test-Chatter, `M` Nachricht, `K` !lurk, `R` Raid,
-`P` Portal auf/zu, `U` Level-Up (zufällige Figur), `G` Gruppenbild, `J` alle jubeln, `D` Duell, `F` Haus-Ruf, `W` Flüstern aus dem Westen, `B` Rabe, `E` Wettrennen, `Z` Tauziehen, `L` Letzter steht, `X` Schatzsuche, `Q` Würfel (zufällige Figur), `S` Sparmodus,
+Tasten (OBS: Rechtsklick → Interagieren): `T` Test-Chatter, `M` Nachricht, `N` !lurk, `R` Raid,
+`K` Kreaturen-Kampf (Shift+K = Boss), `P` Portal auf/zu, `U` Level-Up (zufällige Figur), `G` Gruppenbild, `J` alle jubeln, `D` Duell, `F` Haus-Ruf, `W` Flüstern aus dem Westen, `B` Rabe, `E` Wettrennen, `Z` Tauziehen, `L` Letzter steht, `X` Schatzsuche, `Q` Würfel (zufällige Figur), `S` Sparmodus,
 `1/2/3` = 4/12/30 Demo-Figuren, `H` Anzeige.
 
 **Aussehen und Freischaltungen** (alles in `data/aussehen.js`, Plan bis Level 100 in `docs/FORTSCHRITT.md`):
