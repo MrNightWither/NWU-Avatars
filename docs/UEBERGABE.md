@@ -5,15 +5,15 @@ Erst `README.md`, `docs/GESCHICHTE.md`, `docs/FORTSCHRITT.md` lesen.
 
 ## ✅ Live-Stand 20.10.2026 (Paket 1 erledigt)
 
-- **Worker**  läuft: https://nwu-avatare.nwu-brand.workers.dev (D1  mit Tabellen, Secrets gesetzt).
-  Die Passwörter liegen **nur** in  (am besten zusätzlich in Bitwarden ablegen).
+- **Worker** `nwu-avatare` läuft: https://nwu-avatare.nwu-brand.workers.dev (D1 `nwu-avatare` mit Tabellen, Secrets gesetzt).
+  Die Passwörter liegen **nur** in `%USERPROFILE%\.morrigan\nwu-avatare-geheim.txt` (am besten zusätzlich in Bitwarden ablegen).
 - **Website** (GitHub Pages) nutzt den echten Worker, kein Demo-Modus mehr. Erfolgskarte mit Stand 18.10. befüllt.
-- **Overlay** : Kanal , Bot , Streamer.bot .
+- **Overlay** `overlay/config.js`: Kanal `mrnightwither`, Bot `nwu_morrigan`, Streamer.bot `ws://127.0.0.1:8080/`.
 - **Streamer.bot**: 14 Aktionen + 12 Befehle in der Gruppe „NWU Avatare“, eingesetzt per
-   (Code: ), alle kompilieren fehlerfrei.
-  Ruhm/Essenz/Erfolg erkennen die Quelle selbst (), Present Viewers zählt höchstens alle 10 Minuten.
-- **Noch am PC zu tun:** Laufwege für die 3 Szenen in OBS ausmessen ( → ), Overlay als Browserquelle anlegen,
-  Kick/YouTube/TikTok-Auslöser für Essenz/Erfolg (bisher nur Twitch), Rolle  setzen, sobald sie das Ritual gemacht hat.
+  `C:\Wichtig\01 Streaming\Overlays\streamerbot\nwu-avatare-einsetzen.js` (Code: `nwu-avatare\aktionen.cs`), alle kompilieren fehlerfrei.
+  Ruhm/Essenz/Erfolg erkennen die Quelle selbst (`__source`), Present Viewers zählt höchstens alle 10 Minuten.
+- **Noch am PC zu tun:** Laufwege für die 3 Szenen in OBS ausmessen (`overlay/config.js` → `szenen`), Overlay als Browserquelle anlegen,
+  Kick/YouTube/TikTok-Auslöser für Essenz/Erfolg (bisher nur Twitch), Rolle `koenigin` setzen, sobald sie das Ritual gemacht hat.
 
 ## Zeitplan und großer Bogen (Stand 19.10.2026)
 
