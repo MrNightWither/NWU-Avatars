@@ -77,7 +77,7 @@ window.NWU_CONFIG = {
     maxKreaturen: 5,         // kleine Kreaturen pro Kampf höchstens (Sparmodus: 2)
     angriffPause: 3,         // !angriff höchstens alle X Sekunden pro Person
     partikel: 60,            // Schnee, Asche, Funken (Sparmodus: aus)
-    hintergrundDeckkraft: 0.8,   // Hintergrund hinter dem Terrain (0 = aus)
+    hintergrundDeckkraft: 0.9,   // Hintergrund hinter dem Terrain (0 = aus)
   },
 
   // Figuren (Seitenansicht, Blick nach rechts), Größe im Stream in Pixeln.

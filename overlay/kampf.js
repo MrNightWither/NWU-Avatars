@@ -19,7 +19,7 @@ window.NWU_KAMPF = function (K) {
   const zufall = (l) => l[Math.floor(Math.random() * l.length)];
   const echt = (f) => f.id && !f.demo && !f.gast && !f.ungebunden;
 
-  const BODEN_H = 70, BG_H = 250;
+  const BODEN_H = 70, BG_H = 300;
   const RISS_X = TERRAIN.x + TERRAIN.breite - 70;
   const FRONT_X = TERRAIN.x + TERRAIN.breite * 0.64;
   const VIOLETT = 0xc9a8ff;
