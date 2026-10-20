@@ -312,7 +312,9 @@
       neu.root.addChild(sp);
     });
   }
-  const EV = { phase: 'aus', zeit: 0, ende: 0, naechstes: (CFG.portal?.alleMinuten || 0) * 60 };
+  // Das Portal (= Kreaturen-Kampf) kommt von allein ungefähr alle portal.alleMinuten, zufällig ±40 %
+  const portalAbstand = () => (CFG.portal?.alleMinuten || 0) * 60 * (0.6 + Math.random() * 0.8);
+  const EV = { phase: 'aus', zeit: 0, ende: 0, naechstes: portalAbstand() };
 
   // ---------- Figuren ----------
   const figuren = [];
@@ -968,7 +970,9 @@
 
   function portalAblauf(dt) {
     if (EV.phase === 'aus') {
-      if (EV.naechstes > 0) { EV.naechstes -= dt; if (EV.naechstes <= 0) { if (SPIELE.laeuft() || duell) EV.naechstes = 10; else { portalStarten(); EV.naechstes = (CFG.portal?.alleMinuten || 0) * 60; } } }
+      if (EV.naechstes > 0) { EV.naechstes -= dt; if (EV.naechstes <= 0) { if (SPIELE.laeuft() || duell) EV.naechstes = 10;
+        else if (!figuren.some((f) => !f.entfernen && !f.versteckt && f.root && f.modus === 'rahmen')) EV.naechstes = 60;   // niemand da: später nochmal
+        else { portalStarten(); EV.naechstes = portalAbstand(); } } }
       terrain.y = lerp(terrain.y, H + 10, Math.min(1, dt * 2));
       return;
     }

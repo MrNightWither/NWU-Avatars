@@ -65,7 +65,8 @@ window.NWU_CONFIG = {
   // z. B. 'ws://127.0.0.1:8080/'. Leer = Spiele laufen nur zum Spaß, ohne Ruhm. Auch per ?sb=… möglich.
   streamerbot: 'ws://127.0.0.1:8080/',
 
-  // Großes Portal: automatisch alle X Minuten (0 = nur per Taste P), Dauer auf dem Terrain
+  // Großes Portal mit Kreaturen-Kampf: kommt von allein ungefähr alle X Minuten (zufällig ±40 %, nur wenn Figuren da sind),
+  // 0 = nur per Taste K/P oder !portal. Dauer auf dem Terrain
   portal: { alleMinuten: 20, dauerSekunden: 150 },
 
   // Kreaturen-Kampf hinter dem großen Portal (Taste K, !portal [eis|stein|sumpf|feuer] [boss]). Welten und Bilder: data/welten.js

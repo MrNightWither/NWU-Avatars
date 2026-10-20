@@ -106,7 +106,7 @@ von selbst; Wächter (Mods) und hohe Level stehen vorne, der Rest greift aus der
 Schlag (1× pro 3 Sekunden pro Person, auch vom Rahmen aus). Sieg = alle jubeln, **+40 Ruhm** für alle Mitkämpfer (Boss
 **+150**, Quelle `kreatur`/`boss` in `data/ruhm.js`, gemeldet über Streamer.bot „NWU Spiel“). Läuft die Zeit ab (75 s, Boss
 120 s), ziehen sich die Kreaturen zurück – ohne Strafe. Selten (etwa jedes 8. Portal) kommt ein **Boss** mit Ankündigung;
-ist der Schattenkönig (du) da, macht er bei 25 % den großen Finisher. Start: automatisch alle 20 Minuten (`portal` in
+ist der Schattenkönig (du) da, macht er bei 25 % den großen Finisher. Start: von allein ungefähr alle 20 Minuten, zufällig 12–28 Minuten und nur wenn Figuren da sind (`portal` in
 `config.js`), Taste **K** (Shift+K mit Boss) oder `!portal` / `!portal eis` / `stein` / `sumpf` / `feuer` (mit `boss`
 dahinter = Bosskampf) durch dich und – wie bei den Spielen – Mods. Einstellungen: `kampf` in `config.js`. Bilder: nur
 Pfade in `data/welten.js` eintragen, bis dahin zeichnet das Overlay Platzhalter (Prompts: `docs/GEMINI-PROMPTS.md`
