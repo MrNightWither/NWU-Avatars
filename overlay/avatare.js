@@ -110,8 +110,15 @@
   const HAUSFARBE = Object.fromEntries((window.NWU_HAEUSER || []).map((h) => [h.id, h.farbe]));
 
   // ---------- Laufweg um den Kamera-Rahmen ----------
+  // R bleibt dasselbe Objekt (Spiele halten es fest) – bei einem OBS-Szenenwechsel wird es nur neu gefüllt
   const R = { x: cam.x * W, y: cam.y * H, w: cam.w * W, h: cam.h * H };
-  const umfang = 2 * (R.w + R.h);
+  let umfang = 2 * (R.w + R.h);
+  const laufwegSetzen = (c) => {
+    const alt = umfang;
+    Object.assign(R, { x: c.x * W, y: c.y * H, w: c.w * W, h: c.h * H });
+    umfang = 2 * (R.w + R.h);
+    for (const f of figuren) { if (typeof f.s === 'number') f.s = f.s / alt * umfang; if (typeof f.zielS === 'number') f.zielS = f.zielS / alt * umfang; }
+  };
   const norm = (s) => ((s % umfang) + umfang) % umfang;
   const aufPfad = (s) => {   // oben stehen, rechts klettern, unten kopfüber, links klettern
     s = norm(s);
@@ -830,10 +837,20 @@
   function karteHalten() { clearTimeout(karteZu); karteZu = null; }
 
   const SPIELE = window.NWU_SPIELE({
-    CFG, S, q, W, H, R, umfang, aufPfad, versetzt, lerp, figuren, effekt, funken, T, textur, effektEbene, figurenEbene, terrainEbene,
+    CFG, S, q, W, H, R, umfang, umfangVon: () => umfang, aufPfad, versetzt, lerp, figuren, effekt, funken, T, textur, effektEbene, figurenEbene, terrainEbene,
     karte, karteZeigen, karteFuss, karteListe, karteHalten, laufende, leuchten, huepfen, figurErzeugen, vorlageFuer, rabeBauen, EV,
     zeit: () => zeit, duellLaeuft: () => !!duell,
   });
+
+  // ---------- OBS-Szene → Laufweg (eine Quelle für Gaming/Shooter/NoCam, 20.10.2026) ----------
+  const szeneWaehlen = (name) => {
+    const ziel = CFG.obsSzenen && CFG.obsSzenen[name];
+    if (!ziel || q.has('cam') || ziel === S.szene || !CFG.szenen[ziel]) return;
+    S.szene = ziel;
+    laufwegSetzen(CFG.szenen[ziel]);
+  };
+  window.addEventListener('obsSceneChanged', (e) => szeneWaehlen(e.detail && e.detail.name));
+  if (window.obsstudio && window.obsstudio.getCurrentScene) window.obsstudio.getCurrentScene((s) => s && szeneWaehlen(s.name));
 
   // ---------- Level-Up ----------
   const lvStil = new PIXI.TextStyle({ fontFamily: 'Georgia, serif', fontSize: 15, fontWeight: 'bold', fill: 0xe8c96d, stroke: { color: 0x1a1208, width: 3 }, letterSpacing: 1 });

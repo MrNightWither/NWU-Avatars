@@ -20,7 +20,13 @@ window.NWU_CONFIG = {
     standard: { x: 0.70, y: 0.06, w: 0.27, h: 0.30 },
     gross:    { x: 0.55, y: 0.05, w: 0.42, h: 0.45 },
     unten:    { x: 0.03, y: 0.62, w: 0.25, h: 0.30 },
+    // 20.10.2026 aus den Overlays ausgerechnet (1920x1080): Cam-Rahmen 500x220
+    gaming:   { x: 0.0208, y: 0.7593, w: 0.2604, h: 0.2037 },   // overlay-gaming-cam-unten-links: links 40, unten 40
+    shooter:  { x: 0.7188, y: 0.3981, w: 0.2604, h: 0.2037 },   // overlay-gaming-cam-rechts-mitte: rechts 40, Mitte
+    nocam:    { x: 0.03, y: 0.90, w: 0.94, h: 0.065 },          // ohne Cam: Streifen über der Fußleiste
   },
+  // OBS-Szene → Laufweg. Eine Browserquelle in allen drei Szenen; bei Szenenwechsel springt der Laufweg um.
+  obsSzenen: { Gaming: 'gaming', Shooter: 'shooter', NoCam: 'nocam' },
 
   // Twitch-Kanal, dessen Chat mitgelesen wird (leer = Demo-Figuren). Auch per ?kanal=… möglich.
   kanal: 'mrnightwither',

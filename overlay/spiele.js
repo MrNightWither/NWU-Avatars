@@ -7,6 +7,8 @@
 window.NWU_SPIELE = function (K) {
   const { CFG, S, q, W, H, R, umfang, aufPfad, versetzt, lerp, figuren, effekt, funken, T, textur, effektEbene, figurenEbene, terrainEbene,
     karte, karteZeigen, karteFuss, karteListe, karteHalten, laufende, leuchten, huepfen, figurErzeugen, vorlageFuer, rabeBauen } = K;
+  // Laufweg kann sich bei einem OBS-Szenenwechsel ändern (avatare.js laufwegSetzen) – darum immer frisch lesen
+  const U = () => (K.umfangVon ? K.umfangVon() : umfang);
 
   const SP = CFG.spiele || {};
   const RUHM_SP = (window.NWU_RUHM && window.NWU_RUHM.spiele) || {};
@@ -213,14 +215,14 @@ window.NWU_SPIELE = function (K) {
             const f = l.fi;
             f.s = l.start + l.weg; f.richtung = 1; f.zustand = 'laufen'; f.spielEile = 1 + v / 30; f.letzte = K.zeit();
           }
-          if ((listeZeit -= dt) <= 0) { listeZeit = 0.4; karteListe(laeufer.map((l) => `${HAUS[l.haus].kurz} ${Math.min(100, Math.round(l.weg / umfang * 100))} %`)); }
+          if ((listeZeit -= dt) <= 0) { listeZeit = 0.4; karteListe(laeufer.map((l) => `${HAUS[l.haus].kurz} ${Math.min(100, Math.round(l.weg / U() * 100))} %`)); }
           const vorne = laeufer.reduce((a, b) => (b.weg > a.weg ? b : a));
-          if (vorne.weg >= umfang || t > LAUF) {
+          if (vorne.weg >= U() || t > LAUF) {
             sieger = vorne; phase = 'ende'; ende = t;
             for (const l of laeufer) { l.fi.spielFrei = false; l.fi.zielS = l.fi.s; l.fi.spielEile = 0; }
             const haus = HAUS[sieger.haus];
             ansage(`${haus.name.toUpperCase()} SIEGT`, 3);
-            karteListe(laeufer.map((l) => `${HAUS[l.haus].kurz} ${Math.min(100, Math.round(l.weg / umfang * 100))} %`), laeufer.indexOf(sieger));
+            karteListe(laeufer.map((l) => `${HAUS[l.haus].kurz} ${Math.min(100, Math.round(l.weg / U() * 100))} %`), laeufer.indexOf(sieger));
             karteFuss(`✦ Das ${haus.name} gewinnt das Rennen ✦`, 7);
             figuren.filter((f) => !f.entfernen && f.root && !f.ungebunden && f.vorlage.haus === sieger.haus)
               .forEach((f, i) => setTimeout(() => { f.jubelBis = K.zeit() + 3; huepfen(f); }, i * 80));
@@ -365,11 +367,11 @@ window.NWU_SPIELE = function (K) {
           if (t < ANMELDUNG) return true;
           kaempfer = [...dabei].filter((f) => f.root && !f.entfernen && !f.ungebunden);
           if (kaempfer.length < 2) { karteFuss('Zu wenige Kämpfer. Morrígan wartet auf mutigere Seelen.', 5); return false; }
-          kaempfer.forEach((f, i) => { insSpiel(f); f.zielS = i * umfang / kaempfer.length; f.spielTempo = 320; });
+          kaempfer.forEach((f, i) => { insSpiel(f); f.zielS = i * U() / kaempfer.length; f.spielTempo = 320; });
           karteZeigen('Morrígans Blitze fallen.', [`${kaempfer.length} Kämpfer`], 'Wer zuletzt steht, gewinnt.', 0, 'Letzter steht');
           karteHalten();
           nebel = new PIXI.Container();
-          for (let s = 0; s < umfang; s += 70) {
+          for (let s = 0; s < U(); s += 70) {
             const p = aufPfad(s), n = new PIXI.Sprite(T.glanz);
             n.anchor.set(0.5); n.tint = 0x2a1f3d; n.position.set(p.x, p.y); n.scale.set(3); n.alpha = 0;
             nebel.addChild(n);
@@ -414,7 +416,7 @@ window.NWU_SPIELE = function (K) {
 
   // ----- Schatzsuche: eine Truhe an einer Seite des Rahmens, Raten mit !grab oben/rechts/unten/links -----
   const SEITEN = ['oben', 'rechts', 'unten', 'links'];
-  const SEITE_START = [0, R.w, R.w + R.h, 2 * R.w + R.h], SEITE_LAENGE = [R.w, R.h, R.w, R.h];
+  const seiteStart = () => [0, R.w, R.w + R.h, 2 * R.w + R.h], seiteLaenge = () => [R.w, R.h, R.w, R.h];
   function truheBauen() {
     const c = new PIXI.Container();
     const glanz = new PIXI.Sprite(T.glanz); glanz.anchor.set(0.5); glanz.tint = 0xe8c96d; glanz.blendMode = 'add'; glanz.scale.set(2.2); glanz.y = -14; glanz.alpha = 0;
@@ -444,7 +446,7 @@ window.NWU_SPIELE = function (K) {
         if (phase !== 'raten' || !m || fi.ungebunden || tipps.has(fi)) return false;
         const i = SEITEN.indexOf(m[1]);
         tipps.set(fi, i); zahl[i]++; fi.letzte = K.zeit();
-        if (spielbar(fi)) { insSpiel(fi); fi.zielS = SEITE_START[i] + SEITE_LAENGE[i] * (0.12 + Math.random() * 0.76); fi.spielTempo = 170; }
+        if (spielbar(fi)) { insSpiel(fi); fi.zielS = seiteStart()[i] + seiteLaenge()[i] * (0.12 + Math.random() * 0.76); fi.spielTempo = 170; }
         karteListe(liste());
         return true;
       },
@@ -454,7 +456,7 @@ window.NWU_SPIELE = function (K) {
           if (demoChat && Math.random() < dt * 0.5) { const f = zufall(figuren.filter((x) => spielbar(x) && x.demo)); if (f) spiel.eingabe(f, '!grab ' + zufall(SEITEN)); }
           if (t < SEK) return true;
           phase = 'auf'; ende = t;
-          const p = aufPfad(SEITE_START[richtig] + SEITE_LAENGE[richtig] / 2);
+          const p = aufPfad(seiteStart()[richtig] + seiteLaenge()[richtig] / 2);
           truhe = truheBauen(); truhe.position.set(p.x, p.y); truhe.rotation = p.a; truhe.scale.set(0);
           figurenEbene.addChild(truhe);
           const gewinner = [...tipps].filter(([, i]) => i === richtig).map(([f]) => f);
