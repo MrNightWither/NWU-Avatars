@@ -917,6 +917,8 @@
   });
   // Fluchkammer: wird der Streamer verflucht, brennen / vernebeln / verlangsamen alle Figuren (fluch.js)
   if (window.NWU_FLUCH) window.NWU_FLUCH.anbinden({ app, S, CFG, figuren, effektEbene, versetzt, T });
+  // Goldene Rüstung für König, Königin und Mods im Kreaturen-Kampf (ruestung.js)
+  if (window.NWU_RUESTUNG) window.NWU_RUESTUNG.anbinden({ app, S, figuren, texHolen, funken, kampf: KAMPF });
 
   // ---------- OBS-Szene → Laufweg (eine Quelle für Gaming/Shooter/NoCam, 20.10.2026) ----------
   const szeneWaehlen = (name) => {

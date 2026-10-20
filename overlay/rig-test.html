@@ -14,10 +14,12 @@
 <script src="lib/pixi.min.js"></script>
 <script src="rig.js"></script>
 <script src="rigs.js"></script>
+<script src="ruestung.js"></script>
 <script>
 'use strict';
 (async () => {
   const q = new URLSearchParams(location.search);
+  const ruestung = ['1', 'wechsel'].includes(q.get('ruestung'));   // ?ruestung=1: goldene Kampf-Rüstung an, =wechsel: alle 2 s an/aus
   const bewegt = q.get('bewegt') === '1';
   const nur = q.get('figur');
   const app = new PIXI.Application();
@@ -30,6 +32,7 @@
     ['sitzen', { sitzen: 1 }], ['jubeln', { idle: 1, jubel: 1 }], ['winken', { idle: 1, winken: 1 }],
   ];
   const figuren = [];
+  if (ruestung) await NWU_RUESTUNG.bilderLaden((src) => laden(src).catch(() => null));
   let zeile = 0;
   for (const id of ids) {
     const def = NWU_RIGS[id], tex = {};
@@ -39,6 +42,10 @@
     if (vorlage) { const v = new PIXI.Sprite(vorlage); v.anchor.set(0.5, 1); v.scale.set(def.hoehe / vorlage.height); v.position.set(170, y); app.stage.addChild(v); }
     (bewegt ? [['laufen', null]] : POSEN).forEach(([name, p], i) => {
       const r = NWU_RIG.bauen(def, tex);
+      if (ruestung) {
+        let ab = NWU_RUESTUNG.anlegen(r);
+        if (q.get('ruestung') === 'wechsel') setInterval(() => { if (ab) { ab(); ab = null; } else ab = NWU_RUESTUNG.anlegen(r); }, 2000);
+      }
       r.koerper.position.set(430 + i * 300, y);
       app.stage.addChild(new PIXI.Graphics().rect(430 + i * 300 - 140, y, 280, 2).fill(0x666677));
       app.stage.addChild(r.koerper);
