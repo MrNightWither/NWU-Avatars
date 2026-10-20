@@ -401,25 +401,40 @@ window.NWU_KAMPF = function (K) {
     opt = opt || {};
     const id = WD.welten[opt.welt] ? opt.welt : zufall(WD.ids);
     if (!id) return null;
-    geplant = { boss: opt.boss, welt: id };
+    geplant = { boss: opt.raider ? true : opt.boss, welt: id, raider: opt.raider || null };
     return weltSetzen(id);
   }
+
+  // Schatten-Invasion (Raid): der Raider kommt als riesiger Boss „Schatten von …“ – nur der Boss, kurze Zeit,
+  // jede Chat-Nachricht ist ein Schlag. Mehr Raid-Zuschauer = mehr Leben.
+  function raidBoss(w, raider) {
+    const name = String(raider.name || 'Unbekannt').replace(/[^\p{L}\p{N}_ .-]/gu, '').slice(0, 25) || 'Unbekannt';
+    return { ...w.boss, name: `Schatten von ${name}`, groesse: w.boss.groesse * (KC.raidGroesse ?? 1.35),
+      leben: w.boss.leben * (1 + Math.min(3, (raider.zuschauer || 0) / 25)) };
+  }
+  const bossName = () => (kampf && kampf.bossDef ? kampf.bossDef.name : welt.boss.name);
 
   function starten() {
     const w = welt, plan = geplant || {};
     const n = Math.max(1, figuren.filter((f) => !f.entfernen && ['ins-portal', 'wartet', 'austreten', 'terrain'].includes(f.modus)).length);
+    const raider = plan.raider;
     const boss = plan.boss ?? Math.random() < (KC.bossChance ?? 0.12);
+    const bossDef = raider ? raidBoss(w, raider) : w.boss;
     const maxK = S.sparmodus ? 2 : (KC.maxKreaturen || 5);
-    const klein = boss ? Math.min(S.sparmodus ? 0 : 2, Math.floor(n / 6)) : Math.min(maxK, 2 + Math.floor(n / 5));
+    const klein = raider ? 0 : boss ? Math.min(S.sparmodus ? 0 : 2, Math.floor(n / 6)) : Math.min(maxK, 2 + Math.floor(n / 5));
     const welle = [];
     for (let i = 0; i < klein; i++) welle.push({ def: zufall(w.kreaturen), boss: false });
-    if (boss) welle.push({ def: w.boss, boss: true });
-    const limit = boss ? (KC.bossSekunden || 120) : (KC.sekunden || 75);
-    kampf = { phase: 'kampf', t: 0, boss, welle, gesamt: welle.length, besiegt: 0, kreaturen: [], teilnehmer: new Set(), sperre: new Map(), limit,
+    if (boss) welle.push({ def: bossDef, boss: true });
+    const limit = raider ? (KC.raidSekunden || 60) : boss ? (KC.bossSekunden || 120) : (KC.sekunden || 75);
+    kampf = { phase: 'kampf', t: 0, boss, raider, bossDef, welle, gesamt: welle.length, besiegt: 0, kreaturen: [], teilnehmer: new Set(), sperre: new Map(), limit,
       faktor: 1 + 0.35 * n, spawn: 1.2, finisher: null, listeZeit: 0, ende: 0 };
     rissZiel = 1;
     EV.ende = Math.max(EV.ende, EV.zeit + limit + 25);
-    if (boss) karteZeigen(w.boss.text, [`${w.boss.name} 100 %`], 'Alle Häuser gemeinsam! !angriff im Chat = starker Schlag', limit, `⚠ Boss · ${w.kurz}`);
+    if (raider) {
+      const wer = bossDef.name.replace(/^Schatten von /, '');
+      karteZeigen(`${wer} fällt mit Gefolge ein – ein Schatten aus der Spaltung hat sich an die Fersen geheftet. Ringt ihn gemeinsam nieder!`,
+        [`${bossDef.name} 100 %`], 'Jede Chat-Nachricht ist ein Schlag · !angriff = starker Schlag', limit, `⚔ Schatten-Invasion · ${w.kurz}`);
+    } else if (boss) karteZeigen(w.boss.text, [`${w.boss.name} 100 %`], 'Alle Häuser gemeinsam! !angriff im Chat = starker Schlag', limit, `⚠ Boss · ${w.kurz}`);
     else karteZeigen(w.text, [`0 / ${welle.length} besiegt`], 'Eure Figuren kämpfen von selbst · !angriff = starker Schlag (alle 3 Sek.)', limit, `Kreaturen der Spaltung · ${w.kurz}`);
     karteHalten();
     if (boss) ansage('EIN BOSS NAHT', 2.6, 0xff6a6a);
@@ -457,7 +472,16 @@ window.NWU_KAMPF = function (K) {
 
   // !angriff: stärkerer Schlag, 1× pro 3 Sekunden pro Person; wer noch am Rahmen steht, schießt von dort
   function eingabe(fi, text) {
-    if (!kampf || kampf.phase !== 'kampf' || !text.startsWith('!angriff') || !fi.root) return false;
+    if (!kampf || kampf.phase !== 'kampf' || !fi.root) return false;
+    if (kampf.raider && !text.startsWith('!')) {           // Schatten-Invasion: jede Nachricht (auch Emotes) ist ein Schlag
+      const k = 'chat:' + (fi.id || fi.name);
+      if ((kampf.sperre.get(k) || 0) <= zeit()) {
+        kampf.sperre.set(k, zeit() + (KC.raidNachrichtPause ?? 1));
+        angreifen(fi, false, lebende().find((c) => c.x < RISS_X - 30), fi.modus === 'terrain' ? kaempferSortiert().indexOf(fi) : 99);
+      }
+      return false;                                         // Nachricht wirkt sonst ganz normal weiter (Winken usw.)
+    }
+    if (!text.startsWith('!angriff')) return false;
     const k = fi.id || fi;
     if ((kampf.sperre.get(k) || 0) > zeit()) return true;
     kampf.sperre.set(k, zeit() + (KC.angriffPause ?? 3));
@@ -481,8 +505,8 @@ window.NWU_KAMPF = function (K) {
     const art = kampf.boss ? 'boss' : 'kreatur';
     const plus = (RUHM_SP[art] && RUHM_SP[art].gewinner) || 0;
     ansage(kampf.boss ? 'BOSS BESIEGT' : 'SIEG!', 3.2);
-    karteFuss(kampf.boss ? `✦ ${welt.boss.name} ist gefallen – alle Häuser haben gemeinsam gesiegt ✦` : '✦ Die Kreaturen der Spaltung sind besiegt ✦', 7);
-    karteListe([kampf.boss ? `${welt.boss.name} 0 %` : `${kampf.gesamt} / ${kampf.gesamt} besiegt`], 0);
+    karteFuss(kampf.boss ? `✦ ${bossName()} ist gefallen – alle Häuser haben gemeinsam gesiegt ✦` : '✦ Die Kreaturen der Spaltung sind besiegt ✦', 7);
+    karteListe([kampf.boss ? `${bossName()} 0 %` : `${kampf.gesamt} / ${kampf.gesamt} besiegt`], 0);
     const alle = [...new Set([...kampf.teilnehmer, ...kaempfer()])].filter((f) => f.root && !f.entfernen);
     alle.forEach((f, i) => setTimeout(() => {
       if (!f.root || f.root.destroyed || f.entfernen) return;
@@ -584,7 +608,7 @@ window.NWU_KAMPF = function (K) {
     if ((k.listeZeit -= dt) <= 0) {
       k.listeZeit = 0.4;
       const b = k.kreaturen.find((c) => c.boss);
-      karteListe([k.boss ? `${welt.boss.name} ${b ? Math.ceil(Math.max(0, b.hp) / b.max * 100) : 100} %` : `${k.besiegt} / ${k.gesamt} besiegt`]);
+      karteListe([k.boss ? `${bossName()} ${b ? Math.ceil(Math.max(0, b.hp) / b.max * 100) : 100} %` : `${k.besiegt} / ${k.gesamt} besiegt`]);
     }
   }
 

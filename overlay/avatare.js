@@ -1002,6 +1002,7 @@
     const dt = Math.min(0.1, ticker.deltaMS / 1000);
     zeit += dt;
     portalAblauf(dt);
+    raidPruefen();
     KAMPF.schritt(dt);
     duellSchritt(dt);
     SPIELE.schritt(dt);
@@ -1153,13 +1154,28 @@
     hudAktualisieren(dt);
   });
 
+  // ---------- Raid: erst jubeln alle am Rahmen, dann öffnet sich das Portal zur Schatten-Invasion ----------
+  // Der Raider kommt als riesiger Boss „Schatten von …“ (kampf.js). Abschalten: CFG.kampf.raidBoss = false.
+  const JUBEL_SEK = 4;
+  let raidWartet = null;
+  function raidEmpfangen(u) {
+    formation(JUBEL_SEK, true);
+    if (CFG.kampf?.raidBoss === false) return;
+    raidWartet = { raider: { name: (u && (u.anzeige || u.name)) || 'Unbekannt', zuschauer: (u && u.zuschauer) || 0 }, bei: zeit + JUBEL_SEK + 0.3 };
+  }
+  function raidPruefen() {           // nach dem Jubeln (Overlay-Zeit, nicht Uhrzeit) – wenn das Portal frei ist
+    if (!raidWartet || zeit < raidWartet.bei) return;
+    if (EV.phase === 'aus') portalStarten({ raider: raidWartet.raider });
+    raidWartet = null;
+  }
+
   // ---------- Chat verbinden ----------
   let chatStatus = S.kanal ? 'verbinde …' : 'aus (Demo)';
   if (S.kanal && window.NWU_CHAT) {
     window.NWU_CHAT.verbinden(S.kanal, {
       status: (s) => { chatStatus = s; },
       nachricht: (u) => chatter(u, 'nachricht'),
-      raid: () => { formation(10, true); },
+      raid: (u) => raidEmpfangen(u),
       sub: (u) => { const fi = nachId.get(u.id); if (fi && fi.root) { levelUp(fi); fi.letzte = zeit; } else figuren.forEach((f) => huepfen(f)); },
     });
   }
@@ -1177,7 +1193,7 @@
       `<b>NWU Avatare</b> · ${Math.round(app.ticker.FPS)} FPS · ${da.filter((f) => !f.versteckt).length}/${da.length} Figuren · Chat: ${chatStatus}` +
       `${S.sparmodus ? ' · <b>Sparmodus</b>' : ''}${EV.phase !== 'aus' ? ' · Portal: ' + EV.phase + (KAMPF.welt() ? ' (' + KAMPF.welt().kurz + ')' : '') : ''}` +
       `${KAMPF.stand() ? ' · Kampf: ' + KAMPF.stand().phase : ''}` +
-      `<div class="klein">T Test-Chatter · M Nachricht · N !lurk · K Kreaturen-Kampf (Shift+K Boss) · R Raid · P Portal · U Level-Up · G Gruppenbild · J Jubeln · D Duell · F Haus-Ruf · W Westen · B Rabe · E Rennen · Z Tauziehen · L Letzter steht · X Schatz · Q Würfel · V Fluch · S Sparmodus · 1/2/3 Demo · H Anzeige</div>`;
+      `<div class="klein">T Test-Chatter · M Nachricht · N !lurk · K Kreaturen-Kampf (Shift+K Boss) · R Raid (Shift+R Raid-Boss) · P Portal · U Level-Up · G Gruppenbild · J Jubeln · D Duell · F Haus-Ruf · W Westen · B Rabe · E Rennen · Z Tauziehen · L Letzter steht · X Schatz · Q Würfel · V Fluch · S Sparmodus · 1/2/3 Demo · H Anzeige</div>`;
   }
 
   let testNr = 0;
@@ -1203,7 +1219,7 @@
     else if (k === 'm') { const f = zufallsFigur(); if (f) leuchten(f); }
     else if (k === 'n') { const f = zufallsFigur(); if (f) { f.lurker = true; f.zustandZeit = 0; } }
     else if (k === 'k') { if (EV.phase === 'aus') portalStarten({ boss: e.shiftKey ? true : undefined }); else portalBeenden(); }
-    else if (k === 'r') formation(10, true);
+    else if (k === 'r') { if (e.shiftKey) raidEmpfangen({ anzeige: 'TestRaider', zuschauer: 30 }); else formation(10, true); }
     else if (k === 'g') formation(12, false);
     else if (k === 'p') { if (EV.phase === 'aus') portalStarten(); else portalBeenden(); }
     else if (k === 'u') { const f = zufallsFigur(); if (f) levelUp(f); }
