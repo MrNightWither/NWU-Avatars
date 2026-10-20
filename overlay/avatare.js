@@ -972,6 +972,10 @@
   }
 
   function portalAblauf(dt) {
+    // Boden fährt nach unten weg; der Hintergrund darüber (300 px hoch) würde sonst sichtbar bleiben → ausblenden
+    const weg = EV.phase === 'aus' || EV.phase === 'schliessen';
+    terrain.alpha = lerp(terrain.alpha, weg ? 0 : 1, Math.min(1, dt * (weg ? 1.5 : 3)));
+    terrain.visible = terrain.alpha > 0.01;
     if (EV.phase === 'aus') {
       if (EV.naechstes > 0) { EV.naechstes -= dt; if (EV.naechstes <= 0) { if (SPIELE.laeuft() || duell) EV.naechstes = 10;
         else if (!figuren.some((f) => !f.entfernen && !f.versteckt && f.root && f.modus === 'rahmen')) EV.naechstes = 60;   // niemand da: später nochmal
