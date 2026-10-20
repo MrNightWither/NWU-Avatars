@@ -300,7 +300,7 @@ Im Overlay läuft diese Person als Silhouette, bis sie gebunden ist. Hat jemand 
 gratuliert Morrígan (im Overlay leuchtet die Figur an diesem Tag golden).
 
 1. **Trigger:** Twitch → Chat → **First Words** (feuert bei der ersten Nachricht jeder Person im Stream).
-2. **Global Variable** `nwuRitualLink` = Adresse der Website (z. B. `https://mrnightwither.github.io/NWU-Avatars/`).
+2. **Global Variable** `nwuRitualLink` = Adresse der Website (z. B. `https://avatare.nightwither.de/`).
 3. **Execute C# Code:**
 
 ```csharp
@@ -546,7 +546,7 @@ public class CPHInline
 {
     public bool Execute()
     {
-        const string SEITE = "https://mrnightwither.github.io/NWU-Avatars/";
+        const string SEITE = "https://avatare.nightwither.de/";
         CPH.SendMessage($"🔮 Morrígan: Dein Haus findest du im Ritual: {SEITE} · Alle Befehle: {SEITE}befehle.html");
         return true;
     }

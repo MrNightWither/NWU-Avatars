@@ -10,8 +10,8 @@ database_name = "nwu-avatare"
 database_id = "146f36ae-659f-4dd6-aaa8-e30bf2f22e90"   # angelegt am 20.10.2026 (npx wrangler d1 create nwu-avatare)
 
 [vars]
-# Erlaubte Website-Adressen (ohne Pfad, mit Komma trennen). Später die Subdomain ergänzen.
-ERLAUBTE_HERKUNFT = "https://mrnightwither.github.io"
+# Erlaubte Website-Adressen (ohne Pfad, mit Komma trennen). Seit 20.10.2026 die eigene Subdomain; github.io bleibt für den Umzug drin.
+ERLAUBTE_HERKUNFT = "https://avatare.nightwither.de,https://mrnightwither.github.io"
 
 # Secrets NICHT hier eintragen, sondern mit:
 #   npx wrangler secret put STREAMERBOT_SECRET
