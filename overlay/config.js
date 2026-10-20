@@ -74,6 +74,9 @@ window.NWU_CONFIG = {
   figurHoehe: 56,
   // Besucher: Figuren für alle, die (noch) kein Ritual gemacht haben – Reisemantel, keine Waffe.
   // Mehrere Einträge = jede Person bekommt fest eine davon. Leere Liste = Silhouette.
+  // Der Schattenkönig (Streamer): eigene Figur mit Krone und Zepter, erscheint, wenn du im Chat schreibst
+  koenig: { bild: 'figuren/koenig.webp', rig: 'koenig' },
+
   besucher: [
     { bild: 'figuren/besucher.webp', rig: 'besucher' },
     { bild: 'figuren/besucherin.webp', rig: 'besucherin' },

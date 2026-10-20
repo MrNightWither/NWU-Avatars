@@ -10,6 +10,21 @@
 // abzeichen: Mitte der Gürtelschnalle im Rumpf-Bild und Durchmesser (Haus-Abzeichen ab Level 2)
 // Reihenfolge der Teile = Zeichenreihenfolge (erstes ganz hinten).
 window.NWU_RIGS = {
+  // Der Schattenkönig (Streamer, 20.10.2026): Krone, NWU-Maske, schwarz-goldene Weste, Wappen-Umhang, Zepter
+  'koenig': {
+    hoehe: 430, huefte: [0, -138],
+    kopfRahmen: { nase: [150, 112], s: 0.5, frisur: null },
+    teile: [
+      { id: 'umhang', bild: 'umhang', anker: [100, 8], pos: [-10, -268], art: 'umhang', oben: true },
+      { id: 'armH', bild: 'armH', anker: [24, 8], pos: [-20, -240], art: 'armH', oben: true, dunkel: true },
+      { id: 'beinH', bild: 'beinH', anker: [21, 4], pos: [-10, -138], art: 'beinH', dunkel: true },
+      { id: 'beinV', bild: 'beinV', anker: [37, 4], pos: [8, -138], art: 'beinV' },
+      { id: 'rumpf', bild: 'rumpf', anker: [50, 138], pos: [0, -138], art: 'rumpf', oben: true },
+      { id: 'kopf', bild: 'kopf', anker: [126, 172], pos: [-4, -268], art: 'kopf', oben: true },
+      { id: 'armV', bild: 'armV', anker: [16, 8], pos: [-14, -238], art: 'armV', oben: true },
+      { id: 'waffeV', bild: 'waffeV', anker: [22, 140], an: 'armV', pos: [2, 128], senkrecht: true },
+    ],
+  },
   // Haus des Mondes · Klinge (gebogener Säbel, blauer Umhang)
   'haus1-a': {
     hoehe: 403, huefte: [0, -145],
@@ -105,7 +120,7 @@ window.NWU_RIGS = {
 (function () {
   const R = window.NWU_RIGS;
   for (const id of Object.keys(R)) {
-    if (id.startsWith('besucher')) continue;   // Kapuze, keine eigene Haar-Ebene
+    if (id.startsWith('besucher') || id === 'koenig') continue;   // Kapuze bzw. Krone, keine eigene Haar-Ebene
     const teile = R[id].teile, i = teile.findIndex((t) => t.id === 'kopf');
     if (i >= 0 && !teile.some((t) => t.id === 'haare')) teile.splice(i + 1, 0, { ...teile[i], id: 'haare', bild: 'haare', haare: true });
   }

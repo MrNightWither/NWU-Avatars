@@ -90,6 +90,21 @@
       BESUCHER.push(v);
     } catch (e) { console.warn('Besucher-Figur fehlt:', e.message); }
   }
+  // 👑 Der Schattenkönig (Streamer) bekommt seine eigene Figur (config.js → koenig, Teile in figuren/koenig/)
+  let KOENIG = null;
+  if (CFG.koenig) {
+    try {
+      const v = { haus: null, typ: 'koenig', ...CFG.koenig, tex: await laden(CFG.koenig.bild) };
+      v.hoehe = v.tex.height;
+      const def = !q.has('stufe1') && v.rig && RIGS[v.rig];
+      if (def && window.NWU_RIG) {
+        const namen = [...new Set(def.teile.map((t) => t.bild))];
+        const tex = await Promise.all(namen.map((n) => laden(`figuren/${v.rig}/${n}.webp`)));
+        v.rigDef = def; v.rigTex = Object.fromEntries(namen.map((n, i) => [n, tex[i]])); v.hoehe = def.hoehe;
+      }
+      KOENIG = v;
+    } catch (e) { console.warn('Königs-Figur fehlt:', e.message); }
+  }
   const textur = (zeichnen) => {
     const g = new PIXI.Graphics(); zeichnen(g);
     const t = app.renderer.generateTexture({ target: g, resolution: 2 }); g.destroy(); return t;
@@ -569,7 +584,7 @@
     if (spiegel) { const f = figuren.find((x) => !x.entfernen && x.name === spiegel[1].toLowerCase()); if (f) umziehen(f, true); return; }
     if (SPIELE.darfStarten(u) && SPIELE.befehl(text)) return;
     if (vomBot && !u.broadcaster) return;                // Bot-Nachrichten erzeugen keine Figur
-    if (!u.id || u.broadcaster) return;                 // Schattenkönig bekommt später eine eigene Figur
+    if (!u.id || (u.broadcaster && !KOENIG)) return;    // ohne Königs-Figur (Bild fehlt) bleibt der Streamer unsichtbar
     let fi = nachId.get(u.id);
     if (fi && !fi.entfernen) {
       fi.letzte = zeit;
@@ -586,6 +601,10 @@
       return;
     }
     nachId.set(u.id, { entfernen: false, letzte: zeit });   // Platzhalter gegen doppeltes Anlegen
+    if (u.broadcaster) {                                  // 👑 der Schattenkönig: eigene Figur, kein Profil nötig, bleibt wie ein Wächter
+      fi = figurErzeugen(KOENIG, { id: u.id, name: u.name, mod: true, lurker: text.startsWith('!lurk'), level: 10, aussehen: null, rolle: 'koenig', jahrestag: 0 });
+      return;
+    }
     const ergebnis = await profilLaden(u);
     const ungebunden = ergebnis === 'ungebunden', profil = ungebunden ? null : ergebnis;
     const vorlage = profil ? vorlageFuer(profil.haus, profil.figur, u.id) : ungebunden && BESUCHER.length ? BESUCHER[hashZahl(u.id) % BESUCHER.length] : vorlageFuer(null, null, u.id);
