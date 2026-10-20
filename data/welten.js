@@ -42,13 +42,13 @@
       bilder: { boden: '', hintergrund: '', portal: '' },
       kreaturen: [
         { id: 'blutkaefer', name: 'Blutkäfer', bauart: 'kriecher', groesse: 0.7, leben: 12,
-          farben: { haut: 0x7a2a26, dunkel: 0x3a1110, akzent: 0xff4a4a }, bild: '' },
+          farben: { haut: 0x7a2a26, dunkel: 0x3a1110, akzent: 0xff4a4a }, bild: 'kreaturen/blut/blutkaefer.webp' },
         { id: 'blutschemen', name: 'Blutschemen', bauart: 'schweber', groesse: 0.8, leben: 10,
-          farben: { haut: 0x9b2232, dunkel: 0x4a0c16, akzent: 0xff8a8a }, bild: '' },
+          farben: { haut: 0x9b2232, dunkel: 0x4a0c16, akzent: 0xff8a8a }, bild: 'kreaturen/blut/blutschemen.webp' },
       ],
       boss: { id: 'blutkoloss', name: 'Der Blutkoloss', bauart: 'koloss', groesse: 2.3, leben: 44,
         text: 'Der Fels selbst steht auf – Adern aus Blut glühen in ihm.',
-        farben: { haut: 0x6e2420, dunkel: 0x2e0c0a, akzent: 0xff4a4a }, hoerner: true, glut: true, bild: '' },
+        farben: { haut: 0x6e2420, dunkel: 0x2e0c0a, akzent: 0xff4a4a }, hoerner: true, glut: true, bild: 'kreaturen/blut/blutkoloss.webp' },
     },
     nebel: {
       id: 'nebel', haus: 'haus3', name: 'Die versunkenen Ruinen im Sumpf', kurz: 'Nebelwelt',
@@ -60,13 +60,13 @@
       bilder: { boden: '', hintergrund: '', portal: '' },
       kreaturen: [
         { id: 'moorkroete', name: 'Moorkröte', bauart: 'kriecher', groesse: 0.7, leben: 12,
-          farben: { haut: 0x4a5a3a, dunkel: 0x232b1c, akzent: 0x9bd17a }, bild: '' },
+          farben: { haut: 0x4a5a3a, dunkel: 0x232b1c, akzent: 0x9bd17a }, bild: 'kreaturen/nebel/moorkroete.webp' },
         { id: 'irrlicht', name: 'Irrlicht', bauart: 'schweber', groesse: 0.75, leben: 9,
-          farben: { haut: 0x9fc9b8, dunkel: 0x3c5a50, akzent: 0xcfffe0 }, glut: true, bild: '' },
+          farben: { haut: 0x9fc9b8, dunkel: 0x3c5a50, akzent: 0xcfffe0 }, glut: true, bild: 'kreaturen/nebel/irrlicht.webp' },
       ],
       boss: { id: 'versunkener', name: 'Der Versunkene', bauart: 'koloss', groesse: 2.3, leben: 42,
         text: 'Ein Riese aus Ruinenstein und Moos steigt aus dem Sumpf.',
-        farben: { haut: 0x4b5747, dunkel: 0x232a22, akzent: 0x8fe0b0 }, bild: '' },
+        farben: { haut: 0x4b5747, dunkel: 0x232a22, akzent: 0x8fe0b0 }, bild: 'kreaturen/nebel/versunkener.webp' },
     },
     flamme: {
       id: 'flamme', haus: 'haus4', name: 'Der Vulkan der Flamme', kurz: 'Feuerwelt',
@@ -78,13 +78,13 @@
       bilder: { boden: '', hintergrund: '', portal: '' },
       kreaturen: [
         { id: 'glutling', name: 'Glutling', bauart: 'kriecher', groesse: 0.65, leben: 11,
-          farben: { haut: 0x3a2a26, dunkel: 0x1a1210, akzent: 0xff7a1a }, glut: true, bild: '' },
+          farben: { haut: 0x3a2a26, dunkel: 0x1a1210, akzent: 0xff7a1a }, glut: true, bild: 'kreaturen/flamme/glutling.webp' },
         { id: 'aschehund', name: 'Aschehund', bauart: 'vierbeiner', groesse: 0.85, leben: 12,
-          farben: { haut: 0x3a3434, dunkel: 0x1a1616, akzent: 0xff8a2a }, glut: true, stacheln: true, bild: '' },
+          farben: { haut: 0x3a3434, dunkel: 0x1a1616, akzent: 0xff8a2a }, glut: true, stacheln: true, bild: 'kreaturen/flamme/aschehund.webp' },
       ],
       boss: { id: 'glutfuerst', name: 'Der Glutfürst', bauart: 'koloss', groesse: 2.4, leben: 46,
         text: 'Aus der Lava steigt der Glutfürst, Hörner aus Obsidian.',
-        farben: { haut: 0x2e2624, dunkel: 0x120e0c, akzent: 0xff6a1a }, hoerner: true, glut: true, bild: '' },
+        farben: { haut: 0x2e2624, dunkel: 0x120e0c, akzent: 0xff6a1a }, hoerner: true, glut: true, bild: 'kreaturen/flamme/glutfuerst.webp' },
     },
   };
   // Wörter für !portal <welt>
