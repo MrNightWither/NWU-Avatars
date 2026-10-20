@@ -913,6 +913,8 @@
     CFG, S, W, H, TERRAIN, PORTAL_X, terrain, terrainEbene, figurenEbene, effektEbene, figuren, effekt, funken, T, textur, lerp, texHolen, EV,
     karteZeigen, karteFuss, karteListe, karteHalten, huepfen, versetzt, melden: SPIELE.melden, portalStarten, zeit: () => zeit,
   });
+  // Fluchkammer: wird der Streamer verflucht, brennen / vernebeln / verlangsamen alle Figuren (fluch.js)
+  if (window.NWU_FLUCH) window.NWU_FLUCH.anbinden({ app, S, CFG, figuren, effektEbene, versetzt, T });
 
   // ---------- OBS-Szene → Laufweg (eine Quelle für Gaming/Shooter/NoCam, 20.10.2026) ----------
   const szeneWaehlen = (name) => {
@@ -1164,7 +1166,7 @@
       `<b>NWU Avatare</b> · ${Math.round(app.ticker.FPS)} FPS · ${da.filter((f) => !f.versteckt).length}/${da.length} Figuren · Chat: ${chatStatus}` +
       `${S.sparmodus ? ' · <b>Sparmodus</b>' : ''}${EV.phase !== 'aus' ? ' · Portal: ' + EV.phase + (KAMPF.welt() ? ' (' + KAMPF.welt().kurz + ')' : '') : ''}` +
       `${KAMPF.stand() ? ' · Kampf: ' + KAMPF.stand().phase : ''}` +
-      `<div class="klein">T Test-Chatter · M Nachricht · N !lurk · K Kreaturen-Kampf (Shift+K Boss) · R Raid · P Portal · U Level-Up · G Gruppenbild · J Jubeln · D Duell · F Haus-Ruf · W Westen · B Rabe · E Rennen · Z Tauziehen · L Letzter steht · X Schatz · Q Würfel · S Sparmodus · 1/2/3 Demo · H Anzeige</div>`;
+      `<div class="klein">T Test-Chatter · M Nachricht · N !lurk · K Kreaturen-Kampf (Shift+K Boss) · R Raid · P Portal · U Level-Up · G Gruppenbild · J Jubeln · D Duell · F Haus-Ruf · W Westen · B Rabe · E Rennen · Z Tauziehen · L Letzter steht · X Schatz · Q Würfel · V Fluch · S Sparmodus · 1/2/3 Demo · H Anzeige</div>`;
   }
 
   let testNr = 0;
