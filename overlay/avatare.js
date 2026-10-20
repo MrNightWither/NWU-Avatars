@@ -256,7 +256,7 @@
     oval.addChild(innen, wirbel, ring);
     root.addChild(glanz, oval);
     root.scale.set(0.001, 0.001);
-    return { root, wirbel, groesse, offen: 0, ziel: 0, funkenFarben: [f.rand || f.ring, f.wirbel[0]] };
+    return { root, wirbel, ring, groesse, offen: 0, ziel: 0, funkenFarben: [f.rand || f.ring, f.wirbel[0]] };
   }
   function portalAktualisieren(p, dt, zeit) {
     p.offen = lerp(p.offen, p.ziel, Math.min(1, dt * 3));
@@ -308,7 +308,8 @@
     const src = w && w.bilder && w.bilder.portal;
     if (src) texHolen(src).then((t) => {
       if (!t || grossesPortal !== neu || neu.root.destroyed) return;
-      const sp = new PIXI.Sprite(t); sp.anchor.set(0.5); sp.scale.set(205 / t.height);
+      const sp = new PIXI.Sprite(t); sp.anchor.set(0.5); sp.scale.set(225 / t.height);   // das Loch im Bild passt dann um den Wirbel
+      neu.ring.visible = false;
       neu.root.addChild(sp);
     });
   }

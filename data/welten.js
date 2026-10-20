@@ -21,7 +21,7 @@
       boden: { farbe: 0xb9d3ea, dunkel: 0x5d7a98, linie: 0xe6f4ff, art: 'eis' },
       himmel: { farbe: 0x4a6a96, berge: 0x34557e, art: 'eistuerme' },
       wetter: { art: 'schnee', farbe: 0xffffff, menge: 1 },
-      bilder: { boden: 'welten/mond-boden.webp', bodenKante: 42, hintergrund: '', portal: '' },
+      bilder: { boden: 'welten/mond-boden.webp', bodenKante: 42, hintergrund: '', portal: 'welten/mond-portal.webp' },
       kreaturen: [
         { id: 'frostling', name: 'Frostling', bauart: 'schweber', groesse: 0.8, leben: 10,
           farben: { haut: 0xcfe6f7, dunkel: 0x6f93b8, akzent: 0x9fdcff }, stacheln: true, bild: 'kreaturen/mond/frostling.webp' },
@@ -39,7 +39,7 @@
       boden: { farbe: 0x6a2420, dunkel: 0x321010, linie: 0xa83a30, art: 'fels' },
       himmel: { farbe: 0x7a1a26, berge: 0x561620, art: 'rote_stadt' },
       wetter: { art: 'asche', farbe: 0xff6a4a, menge: 0.8 },
-      bilder: { boden: 'welten/blut-boden.webp', bodenKante: 0, hintergrund: '', portal: '' },
+      bilder: { boden: 'welten/blut-boden.webp', bodenKante: 0, hintergrund: '', portal: 'welten/blut-portal.webp' },
       kreaturen: [
         { id: 'blutkaefer', name: 'Blutkäfer', bauart: 'kriecher', groesse: 0.7, leben: 12,
           farben: { haut: 0x7a2a26, dunkel: 0x3a1110, akzent: 0xff4a4a }, bild: 'kreaturen/blut/blutkaefer.webp' },
@@ -57,7 +57,7 @@
       boden: { farbe: 0x3a4630, dunkel: 0x1c2418, linie: 0x6a7d50, art: 'moor' },
       himmel: { farbe: 0x3a5a52, berge: 0x2a423a, art: 'ruinen' },
       wetter: { art: 'nebel', farbe: 0xa8c8bc, menge: 1 },
-      bilder: { boden: 'welten/nebel-boden.webp', bodenKante: 41, hintergrund: '', portal: '' },
+      bilder: { boden: 'welten/nebel-boden.webp', bodenKante: 41, hintergrund: '', portal: 'welten/nebel-portal.webp' },
       kreaturen: [
         { id: 'moorkroete', name: 'Moorkröte', bauart: 'kriecher', groesse: 0.7, leben: 12,
           farben: { haut: 0x4a5a3a, dunkel: 0x232b1c, akzent: 0x9bd17a }, bild: 'kreaturen/nebel/moorkroete.webp' },
@@ -75,7 +75,7 @@
       boden: { farbe: 0x2a2426, dunkel: 0x141012, linie: 0xff7a1a, art: 'lava' },
       himmel: { farbe: 0x7a3414, berge: 0x4a2418, art: 'vulkane' },
       wetter: { art: 'funken', farbe: 0xffa040, menge: 1 },
-      bilder: { boden: 'welten/flamme-boden.webp', bodenKante: 0, hintergrund: '', portal: '' },
+      bilder: { boden: 'welten/flamme-boden.webp', bodenKante: 0, hintergrund: '', portal: 'welten/flamme-portal.webp' },
       kreaturen: [
         { id: 'glutling', name: 'Glutling', bauart: 'kriecher', groesse: 0.65, leben: 11,
           farben: { haut: 0x3a2a26, dunkel: 0x1a1210, akzent: 0xff7a1a }, glut: true, bild: 'kreaturen/flamme/glutling.webp' },
