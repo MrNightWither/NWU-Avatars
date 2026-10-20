@@ -302,6 +302,14 @@ assert.equal(r.daten.ok, true); assert.equal(r.daten.hausRuhm, 100);
 assert.equal((await ruf('/pokal')).daten.haeuser.haus3, nebelVorher + 100);
 assert.equal((await sb('/spiel', { spiel: 'rennen', plattform: 'twitch', haus: 'haus5' })).daten.grund, 'leer', 'verborgene Häuser nicht');
 assert.equal((await sb('/spiel', { spiel: 'rabe', plattform: 'twitch', haus: 'haus1' })).daten.grund, 'leer', 'Rabe ohne Hauspreis');
+// Kreaturen-Kampf (großes Portal): alle Mitkämpfer bekommen Ruhm, Boss mehr, kein Hauspreis, kein Abzug
+vorher = await stand();
+r = await sb('/spiel', { spiel: 'kreatur', plattform: 'twitch', gewinner: '111,fremd9', haus: 'haus1' });
+assert.equal(r.daten.ok, true); assert.equal(r.daten.ruhm, globalThis.NWU_RUHM.spiele.kreatur.gewinner); assert.equal(r.daten.hausRuhm, 0, 'Kreaturen: kein Hauspokal');
+assert.equal((await stand()).ruhm, vorher.ruhm + globalThis.NWU_RUHM.spiele.kreatur.gewinner);
+assert.equal((await sb('/spiel', { spiel: 'kreatur', plattform: 'twitch', gewinner: '111' })).daten.grund, 'zu_frueh');
+r = await sb('/spiel', { spiel: 'boss', plattform: 'twitch', gewinner: ['111'], verlierer: ['111'] });
+assert.equal(r.daten.ok, true); assert.ok(r.daten.ruhm > globalThis.NWU_RUHM.spiele.kreatur.gewinner, 'Boss gibt mehr Ruhm'); assert.equal(r.daten.abzug, 0);
 // Würfel: einmal pro Stream; 6 = doppelter Ruhm
 assert.equal((await sb('/wurf', { plattform: 'twitch', plattformId: 'fremd9' })).daten.grund, 'unbekannt');
 r = await sb('/wurf', { plattform: 'twitch', plattformId: '111' });

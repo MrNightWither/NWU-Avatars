@@ -22,6 +22,9 @@
       tauziehen: { name: 'Tauziehen (wer mitzieht)', gewinner: 30, haus: 100, pauseMinuten: 3 },
       letzter:   { name: 'Letzter steht', gewinner: 150, maxGewinner: 1, pauseMinuten: 5 },
       schatz:    { name: 'Schatzsuche', gewinner: 100, verlierer: -20, pauseMinuten: 3 },
+      // Kreaturen-Kampf hinter dem großen Portal (overlay/kampf.js): alle Mitkämpfer, kein Abzug bei Rückzug
+      kreatur:   { name: 'Kreaturen der Spaltung besiegt', gewinner: 40, pauseMinuten: 4 },
+      boss:      { name: 'Boss der Spaltung besiegt', gewinner: 150, pauseMinuten: 4 },
     },
     // Würfel der Morrígan (!wurf): einmal pro Stream (wurfStunden), 6 = doppelter Ruhm für doppeltStunden,
     // 1 = Gestalt für 5 Minuten verloren, 2–5 = Augenzahl × wurfRuhm

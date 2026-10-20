@@ -600,6 +600,7 @@ public class CPHInline
             if (g.Count > 0 && spiel == "rabe") CPH.SendMessage($"🐦‍⬛ {namen} hat den Raben gefangen! +{a["ruhm"]} Ruhm.");
             else if (g.Count > 0 && spiel == "letzter") CPH.SendMessage($"⚡ {namen} steht als Letzter! +{a["ruhm"]} Ruhm.");
             else if (spiel == "schatz") CPH.SendMessage($"💰 Schatzsuche: {g.Count} haben die Truhe gefunden (+{a["ruhm"]} Ruhm), {((JArray)a["verlierer"]).Count} gingen leer aus ({a["abzug"]} Ruhm).");
+            else if (g.Count > 0 && (spiel == "kreatur" || spiel == "boss")) CPH.SendMessage($"⚔ {(spiel == "boss" ? "Der Boss der Spaltung ist gefallen" : "Die Kreaturen der Spaltung sind besiegt")}! +{a["ruhm"]} Ruhm für {g.Count} Mitkämpfer.");
             else if (a["haus"] != null && a["haus"].Type != JTokenType.Null)
             {
                 string mit = g.Count > 0 ? $", +{a["ruhm"]} für {g.Count}, die mitgemacht haben." : ".";
@@ -612,6 +613,10 @@ public class CPHInline
     }
 }
 ```
+
+Auch der **Kreaturen-Kampf** hinter dem großen Portal meldet über diese Aktion (`spiel` = `kreatur` oder `boss`,
+`gewinner` = alle Mitkämpfer). Dafür braucht es keinen eigenen Befehl in Streamer.bot: `!portal` und `!angriff` liest
+das Overlay selbst im Chat mit.
 
 Gestartet werden die Spiele im Chat: `!rennen`, `!tauziehen` (oder `!tauziehen mond blut`), `!letzter`, `!schatz`,
 `!rabe` – vom Streamer und, wenn `spiele.starter` in `overlay/config.js` auf `'mods'` steht, auch von Mods.
