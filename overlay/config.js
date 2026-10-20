@@ -23,7 +23,9 @@ window.NWU_CONFIG = {
     // 20.10.2026 aus den Overlays ausgerechnet (1920x1080): Cam-Rahmen 500x220
     gaming:   { x: 0.0208, y: 0.7593, w: 0.2604, h: 0.2037 },   // overlay-gaming-cam-unten-links: links 40, unten 40
     shooter:  { x: 0.7188, y: 0.3981, w: 0.2604, h: 0.2037 },   // overlay-gaming-cam-rechts-mitte: rechts 40, Mitte
-    nocam:    { x: 0.03, y: 0.90, w: 0.94, h: 0.065 },          // ohne Cam: Streifen über der Fußleiste
+    // ohne Cam: aufrecht am Boden über der Fußleiste/dem Befehle-Feld (bis vor die Figur rechts unten),
+    // ab und zu per Portal kopfüber an der goldenen Linie unter „MRNIGHTWITHER“ (Wunsch 20.10.2026)
+    nocam:    { linien: [ { x0: 0.010, x1: 0.815, y: 0.974 }, { x0: 0.812, x1: 0.979, y: 0.131, kopf: true } ] },
   },
   // OBS-Szene → Laufweg. Eine Browserquelle in allen drei Szenen; bei Szenenwechsel springt der Laufweg um.
   obsSzenen: { Gaming: 'gaming', Shooter: 'shooter', NoCam: 'nocam' },

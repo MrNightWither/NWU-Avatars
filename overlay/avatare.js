@@ -20,7 +20,7 @@
     fps: zahl('fps', CFG.fps),
     hoehe: zahl('groesse', CFG.figurHoehe),
     max: zahl('max', CFG.maxFiguren),
-    hud: an('hud', !window.obsstudio),          // in OBS (Stream) aus, im Browser zum Testen an; ?hud=1 erzwingt sie, H schaltet um
+    hud: an('hud', !(window.obsstudio || navigator.userAgent.includes('OBS/'))),          // in OBS (Stream) aus, im Browser zum Testen an; ?hud=1 erzwingt sie, H schaltet um
     szene: q.get('szene') || 'standard',
     sparmodus: an('spar', false),
     portalOffen: false,
@@ -111,17 +111,41 @@
 
   // ---------- Laufweg um den Kamera-Rahmen ----------
   // R bleibt dasselbe Objekt (Spiele halten es fest) – bei einem OBS-Szenenwechsel wird es nur neu gefüllt
-  const R = { x: cam.x * W, y: cam.y * H, w: cam.w * W, h: cam.h * H };
-  let umfang = 2 * (R.w + R.h);
+  // Szenen ohne Kamera (z. B. NoCam): statt Rechteck einzelne Linien {x0, x1, y, kopf} – die erste ist der Boden.
+  // Am Ende einer Linie geht es per Portal (Funken) auf die nächste; kopf = kopfüber darunter hängen.
+  const R = { x: 0, y: 0, w: 1, h: 0 };
+  let umfang = 1, linien = null;
+  const rahmenSetzen = (c) => {
+    if (Array.isArray(c.linien) && c.linien.length) {
+      linien = c.linien.map((l) => ({ x0: Math.min(l.x0, l.x1) * W, x1: Math.max(l.x0, l.x1) * W, y: l.y * H, kopf: !!l.kopf, laenge: Math.abs(l.x1 - l.x0) * W }));
+      Object.assign(R, { x: linien[0].x0, y: linien[0].y, w: linien[0].laenge, h: 0 });   // Spiele nutzen den Boden
+      umfang = linien.reduce((n, l) => n + l.laenge, 0);
+    } else {
+      linien = null;
+      Object.assign(R, { x: c.x * W, y: c.y * H, w: c.w * W, h: c.h * H });
+      umfang = 2 * (R.w + R.h);
+    }
+  };
+  rahmenSetzen(cam);
   const laufwegSetzen = (c) => {
     const alt = umfang;
-    Object.assign(R, { x: c.x * W, y: c.y * H, w: c.w * W, h: c.h * H });
-    umfang = 2 * (R.w + R.h);
-    for (const f of figuren) { if (typeof f.s === 'number') f.s = f.s / alt * umfang; if (typeof f.zielS === 'number') f.zielS = f.zielS / alt * umfang; }
+    rahmenSetzen(c);
+    for (const f of figuren) { if (typeof f.s === 'number') f.s = f.s / alt * umfang; if (typeof f.zielS === 'number') f.zielS = f.zielS / alt * umfang; f.linie = undefined; }
   };
   const norm = (s) => ((s % umfang) + umfang) % umfang;
-  const aufPfad = (s) => {   // oben stehen, rechts klettern, unten kopfüber, links klettern
+  const linieBei = (s) => {
+    if (!linien) return 0;
     s = norm(s);
+    for (let i = 0; i < linien.length; i++) { if (s < linien[i].laenge) return i; s -= linien[i].laenge; }
+    return linien.length - 1;
+  };
+  const aufPfad = (s) => {   // Rechteck: oben stehen, rechts klettern, unten kopfüber, links klettern
+    s = norm(s);
+    if (linien) {
+      const l = linien[linieBei(s)];
+      const t = Math.min(l.laenge, s - linien.slice(0, linien.indexOf(l)).reduce((n, x) => n + x.laenge, 0));
+      return l.kopf ? { x: l.x1 - t, y: l.y, a: Math.PI } : { x: l.x0 + t, y: l.y, a: 0 };
+    }
     if (s < R.w) return { x: R.x + s, y: R.y, a: 0 };
     s -= R.w;
     if (s < R.h) return { x: R.x + R.w, y: R.y + s, a: Math.PI / 2 };
@@ -976,6 +1000,11 @@
           fi.s += fi.richtung * fi.tempo * dt * fi.g.laufen;
         }
         const p = aufPfad(fi.s);
+        if (linien) {     // Linienwechsel = Portal: Funken und sofort richtig herum
+          const li = linieBei(fi.s);
+          if (fi.linie !== undefined && li !== fi.linie) { funken(p.x, p.y, fi.farbe, 8); fi.winkel = p.a; }
+          fi.linie = li;
+        }
         fi.winkel = winkelLerp(fi.winkel, p.a, Math.min(1, dt * 6));
         fi.root.position.set(p.x, p.y);
         fi.modusAlpha = lerp(fi.modusAlpha, 1, Math.min(1, dt * 3));
