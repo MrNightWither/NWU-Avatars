@@ -337,7 +337,8 @@ window.NWU_KAMPF = function (K) {
     return {
       def, h, boss, root, koerper: bau.koerper, teile: bau.teile, massstab: bau.massstab, einBild: !!bau.einBild, leiste, schild,
       x: RISS_X, zielX: RISS_X, hp: max, max, laufen: 0, phase: Math.random() * 6, t: Math.random() * 6, angriff: 0, angriffT: -1,
-      treffer: 0, cd: 2 + Math.random() * 2, tot: false, sterben: 0, ein: 0, weg: false, richtung: -1, breite: h * (def.bauart === 'koloss' ? 0.55 : 0.85),
+      treffer: 0, cd: 2 + Math.random() * 2, tot: false, sterben: 0, ein: 0, weg: false, richtung: -1,
+      breite: bau.einBild ? bau.koerper.children[0].texture.width * bau.massstab * 0.8 : h * (def.bauart === 'koloss' ? 0.55 : 0.85),
     };
   }
   function kreaturPose(c, dt) {

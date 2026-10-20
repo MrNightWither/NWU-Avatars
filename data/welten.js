@@ -24,13 +24,13 @@
       bilder: { boden: '', hintergrund: '', portal: '' },
       kreaturen: [
         { id: 'frostling', name: 'Frostling', bauart: 'schweber', groesse: 0.8, leben: 10,
-          farben: { haut: 0xcfe6f7, dunkel: 0x6f93b8, akzent: 0x9fdcff }, stacheln: true, bild: '' },
+          farben: { haut: 0xcfe6f7, dunkel: 0x6f93b8, akzent: 0x9fdcff }, stacheln: true, bild: 'kreaturen/mond/frostling.webp' },
         { id: 'eiswolf', name: 'Eiswolf', bauart: 'vierbeiner', groesse: 0.85, leben: 12,
-          farben: { haut: 0xa9bccd, dunkel: 0x4c5f75, akzent: 0xdff3ff }, stacheln: true, bild: '' },
+          farben: { haut: 0xa9bccd, dunkel: 0x4c5f75, akzent: 0xdff3ff }, stacheln: true, bild: 'kreaturen/mond/eiswolf.webp' },
       ],
       boss: { id: 'frostwaechter', name: 'Der Gefrorene Wächter', bauart: 'koloss', groesse: 2.3, leben: 40,
         text: 'Ein Riese aus uraltem Eis erhebt sich aus dem See.',
-        farben: { haut: 0x9cc4e4, dunkel: 0x3d5a7a, akzent: 0xe6f6ff }, stacheln: true, bild: '' },
+        farben: { haut: 0x9cc4e4, dunkel: 0x3d5a7a, akzent: 0xe6f6ff }, stacheln: true, bild: 'kreaturen/mond/frostwaechter.webp' },
     },
     blut: {
       id: 'blut', haus: 'haus2', name: 'Der rote Stein am Blutfluss', kurz: 'Blutwelt',
