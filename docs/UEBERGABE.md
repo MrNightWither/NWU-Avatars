@@ -3,6 +3,18 @@
 Für die Weiterarbeit mit Claude Code direkt auf dem Stream-PC (Overlays, Kameras, OBS).
 Erst `README.md`, `docs/GESCHICHTE.md`, `docs/FORTSCHRITT.md` lesen.
 
+## ✅ Live-Stand 20.10.2026 (Paket 1 erledigt)
+
+- **Worker**  läuft: https://nwu-avatare.nwu-brand.workers.dev (D1  mit Tabellen, Secrets gesetzt).
+  Die Passwörter liegen **nur** in  (am besten zusätzlich in Bitwarden ablegen).
+- **Website** (GitHub Pages) nutzt den echten Worker, kein Demo-Modus mehr. Erfolgskarte mit Stand 18.10. befüllt.
+- **Overlay** : Kanal , Bot , Streamer.bot .
+- **Streamer.bot**: 14 Aktionen + 12 Befehle in der Gruppe „NWU Avatare“, eingesetzt per
+   (Code: ), alle kompilieren fehlerfrei.
+  Ruhm/Essenz/Erfolg erkennen die Quelle selbst (), Present Viewers zählt höchstens alle 10 Minuten.
+- **Noch am PC zu tun:** Laufwege für die 3 Szenen in OBS ausmessen ( → ), Overlay als Browserquelle anlegen,
+  Kick/YouTube/TikTok-Auslöser für Essenz/Erfolg (bisher nur Twitch), Rolle  setzen, sobald sie das Ritual gemacht hat.
+
 ## Zeitplan und großer Bogen (Stand 19.10.2026)
 
 - **Release erst, wenn alles fertig ist – Ziel: in etwa einem Monat (ca. 19.11.2026).** Bis dahin in Ruhe testen.
