@@ -174,8 +174,10 @@ window.NWU_KAMPF = function (K) {
     });
     if (bilder.boden) texHolen(bilder.boden).then((t) => {
       if (!t || welt !== w || boden.destroyed) return;
-      const ts = new PIXI.TilingSprite({ texture: t, width: TERRAIN.breite, height: BODEN_H + 10 });
-      ts.tileScale.set((BODEN_H + 10) / t.height); ts.y = -8;
+      // eine Kachel = halbe Streifenbreite; bodenKante = Pixel im Bild über der Lauffläche (Schnee, Schilf)
+      const s = TERRAIN.breite / 2 / t.width, kante = (bilder.bodenKante || 0) * s;
+      const ts = new PIXI.TilingSprite({ texture: t, width: TERRAIN.breite, height: BODEN_H + kante });
+      ts.tileScale.set(s); ts.y = -kante;
       terrain.addChildAt(ts, terrain.getChildIndex(boden)); boden.destroy(); boden = ts;
       if (adern) { adern.destroy(); adern = null; }
     });
