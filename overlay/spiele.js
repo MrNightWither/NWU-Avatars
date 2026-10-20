@@ -25,8 +25,8 @@ window.NWU_SPIELE = function (K) {
   const plus = (art) => (RUHM_SP[art] && RUHM_SP[art].gewinner) || 0;
 
   const ansageStil = new PIXI.TextStyle({ fontFamily: 'Georgia, serif', fontSize: 30, fontWeight: 'bold', fill: 0xe8c96d, stroke: { color: 0x120d06, width: 5 }, letterSpacing: 2 });
-  const plusStil = new PIXI.TextStyle({ fontFamily: 'Georgia, serif', fontSize: 14, fontWeight: 'bold', fill: 0xe8c96d, stroke: { color: 0x120d06, width: 3 } });
-  const minusStil = new PIXI.TextStyle({ fontFamily: 'Georgia, serif', fontSize: 14, fontWeight: 'bold', fill: 0xb9b0c9, stroke: { color: 0x120d06, width: 3 } });
+  const plusStil = new PIXI.TextStyle({ fontFamily: 'Georgia, serif', fontSize: 19, fontWeight: 'bold', fill: 0xe8c96d, stroke: { color: 0x120d06, width: 3 } });
+  const minusStil = new PIXI.TextStyle({ fontFamily: 'Georgia, serif', fontSize: 19, fontWeight: 'bold', fill: 0xb9b0c9, stroke: { color: 0x120d06, width: 3 } });
   function ansage(text, dauer) {
     const t = new PIXI.Text({ text, style: ansageStil });
     t.anchor.set(0.5); t.position.set(R.x + R.w / 2, R.y + R.h / 2);

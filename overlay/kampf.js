@@ -26,8 +26,8 @@ window.NWU_KAMPF = function (K) {
 
   const ANSAGE = { fontFamily: 'Georgia, serif', fontSize: 30, fontWeight: 'bold', fill: 0xe8c96d, stroke: { color: 0x120d06, width: 5 }, letterSpacing: 2 };
   const ansageStil = new PIXI.TextStyle(ANSAGE);
-  const plusStil = new PIXI.TextStyle({ fontFamily: 'Georgia, serif', fontSize: 14, fontWeight: 'bold', fill: 0xe8c96d, stroke: { color: 0x120d06, width: 3 } });
-  const nameStil = new PIXI.TextStyle({ fontFamily: 'Georgia, serif', fontSize: 13, fontWeight: 'bold', fill: 0xf1e9d6, stroke: { color: 0x120d06, width: 3 } });
+  const plusStil = new PIXI.TextStyle({ fontFamily: 'Georgia, serif', fontSize: 19, fontWeight: 'bold', fill: 0xe8c96d, stroke: { color: 0x120d06, width: 3 } });
+  const nameStil = new PIXI.TextStyle({ fontFamily: 'Georgia, serif', fontSize: 17, fontWeight: 'bold', fill: 0xf1e9d6, stroke: { color: 0x120d06, width: 3 } });
   function ansage(text, dauer, farbe) {
     const stil = farbe ? new PIXI.TextStyle({ ...ANSAGE, fill: farbe }) : ansageStil;
     const t = new PIXI.Text({ text, style: stil });

@@ -204,7 +204,7 @@
       effekt(p, { vx: Math.cos(w) * 45, vy: Math.sin(w) * 45 - 30, leben: l, max: l });
     }
   }
-  const zStil = new PIXI.TextStyle({ fontFamily: 'Georgia, serif', fontSize: 14, fontStyle: 'italic', fill: 0xd8dcf0 });
+  const zStil = new PIXI.TextStyle({ fontFamily: 'Georgia, serif', fontSize: 18, fontStyle: 'italic', fill: 0xd8dcf0 });
   function zzz(fi) {
     const t = new PIXI.Text({ text: 'z', style: zStil });
     t.anchor.set(0.5);
@@ -682,7 +682,7 @@
   // Beide laufen am Rahmen aufeinander zu, drei Schlagabtausche mit Funken, dann jubelt der Sieger und
   // der Verlierer setzt sich kurz hin. Es geht nur um den Stolz – kein Ruhm wird gewonnen oder verloren.
   const DUELL_PAUSE = 120;                   // Sekunden, bis dieselbe Person wieder fordern darf
-  const duellStil = new PIXI.TextStyle({ fontFamily: 'Georgia, serif', fontSize: 15, fontWeight: 'bold', fill: 0xf1e9d6, stroke: { color: 0x120d06, width: 3 } });
+  const duellStil = new PIXI.TextStyle({ fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 'bold', fill: 0xf1e9d6, stroke: { color: 0x120d06, width: 3 } });
   let duell = null;
   const darfDuellieren = (f) => f && f.root && !f.entfernen && !f.versteckt && !f.ungebunden && f.modus === 'rahmen';
   function duellStarten(a, b) {
@@ -953,7 +953,7 @@
   if (window.obsstudio && window.obsstudio.getCurrentScene) window.obsstudio.getCurrentScene((s) => s && szeneWaehlen(s.name));
 
   // ---------- Level-Up ----------
-  const lvStil = new PIXI.TextStyle({ fontFamily: 'Georgia, serif', fontSize: 15, fontWeight: 'bold', fill: 0xe8c96d, stroke: { color: 0x1a1208, width: 3 }, letterSpacing: 1 });
+  const lvStil = new PIXI.TextStyle({ fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 'bold', fill: 0xe8c96d, stroke: { color: 0x1a1208, width: 3 }, letterSpacing: 1 });
   function levelUp(fi) {
     const a = fi.winkel, mitte = versetzt(fi.root.x, fi.root.y, a, S.hoehe * 0.5);
     const strahl = new PIXI.Sprite(T.strahl);
