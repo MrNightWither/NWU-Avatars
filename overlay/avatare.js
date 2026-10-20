@@ -20,7 +20,7 @@
     fps: zahl('fps', CFG.fps),
     hoehe: zahl('groesse', CFG.figurHoehe),
     max: zahl('max', CFG.maxFiguren),
-    hud: an('hud', true),
+    hud: an('hud', !window.obsstudio),          // in OBS (Stream) aus, im Browser zum Testen an; ?hud=1 erzwingt sie, H schaltet um
     szene: q.get('szene') || 'standard',
     sparmodus: an('spar', false),
     portalOffen: false,
