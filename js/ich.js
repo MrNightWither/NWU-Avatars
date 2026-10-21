@@ -90,7 +90,7 @@
     const ab = (window.NWU_FREISCHALTUNGEN.find((f) => f.id === 'haare') || {}).level;
     const abSelten = (window.NWU_FREISCHALTUNGEN.find((f) => f.id === 'haare_selten') || {}).level;
     const jetzt = window.NWU_HAARFARBE_FREI(level, d.aussehen && d.aussehen.haare) ? d.aussehen.haare : (window.NWU_HAARE_STANDARD || {})[d.haus];
-    $('haare-text').textContent = level < ab ? `Ab Level ${ab} kannst du die Haarfarbe deiner Figur wählen.` : `Seltene Farben gibt es ab Level ${abSelten}. Im Chat geht das auch mit !haare <Farbe>.`;
+    $('haare-text').textContent = level < ab ? `Ab Level ${ab} kannst du die Haarfarbe deiner Figur wählen.` : `Seltene Farben gibt es ab Level ${abSelten}. Im Chat geht das auch mit !nwu haare <Farbe>.`;
     $('farben').replaceChildren(...Object.entries(FARBEN).map(([id, f]) => {
       const b = document.createElement('button');
       b.type = 'button'; b.className = 'farbe';
@@ -104,9 +104,9 @@
     // Frisur, Kopfschmuck, Begleiter
     const aus = d.aussehen || {};
     wahlZeigen('frisur', window.NWU_FRISUREN, aus.frisur, (id) => id === 'glatze' ? ['overlay/frisuren/kopfform.webp'] : ['overlay/frisuren/kopfform.webp', `overlay/frisuren/${id}.webp`], level,
-      d.figur === 'c' ? 'Beim Schatten verbirgt die Kapuze die Frisur – sie zählt erst, wenn du eine andere Gestalt hast.' : 'Im Chat: !frisur <Name>.');
-    wahlZeigen('kopf', window.NWU_KOPFSCHMUCK, aus.kopf, (id) => ['overlay/frisuren/kopfform.webp', `overlay/kopfschmuck/${id}.webp`], level, 'Im Chat: !kopf <Name>.');
-    wahlZeigen('begleiter', window.NWU_BEGLEITER, aus.begleiter, (id) => [`overlay/begleiter/${id}.webp`], level, 'Läuft neben deiner Figur. Im Chat: !begleiter <Name>.');
+      d.figur === 'c' ? 'Beim Schatten verbirgt die Kapuze die Frisur – sie zählt erst, wenn du eine andere Gestalt hast.' : 'Im Chat: !nwu frisur <Name>.');
+    wahlZeigen('kopf', window.NWU_KOPFSCHMUCK, aus.kopf, (id) => ['overlay/frisuren/kopfform.webp', `overlay/kopfschmuck/${id}.webp`], level, 'Im Chat: !nwu kopf <Name>.');
+    wahlZeigen('begleiter', window.NWU_BEGLEITER, aus.begleiter, (id) => [`overlay/begleiter/${id}.webp`], level, 'Läuft neben deiner Figur. Im Chat: !nwu begleiter <Name>.');
     $('anonym').checked = !!d.anonym;
 
     // Konten

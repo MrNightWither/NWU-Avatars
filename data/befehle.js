@@ -4,11 +4,11 @@
   {
     gruppe: 'Dein Weg', befehle: [
       { befehl: '!bestätigen <Code>', text: 'Bindet dich nach dem Ritual an dein Haus. Den Code zeigt dir die Website.' },
-      { befehl: '!haare <Farbe>', text: 'Ändert die Haarfarbe deiner Figur (ab Level 5, seltene Farben ab Level 25). Geht auch unter „Mein Profil“.', z: '!haare kupfer' },
-      { befehl: '!frisur <Name>', text: 'Neue Frisur ab Level 8 (mehr ab 18, alle 24 ab 35). Mit „keine“ zurück zur eigenen.', z: '!frisur pferdeschwanz' },
-      { befehl: '!kopf <Name>', text: 'Kopfschmuck ab Level 30: Silberreif, Kapuze, Blumenkranz … später Hörner, Krone, Heiligenschein.', z: '!kopf blumenkranz' },
-      { befehl: '!begleiter <Name>', text: 'Ein Tier läuft mit dir: ab Level 20 Rabe oder Katze, ab 45 Wolfswelpe oder Fledermaus, ab 70 noch seltener.', z: '!begleiter rabe' },
       { befehl: '!nwu', text: 'Morrígan schickt dir den Link zum Ritual und zu dieser Seite.' },
+      { befehl: '!nwu haare <Farbe>', text: 'Ändert die Haarfarbe deiner Figur (ab Level 5, seltene Farben ab Level 25). Geht auch unter „Mein Profil“.', z: '!nwu haare kupfer' },
+      { befehl: '!nwu frisur <Name>', text: 'Neue Frisur ab Level 8 (mehr ab 18, alle 24 ab 35). Mit „keine“ zurück zur eigenen.', z: '!nwu frisur pferdeschwanz' },
+      { befehl: '!nwu kopf <Name>', text: 'Kopfschmuck ab Level 30: Silberreif, Kapuze, Blumenkranz … später Hörner, Krone, Heiligenschein.', z: '!nwu kopf blumenkranz' },
+      { befehl: '!nwu begleiter <Name>', text: 'Ein Tier läuft mit dir: ab Level 20 Rabe oder Katze, ab 45 Wolfswelpe oder Fledermaus, ab 70 noch seltener.', z: '!nwu begleiter rabe' },
       { befehl: '!anonym', text: 'Dein Name verschwindet aus der Chronik („Unbekannte Seele“). Nochmal schreiben = wieder sichtbar.' },
       { befehl: '!löschen', text: 'Löscht dein Profil endgültig. Morrígan fragt einmal nach, dann: !löschen ja' },
       { befehl: '!anmelden <Code>', text: 'Nur für die Website: meldet dich unter „Mein Profil“ an (Code gibt es dort).' },
