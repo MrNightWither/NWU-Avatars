@@ -610,6 +610,15 @@
     if (vomBot && SPIELE.wurfNachricht(u.text || '')) return;
     const spiegel = vomBot && (u.text || '').match(/🪞 @([A-Za-z0-9_]{2,25})/);
     if (spiegel) { const f = figuren.find((x) => !x.entfernen && x.name === spiegel[1].toLowerCase()); if (f) umziehen(f, true); return; }
+    // Duell (21.10.2026): Der Zähler in Streamer.bot entscheidet und zählt (!duell @Name → !annehmen),
+    // hier wird nur noch der Kampf mit genau diesem Sieger gezeigt: „⚔️ A gegen B – A gewinnt das Duell! (3. Sieg)“
+    const duellErgebnis = vomBot && (u.text || '').match(/⚔️?\s*@?([A-Za-z0-9_]{2,25}) gegen @?([A-Za-z0-9_]{2,25}) – @?([A-Za-z0-9_]{2,25}) gewinnt das Duell/);
+    if (duellErgebnis) {
+      const [na, nb, ns] = duellErgebnis.slice(1).map((n) => n.toLowerCase());
+      const fa = figuren.find((f) => !f.entfernen && f.name === na), fb = figuren.find((f) => !f.entfernen && f.name === nb);
+      if (fa && fb) duellStarten(fa, fb, ns === na ? fa : ns === nb ? fb : null);
+      return;
+    }
     if (SPIELE.darfStarten(u) && (SPIELE.befehl(text) || KAMPF.befehl(text))) return;
     if (vomBot && !u.broadcaster) return;                // Bot-Nachrichten erzeugen keine Figur
     if (!u.id || (u.broadcaster && !KOENIG)) return;    // ohne Königs-Figur (Bild fehlt) bleibt der Streamer unsichtbar
@@ -617,8 +626,6 @@
     if (fi && !fi.entfernen) {
       fi.letzte = zeit;
       if (!fi.root) return;                               // Profil lädt noch
-      const duellRuf = text.match(/^!duell\s+@?([a-z0-9_]{2,25})/);
-      if (duellRuf) { duellStarten(fi, figuren.find((f) => !f.entfernen && f.name === duellRuf[1])); return; }
       if (KAMPF.eingabe(fi, text) || SPIELE.eingabe(fi, text, u)) return;
       if (!S.api && text.startsWith('!wurf') && !fi.gewuerfelt && !fi.ungebunden) { fi.gewuerfelt = true; SPIELE.wurfZeigen(fi, 1 + Math.floor(Math.random() * 6)); return; }
       if (text.startsWith('!lurk')) { fi.lurker = true; fi.zustandZeit = 0; }
@@ -678,15 +685,17 @@
     fi.funkenSpur = FREI(level, 'funken');
   }
 
-  // ---------- Ehrenduelle: !duell @Name ----------
+  // ---------- Duelle ----------
   // Beide laufen am Rahmen aufeinander zu, drei Schlagabtausche mit Funken, dann jubelt der Sieger und
-  // der Verlierer setzt sich kurz hin. Es geht nur um den Stolz – kein Ruhm wird gewonnen oder verloren.
+  // der Verlierer setzt sich kurz hin. Kein Ruhm wird gewonnen oder verloren.
+  // Chat-Duelle (!duell @Name → !annehmen) entscheidet seit 21.10.2026 der Zähler in Streamer.bot (Siege zählen in !stats);
+  // dann kommt der Sieger als `vorgabe` mit. Ohne Vorgabe (Duelle von selbst) entscheidet der Zufall.
   const DUELL_PAUSE = 120;                   // Sekunden, bis dieselbe Person wieder fordern darf
   const duellStil = new PIXI.TextStyle({ fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 'bold', fill: 0xf1e9d6, stroke: { color: 0x120d06, width: 3 } });
   let duell = null;
   const darfDuellieren = (f) => f && f.root && !f.entfernen && !f.versteckt && !f.ungebunden && f.modus === 'rahmen';
-  function duellStarten(a, b) {
-    if (duell || SPIELE.laeuft() || KAMPF.laeuft() || a === b || !darfDuellieren(a) || !darfDuellieren(b) || (a.duellPause || 0) > zeit) return false;
+  function duellStarten(a, b, vorgabe) {
+    if (duell || SPIELE.laeuft() || KAMPF.laeuft() || a === b || !darfDuellieren(a) || !darfDuellieren(b) || (!vorgabe && (a.duellPause || 0) > zeit)) return false;
     let d = norm(b.s - a.s); if (d > umfang / 2) d -= umfang;
     const mitte = a.s + d / 2, abstand = S.hoehe * 0.42, r = Math.sign(d) || 1;
     for (const [f, seite] of [[a, -1], [b, 1]]) {
@@ -694,7 +703,7 @@
       f.lurkerVorher = f.lurker; f.lurker = false; f.angekommen = false;
     }
     a.duellPause = zeit + DUELL_PAUSE;
-    duell = { a, b, phase: 'anlauf', t: 0, schlaege: 0 };
+    duell = { a, b, phase: 'anlauf', t: 0, schlaege: 0, vorgabe: vorgabe || null };
     return true;
   }
   // Duelle von selbst: begegnen sich zwei Figuren aus verschiedenen Häusern am Rahmen, kommt es ab und zu zum Kampf.
@@ -742,7 +751,7 @@
     } else if (duell.phase === 'ende' && !duell.sieger) {
       // Höheres Level hilft ein wenig, entscheidet aber nie sicher (höchstens 70 : 30)
       const vorteil = Math.max(-0.2, Math.min(0.2, ((a.level || 1) - (b.level || 1)) * 0.02));
-      const sieger = Math.random() < 0.5 + vorteil ? a : b, verlierer = sieger === a ? b : a;
+      const sieger = duell.vorgabe || (Math.random() < 0.5 + vorteil ? a : b), verlierer = sieger === a ? b : a;
       duell.sieger = sieger;
       sieger.jubelBis = zeit + 3; huepfen(sieger); leuchten(sieger);
       verlierer.zustand = 'sitzen'; verlierer.g.sitzen = 0.5;

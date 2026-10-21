@@ -19,7 +19,7 @@
     gruppe: 'Deine Figur', befehle: [
       { befehl: '!lurk', text: 'Deine Figur setzt sich hin und schläft ein. Schreibst du wieder, wacht sie auf.' },
       { befehl: '!ruf', text: 'Ruft dein Haus: alle Figuren deines Hauses laufen zu dir und jubeln.' },
-      { befehl: '!duell @Name', text: 'Fordert jemanden zum Ehrenduell. Es geht nur um die Ehre, kein Ruhm.' },
+      { befehl: '!duell @Name', text: 'Fordert jemanden zum Duell. Wer gefordert wird, sagt mit !annehmen zu (60 Sekunden), dann kämpfen eure Figuren. Siege zählen in !stats.' },
     ],
   },
   {
