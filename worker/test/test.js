@@ -383,6 +383,29 @@ assert.deepEqual((await mitToken('/ich', token)).daten.aussehen, { haare: 'kupfe
 assert.equal((await sb('/avatare/aussehen', { plattform: 'twitch', plattformId: '111', frisur: 'keine' })).daten.ok, true);
 assert.equal((await ruf('/avatare/profil?plattform=twitch&id=111')).daten.aussehen.frisur, undefined);
 
+// 🎃 Halloween-Kostüm: Event-Zeit in deutscher Zeit, Kürbis nur am Event-Tag, danach behalten
+const EV = globalThis.NWU_EVENT_AKTIV;
+assert.equal(EV('halloween', new Date('2026-10-30T22:59:00Z')), false, '30.10. 23:59 noch nicht');
+assert.equal(EV('halloween', new Date('2026-10-30T23:00:00Z')), true, '31.10. 0 Uhr (MEZ) los');
+assert.equal(EV('halloween', new Date('2026-11-01T04:59:00Z')), true, '1.11. 5:59 noch dabei');
+assert.equal(EV('halloween', new Date('2026-11-01T05:00:00Z')), false, '1.11. 6 Uhr vorbei');
+globalThis.NWU_EVENT_AKTIV = () => false;
+assert.equal((await sb('/avatare/aussehen', { plattform: 'twitch', plattformId: '111', kopf: 'kürbis' })).daten.grund, 'event', 'ohne Event kein Kürbis');
+assert.equal((await sb('/avatare/aussehen', { plattform: 'twitch', plattformId: '111', kopf: 'hexenhut' })).daten.grund, 'level', 'Hexenhut sonst ab 60');
+globalThis.NWU_EVENT_AKTIV = (n) => n === 'halloween';
+assert.equal((await sb('/avatare/aussehen', { plattform: 'twitch', plattformId: '111', kopf: 'hexenhut' })).daten.name, 'Hexenhut', 'Halloween: Hexenhut für alle');
+assert.equal((await sb('/avatare/aussehen', { plattform: 'twitch', plattformId: '111', kopf: 'kürbis' })).daten.name, 'Kürbiskopf');
+assert.deepEqual((await ruf('/avatare/profil?plattform=twitch&id=111')).daten.aussehen.behalten, ['kuerbis']);
+globalThis.NWU_EVENT_AKTIV = () => false;
+assert.equal((await sb('/avatare/aussehen', { plattform: 'twitch', plattformId: '111', kopf: 'hexenhut' })).daten.grund, 'level', 'nach Halloween wieder ab 60');
+assert.equal((await sb('/avatare/aussehen', { plattform: 'twitch', plattformId: '111', kopf: 'Kürbiskopf' })).daten.ok, true, 'Kürbis bleibt');
+assert.equal(globalThis.NWU_WAHL_FREI(20, 'kopf', 'kuerbis', { behalten: ['kuerbis'] }), true);
+assert.equal(globalThis.NWU_WAHL_FREI(99, 'kopf', 'kuerbis', {}), false, 'auch hohes Level bekommt ihn nur am Event-Tag');
+assert.equal((await sb('/avatare/aussehen', { plattform: 'twitch', plattformId: '111', kopf: 'keine' })).daten.ok, true);
+assert.equal((await sb('/avatare/aussehen', { plattform: 'twitch', plattformId: '111', kopf: 'Kürbis' })).daten.name, 'Kürbiskopf', 'abgesetzt und wieder aufgesetzt');
+globalThis.NWU_EVENT_AKTIV = EV;
+assert.equal((await sb('/avatare/aussehen', { plattform: 'twitch', plattformId: '111', kopf: 'keine' })).daten.ok, true);
+
 // Anonym: über Website und Chat; dann nicht per Name auffindbar, Chronik ohne Namen, Overlay (ID) findet weiter
 assert.equal((await mitToken('/ich/anonym', token, { an: true })).daten.anonym, true);
 assert.equal((await ruf('/avatare/profil?plattform=twitch&name=mrnightwither')).daten.gefunden, false);

@@ -59,8 +59,11 @@
     reif: { name: 'Silberreif', ab: 'kopfschmuck' },        kapuze: { name: 'Kapuze', ab: 'kopfschmuck' },
     blumenkranz: { name: 'Blumenkranz', ab: 'kopfschmuck' }, federn: { name: 'Federschmuck', ab: 'kopfschmuck' },
     hoerner: { name: 'Hörner', ab: 'kopfschmuck2' },        maske: { name: 'Maske', ab: 'kopfschmuck2' },
-    augenklappe: { name: 'Augenklappe', ab: 'kopfschmuck2' }, hexenhut: { name: 'Hexenhut', ab: 'kopfschmuck2' },
+    augenklappe: { name: 'Augenklappe', ab: 'kopfschmuck2' }, hexenhut: { name: 'Hexenhut', ab: 'kopfschmuck2', event: 'halloween' },
     vogelschaedel: { name: 'Vogelschädel', ab: 'kopfschmuck2' },
+    // 🎃 Halloween-Kostüm: am Event-Tag für alle mit Figur, egal welches Level. Den Kürbis gibt es nur dann –
+    // wer ihn am Event-Tag aufsetzt, darf ihn behalten (aussehen.behalten). Der Hexenhut ist danach wieder ab Level 60.
+    kuerbis: { name: 'Kürbiskopf', ab: 'kopfschmuck', event: 'halloween', nurEvent: true },
     dornenkrone: { name: 'Eisenkrone', ab: 'kopfschmuck3' }, heiligenschein: { name: 'Heiligenschein', ab: 'kopfschmuck3' },
     geweih: { name: 'Geisterhafte Geweihe', ab: 'kopfschmuck3' },
   };
@@ -74,11 +77,24 @@
     const f = ziel.NWU_FREISCHALTUNGEN.find((x) => x.id === id);
     return !!f && (level || 1) >= f.level;
   };
+  // Läuft gerade ein Event? Deutsche Zeit, damit Overlay (PC) und Worker (Cloudflare, UTC) gleich rechnen.
+  // halloween: 31.10. ganztags bis 1.11. 6 Uhr (der Stream am Abend darf über Mitternacht gehen).
+  ziel.NWU_EVENT_AKTIV = (name, jetzt = new Date()) => {
+    if (name !== 'halloween') return false;
+    const t = {};
+    new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Berlin', month: 'numeric', day: 'numeric', hour: 'numeric', hourCycle: 'h23' })
+      .formatToParts(jetzt).forEach((p) => { t[p.type] = Number(p.value); });
+    return (t.month === 10 && t.day === 31) || (t.month === 11 && t.day === 1 && t.hour < 6);
+  };
   // Darf jemand mit diesem Level diese Frisur / diesen Kopfschmuck / diesen Begleiter tragen? (art: frisur | kopf | begleiter)
-  ziel.NWU_WAHL_FREI = (level, art, id) => {
+  // aus = das gespeicherte Aussehen (optional): was in aus.behalten steht, bleibt frei (Event-Stücke).
+  ziel.NWU_WAHL_FREI = (level, art, id, aus) => {
     const liste = { frisur: ziel.NWU_FRISUREN, kopf: ziel.NWU_KOPFSCHMUCK, begleiter: ziel.NWU_BEGLEITER }[art];
     const e = liste && Object.prototype.hasOwnProperty.call(liste, id) && liste[id];
-    return !!e && ziel.NWU_FREI(level, e.ab);
+    if (!e) return false;
+    if (e.event && ziel.NWU_EVENT_AKTIV(e.event)) return true;
+    if (aus && Array.isArray(aus.behalten) && aus.behalten.includes(id)) return true;
+    return !e.nurEvent && ziel.NWU_FREI(level, e.ab);
   };
   // Darf jemand mit diesem Level diese Haarfarbe tragen?
   ziel.NWU_HAARFARBE_FREI = (level, farbe) => {

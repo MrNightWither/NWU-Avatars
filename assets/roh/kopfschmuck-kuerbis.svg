@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="520" viewBox="0 0 420 520">
+  <!-- Halloween-Kopfschmuck „Kürbiskopf“ (26.10.2026), im Bezugsrahmen der Frisuren (420×520, Nase bei 300/230).
+       Daraus wird overlay/kopfschmuck/kuerbis.webp. -->
+  <defs>
+    <radialGradient id="schale" cx="62%" cy="40%" r="70%">
+      <stop offset="0" stop-color="#ffa43a"/>
+      <stop offset=".55" stop-color="#ec7414"/>
+      <stop offset="1" stop-color="#a94608"/>
+    </radialGradient>
+    <radialGradient id="glut" cx="50%" cy="50%" r="60%">
+      <stop offset="0" stop-color="#fff2a0"/>
+      <stop offset=".6" stop-color="#ffc233"/>
+      <stop offset="1" stop-color="#e07b10"/>
+    </radialGradient>
+  </defs>
+  <!-- Stiel -->
+  <path d="M182 62 C178 40 186 22 204 14 L214 22 C200 30 198 46 202 64 Z" fill="#5d7a2c" stroke="#111" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M206 30 C226 18 246 22 256 34" fill="none" stroke="#5d7a2c" stroke-width="6" stroke-linecap="round"/>
+  <!-- Kürbis -->
+  <path d="M196 58 C120 52 58 112 58 196 C58 282 118 330 196 330 C232 330 252 320 270 312 C312 296 334 250 334 196 C334 116 284 54 222 56 C212 56 204 57 196 58 Z"
+        fill="url(#schale)" stroke="#111" stroke-width="6" stroke-linejoin="round"/>
+  <!-- Rippen -->
+  <path d="M196 60 C150 90 132 150 134 200 C136 260 156 306 196 328" fill="none" stroke="#9a3f06" stroke-width="4" opacity=".75"/>
+  <path d="M200 60 C232 92 246 150 246 200 C246 258 232 302 206 328" fill="none" stroke="#9a3f06" stroke-width="4" opacity=".75"/>
+  <path d="M120 82 C88 120 84 170 86 210 C88 256 104 292 136 318" fill="none" stroke="#9a3f06" stroke-width="3.5" opacity=".55"/>
+  <path d="M262 70 C298 104 312 150 312 198 C312 246 300 282 276 306" fill="none" stroke="#9a3f06" stroke-width="3.5" opacity=".55"/>
+  <!-- Glanz -->
+  <path d="M256 92 C280 104 298 128 304 156" fill="none" stroke="#ffd28a" stroke-width="7" stroke-linecap="round" opacity=".55"/>
+  <!-- Gesicht (Blick nach rechts) -->
+  <path d="M248 160 L290 150 L276 188 Z" fill="url(#glut)" stroke="#111" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M232 238 L250 248 L262 236 L276 248 L290 236 L304 246 L314 232 C312 262 296 284 268 288 C244 290 232 270 232 238 Z"
+        fill="url(#glut)" stroke="#111" stroke-width="5" stroke-linejoin="round"/>
+</svg>

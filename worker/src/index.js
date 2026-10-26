@@ -273,13 +273,16 @@ async function wahlSetzen(env, p, art, wunsch) {
     return { ok: true, art, name: null };
   }
   const id = Object.keys(liste).find((k) => k === w || einfach(liste[k].name) === w);
-  const frei = Object.keys(liste).filter((k) => globalThis.NWU_WAHL_FREI(p.level, art, k)).map((k) => liste[k].name);
+  const frei = Object.keys(liste).filter((k) => globalThis.NWU_WAHL_FREI(p.level, art, k, aussehen)).map((k) => liste[k].name);
   if (!id) return { ok: false, grund: 'unbekannt_wahl', art, frei };
-  if (!globalThis.NWU_WAHL_FREI(p.level, art, id)) {
+  if (!globalThis.NWU_WAHL_FREI(p.level, art, id, aussehen)) {
+    if (liste[id].nurEvent) return { ok: false, grund: 'event', art, name: liste[id].name, frei };
     const f = globalThis.NWU_FREISCHALTUNGEN.find((x) => x.id === liste[id].ab);
     return { ok: false, grund: 'level', art, level: f.level, name: liste[id].name, frei };
   }
   aussehen[art] = id;
+  // Event-Stück (Kürbiskopf) am Event-Tag gewählt → für immer behalten
+  if (liste[id].nurEvent && !(aussehen.behalten || []).includes(id)) aussehen.behalten = [...(aussehen.behalten || []), id];
   await env.DB.prepare('UPDATE profil SET aussehen = ? WHERE id = ?').bind(JSON.stringify(aussehen), p.id).run();
   return { ok: true, art, name: liste[id].name };
 }

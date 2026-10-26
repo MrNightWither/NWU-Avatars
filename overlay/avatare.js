@@ -363,7 +363,7 @@
     const kr = def.kopfRahmen;
     if (!kr || !aus) return;
     const frisur = kr.frisur && WAHL(fi.level, 'frisur', aus.frisur) ? aus.frisur : null;
-    const schmuck = WAHL(fi.level, 'kopf', aus.kopf) ? aus.kopf : null;
+    const schmuck = WAHL(fi.level, 'kopf', aus.kopf, aus) ? aus.kopf : null;   // aus: behaltene Event-Stücke (Kürbiskopf)
     if (frisur) {
       const [kf, hf, fr] = await Promise.all([texHolen(`figuren/${fi.vorlage.rig}/kopf-frei.webp`), texHolen('frisuren/kopfform.webp'),
         frisur === 'glatze' ? null : texHolen(`frisuren/${frisur}.webp`)]);

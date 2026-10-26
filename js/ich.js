@@ -158,8 +158,11 @@
       b.addEventListener('click', () => waehlen(art, id || 'keine'));
       return b;
     };
+    // Event-Stücke (z. B. Kürbiskopf) nur zeigen, solange das Event läuft oder wenn man sie behalten hat
+    const aus = ich.aussehen || {};
+    const sichtbar = ([id, e]) => !e.nurEvent || window.NWU_WAHL_FREI(level, art, id, aus);
     $(ZIEL[art]).replaceChildren(knopf(null, art === 'frisur' ? 'Standard' : 'Keiner', [], true, 0),
-      ...Object.entries(liste).map(([id, e]) => knopf(id, e.name, bilder(id), window.NWU_WAHL_FREI(level, art, id), ab(id))));
+      ...Object.entries(liste).filter(sichtbar).map(([id, e]) => knopf(id, e.name, bilder(id), window.NWU_WAHL_FREI(level, art, id, aus), ab(id))));
   }
   async function waehlen(art, id) {
     if (beispiel) { ich.aussehen = { ...ich.aussehen, [art]: id === 'keine' ? undefined : id }; zeigen(ich); return; }
