@@ -25,6 +25,8 @@
       // Kreaturen-Kampf hinter dem großen Portal (overlay/kampf.js): alle Mitkämpfer, kein Abzug bei Rückzug
       kreatur:   { name: 'Kreaturen der Spaltung besiegt', gewinner: 40, pauseMinuten: 4 },
       boss:      { name: 'Boss der Spaltung besiegt', gewinner: 150, pauseMinuten: 4 },
+      // Seelen-Ernte (overlay/spiele.js): Essenz bei Sub/Bits eingesammelt – höchstens einmal pro Minute gebucht
+      ernte:     { name: 'Seelen-Ernte (Essenz eingesammelt)', gewinner: 20, pauseMinuten: 1 },
     },
     // Würfel der Morrígan (!wurf): einmal pro Stream (wurfStunden), 6 = doppelter Ruhm für doppeltStunden,
     // 1 = Gestalt für 5 Minuten verloren, 2–5 = Augenzahl × wurfRuhm

@@ -59,6 +59,7 @@
           const m = zeileLesen(zeile);
           if (m.befehl === 'PRIVMSG') {
             h.nachricht && h.nachricht({ ...nutzer(m.tags, m.quelle), text: m.text });
+            if (Number(m.tags.bits) > 0) h.bits && h.bits(nutzer(m.tags, m.quelle), Number(m.tags.bits));   // Seelen-Ernte
           } else if (m.befehl === 'USERNOTICE') {
             const art = m.tags['msg-id'];
             const u = nutzer(m.tags, m.quelle);

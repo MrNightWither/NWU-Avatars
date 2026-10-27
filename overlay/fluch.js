@@ -5,6 +5,7 @@
 // Welcher Effekt: nach Stichwörtern im Fluch-Namen, sonst fest aus dem Namen gewählt (gleicher Fluch = gleicher Effekt).
 // Prallt der Fluch am Schild ab (joker), passiert nichts. Am Ende: goldene Funken (überstanden), rotes Aufblitzen
 // (gebrochen), weiße Funken (aufgehoben). Sicherheitsnetz: nach 30 Minuten endet der Effekt von selbst.
+// Seit 27.10.2026 auch die Community-Flüche der Fluchkammer (GET http://127.0.0.1:5000/fluch) und der Hype-Train (→ Portal).
 // Ereignisse kommen von Streamer.bot (Gruppe „NWU Belohnungen“, Custom-Events „fluch“ / „fluchEnde“, wie
 // Overlays/einblendung-fluch-wuerfel.html). Hier steht nie ein Name – nur Effekte.
 // Testen: Taste V schaltet brennen → nebel → zeitlupe → aus durch (nur im Browser, in OBS über „Interagieren“).
@@ -123,16 +124,39 @@ window.NWU_FLUCH = (() => {
     }
   }
 
-  /* Streamer.bot: eigene, schlanke Verbindung nur für die beiden Fluch-Ereignisse */
+  /* Fluchkammer-Flüche (Verhext, Eingefroren, Kronenraub – 27.10.2026): die Fluchkammer läuft auf diesem PC und
+     sagt unter /fluch nur, WELCHER Community-Fluch läuft. Alle 3 s fragen; ist er weg, wurde er gebrochen. */
+  const KAMMER_ART = { eingefroren: 'zeitlupe', spinnennetz: 'nebel', kronenraub: 'brennen' };
+  let kammerFluch = '';
+  function kammerFragen(url) {
+    if (!url) return;
+    let warten = 3000;
+    const fragen = async () => {
+      try {
+        const r = await fetch(url.replace(/\/$/, '') + '/fluch', { cache: 'no-store' });
+        const f = (await r.json()).fluch;
+        const id = f ? String(f.effekt || f.name || '') : '';
+        if (id && id !== kammerFluch) setzen(KAMMER_ART[id] || artFuer(f.name));
+        else if (!id && kammerFluch) ende('gebrochen');
+        kammerFluch = id;
+        warten = 3000;
+      } catch (e) { warten = Math.min(60000, warten * 2); }    // Fluchkammer aus → seltener fragen
+      setTimeout(fragen, warten);
+    };
+    fragen();
+  }
+
+  /* Streamer.bot: eigene, schlanke Verbindung für die Fluch-Ereignisse – und den Hype-Train (öffnet das Portal) */
   function hoeren(url) {
     if (!url) return;
     let warten = 2000;
     const los = () => {
       let ws;
       try { ws = new WebSocket(url); } catch (e) { return; }
-      ws.onopen = () => { warten = 2000; ws.send(JSON.stringify({ request: 'Subscribe', id: 'nwu-fluch', events: { General: ['Custom'] } })); };
+      ws.onopen = () => { warten = 2000; ws.send(JSON.stringify({ request: 'Subscribe', id: 'nwu-fluch', events: { General: ['Custom'], Twitch: ['HypeTrainStart'] } })); };
       ws.onmessage = (e) => {
         let d; try { d = JSON.parse(e.data); } catch (err) { return; }
+        if (d && d.event && d.event.type === 'HypeTrainStart') { if (window.NWU && window.NWU.portalStarten) window.NWU.portalStarten(); return; }
         let x = d && d.data;
         while (x && x.data && !x.customType) x = x.data;          // Streamer.bot verpackt Custom-Events eine Ebene tiefer
         if (!x || !x.customType) return;
@@ -152,6 +176,7 @@ window.NWU_FLUCH = (() => {
     K.app.ticker.add(schritt);
     const q = new URLSearchParams(location.search);
     hoeren(q.get('sb') ?? K.CFG.streamerbot ?? '');
+    if (K.S.kanal) kammerFragen(q.get('fluchkammer') ?? K.CFG.fluchkammer ?? 'http://127.0.0.1:5000');
     document.addEventListener('keydown', (e) => {
       if (e.key.toLowerCase() !== 'v' || e.repeat) return;
       const i = ARTEN.indexOf(art);

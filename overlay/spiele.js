@@ -492,6 +492,56 @@ window.NWU_SPIELE = function (K) {
     return true;
   }
 
+  // ----- Seelen-Ernte (27.10.2026): bei Sub, Geschenk-Abo oder Bits wirft Morrígan leuchtende Essenz auf den Rahmen.
+  // Die nächste freie Figur rennt jeweils hin und sammelt sie ein (+Ruhm, Worker-Spiel „ernte“). Kein Befehl nötig.
+  // Läuft schon ein anderes Spiel/Portal/Duell, gibt es nur das Funkeln ohne Wettlauf.
+  function ernteStarten(anzahl) {
+    const n = Math.max(1, Math.min(SP.ernteMax || 6, Math.round(anzahl) || 3));
+    if (!spielFrei() || !figuren.some(spielbar)) { for (let i = 0; i < n; i++) { const p = aufPfad(Math.random() * U()); funken(p.x, p.y, 0x9fe7ff, 12); } return false; }
+    ansage('Seelen-Ernte!', 2);
+    const kugeln = [];
+    for (let i = 0; i < n; i++) {
+      const s = Math.random() * U(), p = aufPfad(s);
+      const k = new PIXI.Sprite(T.glanz); k.anchor.set(0.5); k.tint = 0x9fe7ff; k.blendMode = 'add'; k.scale.set(0);
+      const hoch = versetzt(p.x, p.y, p.a, S.hoehe * 0.35); k.position.set(hoch.x, hoch.y);
+      figurenEbene.addChild(k);
+      kugeln.push({ s, k, sammler: null, weg: false });
+    }
+    const sammler = new Set();
+    const dist = (a, b) => { let d = Math.abs(a - b) % U(); return Math.min(d, U() - d); };
+    spiel = {
+      art: 'ernte', t: 0,
+      eingabe: () => false,
+      schritt(dt) {
+        const t = spiel.t;
+        for (const kg of kugeln) {
+          if (kg.weg) continue;
+          kg.k.scale.set(Math.min(1, t * 2) * (1.1 + 0.15 * Math.sin(t * 6 + kg.s)));
+          if (!kg.sammler && t > 0.6) {            // nächste freie Figur losschicken
+            const frei = figuren.filter((f) => spielbar(f) && !sammler.has(f)).sort((a, b) => dist(a.s, kg.s) - dist(b.s, kg.s))[0];
+            if (frei) { kg.sammler = frei; sammler.add(frei); insSpiel(frei); frei.zielS = kg.s; frei.spielTempo = 260; frei.spielEile = 2.6; }
+          }
+          const f = kg.sammler;
+          if (f && (!f.root || f.entfernen)) { kg.sammler = null; continue; }
+          if (f && dist(f.s, kg.s) < 6) {
+            kg.weg = true; funken(kg.k.x, kg.k.y, 0x9fe7ff, 18); kg.k.destroy();
+            f.gesammelt = true; huepfen(f); f.jubelBis = K.zeit() + 1.5;
+            ueberFigur(f, plus('ernte') ? `+${plus('ernte')} Ruhm` : '✦');
+          }
+        }
+        if (kugeln.every((kg) => kg.weg) || t > (SP.ernteSekunden || 25)) {
+          kugeln.filter((kg) => !kg.weg).forEach((kg) => kg.k.destroy());
+          const gewinner = [...sammler].filter((f) => f.gesammelt);
+          sammler.forEach((f) => { delete f.gesammelt; ausSpiel(f); });
+          melden('ernte', gewinner, []);
+          return false;
+        }
+        return true;
+      },
+    };
+    return true;
+  }
+
   // ----- Würfel der Morrígan: „🎲 @Name würfelt eine 6 …“ von Streamer.bot -----
   const AUGEN = { 1: [[11, 11]], 2: [[6, 6], [16, 16]], 3: [[6, 6], [11, 11], [16, 16]], 4: [[6, 6], [16, 6], [6, 16], [16, 16]],
     5: [[6, 6], [16, 6], [11, 11], [6, 16], [16, 16]], 6: [[6, 5], [16, 5], [6, 11], [16, 11], [6, 17], [16, 17]] };
@@ -553,7 +603,7 @@ window.NWU_SPIELE = function (K) {
     eingabe: (fi, text, u) => !!spiel && spiel.eingabe(fi, text, u),
     laeuft: () => spiel,
     wurfNachricht, wurfZeigen, aufhellen, melden,
-    rabe: rabeStarten, rennen: rennenStarten, tauziehen: tauziehenStarten, letzter: letzterStarten, schatz: schatzStarten,
+    rabe: rabeStarten, rennen: rennenStarten, tauziehen: tauziehenStarten, letzter: letzterStarten, schatz: schatzStarten, ernte: ernteStarten,
     letzteMeldung: () => letzteMeldung,
   };
 };

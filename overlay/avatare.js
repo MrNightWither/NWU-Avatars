@@ -1221,7 +1221,8 @@
       status: (s) => { chatStatus = s; },
       nachricht: (u) => chatter(u, 'nachricht'),
       raid: (u) => raidEmpfangen(u),
-      sub: (u) => { const fi = nachId.get(u.id); if (fi && fi.root) { levelUp(fi); fi.letzte = zeit; } else figuren.forEach((f) => huepfen(f)); },
+      sub: (u) => { const fi = nachId.get(u.id); if (fi && fi.root) { levelUp(fi); fi.letzte = zeit; } else figuren.forEach((f) => huepfen(f)); SPIELE.ernte(3); },
+      bits: (u, menge) => SPIELE.ernte(Math.min(6, 1 + Math.floor(menge / 100))),     // Seelen-Ernte: je 100 Bits eine Kugel mehr
     });
   }
 
@@ -1238,7 +1239,7 @@
       `<b>NWU Avatare</b> · ${Math.round(app.ticker.FPS)} FPS · ${da.filter((f) => !f.versteckt).length}/${da.length} Figuren · Chat: ${chatStatus}` +
       `${S.sparmodus ? ' · <b>Sparmodus</b>' : ''}${EV.phase !== 'aus' ? ' · Portal: ' + EV.phase + (KAMPF.welt() ? ' (' + KAMPF.welt().kurz + ')' : '') : ''}` +
       `${KAMPF.stand() ? ' · Kampf: ' + KAMPF.stand().phase : ''}` +
-      `<div class="klein">T Test-Chatter · M Nachricht · N !lurk · K Kreaturen-Kampf (Shift+K Boss) · R Raid (Shift+R Raid-Boss) · P Portal · U Level-Up · G Gruppenbild · J Jubeln · D Duell · F Haus-Ruf · W Westen · B Rabe · E Rennen · Z Tauziehen · L Letzter steht · X Schatz · Q Würfel · V Fluch · S Sparmodus · 1/2/3 Demo · H Anzeige</div>`;
+      `<div class="klein">T Test-Chatter · M Nachricht · N !lurk · K Kreaturen-Kampf (Shift+K Boss) · R Raid (Shift+R Raid-Boss) · P Portal · U Level-Up · G Gruppenbild · J Jubeln · D Duell · F Haus-Ruf · W Westen · B Rabe · E Rennen · Z Tauziehen · L Letzter steht · X Schatz · O Seelen-Ernte · Q Würfel · V Fluch · S Sparmodus · 1/2/3 Demo · H Anzeige</div>`;
   }
 
   let testNr = 0;
@@ -1274,6 +1275,7 @@
     else if (k === 'z') SPIELE.tauziehen();
     else if (k === 'l') SPIELE.letzter();
     else if (k === 'x') SPIELE.schatz();
+    else if (k === 'o') SPIELE.ernte(4);
     else if (k === 'q') { const f = zufallsFigur(); if (f && !f.ungebunden) SPIELE.wurfZeigen(f, 1 + Math.floor(Math.random() * 6)); }
     else if (k === 'f') { const f = zufallsFigur(); if (f) hausRuf(f); }
     else if (k === 'd') { const da = figuren.filter(darfDuellieren); if (da.length > 1) duellStarten(da[0], da[1 + Math.floor(Math.random() * (da.length - 1))]); }
@@ -1289,5 +1291,5 @@
   window.NWU = { S, figuren, chatter, hausRuf, sammeln, fluestern, formation, portalStarten, portalBeenden, levelUp, EV, demoSetzen, figurErzeugen, VORLAGEN, duellStarten, duellLaeuft: () => !!duell, autoDuell,
     rabeStarten: SPIELE.rabe, rennenStarten: SPIELE.rennen, tauziehenStarten: SPIELE.tauziehen, letzterStarten: SPIELE.letzter,
     kampfStarten: portalStarten, kampfStand: KAMPF.stand, kampfEingabe: KAMPF.eingabe, kampfBefehl: KAMPF.befehl,
-    schatzStarten: SPIELE.schatz, wurfZeigen: SPIELE.wurfZeigen, spielLaeuft: () => (SPIELE.laeuft() ? SPIELE.laeuft().art : null), letzteMeldung: SPIELE.letzteMeldung };
+    schatzStarten: SPIELE.schatz, ernteStarten: SPIELE.ernte, wurfZeigen: SPIELE.wurfZeigen, spielLaeuft: () => (SPIELE.laeuft() ? SPIELE.laeuft().art : null), letzteMeldung: SPIELE.letzteMeldung };
 })();
