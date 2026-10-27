@@ -28,6 +28,10 @@
       // Seelen-Ernte (overlay/spiele.js): Essenz bei Sub/Bits eingesammelt – höchstens einmal pro Minute gebucht
       ernte:     { name: 'Seelen-Ernte (Essenz eingesammelt)', gewinner: 20, pauseMinuten: 1 },
     },
+    // Murmelrennen in der Pause (overlay/murmelrennen.html, 28.10.2026): jede Kugel setzt `einsatz` Ruhm – nie unter den
+    // Beginn des eigenen Levels (wer gerade aufgestiegen ist, zahlt weniger oder nichts). Der Sieger bekommt den ganzen Topf,
+    // sein Haus `hausBonus` für den Hauspokal. Richtige Wette (!wette, kostenlos) = `wette` Ruhm. Allein gerollt = nichts.
+    murmel: { einsatz: 10, hausBonus: 25, wette: 15, pauseSekunden: 45 },
     // Würfel der Morrígan (!wurf): einmal pro Stream (wurfStunden), 6 = doppelter Ruhm für doppeltStunden,
     // 1 = Gestalt für 5 Minuten verloren, 2–5 = Augenzahl × wurfRuhm
     wurfStunden: 10,

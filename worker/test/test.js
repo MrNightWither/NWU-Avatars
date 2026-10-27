@@ -452,6 +452,33 @@ assert.equal((await ruf('/avatare/profil?plattform=twitch&id=111')).daten.gefund
 assert.equal(env.DB.roh.prepare('SELECT COUNT(*) AS n FROM sitzung').get().n, 0, 'Sitzungen gelöscht');
 assert.equal((await mitToken('/ich', token2)).status, 401);
 
+// 🎲 Murmelrennen: Einsatz nie unter den Levelbeginn, Sieger bekommt den Topf, Haus +Bonus, Wetten, Sperre, allein = nichts
+{
+  const R = globalThis.NWU_RUHM, M = R.murmel, neu = (id, haus, ruhm, plattform, pid, name) => {
+    env.DB.roh.prepare('INSERT INTO profil (id, haus, figur, level, ruhm, erstellt_am) VALUES (?, ?, ?, ?, ?, ?)').run(id, haus, 'a', R.levelFuerRuhm(ruhm), ruhm, '2026-10-01T00:00:00.000Z');
+    env.DB.roh.prepare('INSERT INTO konto (plattform, plattform_id, name, name_klein, profil_id, bestaetigt_am) VALUES (?, ?, ?, ?, ?, ?)').run(plattform, pid, name, name.toLowerCase(), id, '2026-10-01T00:00:00.000Z');
+  };
+  const ruhmVon = (id) => env.DB.roh.prepare('SELECT ruhm FROM profil WHERE id = ?').get(id).ruhm;
+  neu('m1', 'haus2', R.ruhmFuerLevel(3) + 200, 'twitch', 't-m1', 'KugelEins');   // zahlt vollen Einsatz
+  neu('m2', 'haus3', R.ruhmFuerLevel(5), 'twitch', 't-m2', 'KugelZwei');         // gerade aufgestiegen: zahlt 0
+  neu('m3', 'haus1', R.ruhmFuerLevel(3) + 5, 'kick', 'k-m3', 'KugelDrei');        // zahlt nur 5
+  neu('w1', 'haus4', 100, 'twitch', 't-w1', 'Wetterin');
+  const vor = { m1: ruhmVon('m1'), m2: ruhmVon('m2'), m3: ruhmVon('m3'), w1: ruhmVon('w1') };
+  const pokalVor = (await ruf('/pokal')).daten.haeuser.haus2 || 0;
+  const t = (plattform, id) => ({ plattform, id });
+  assert.equal((await sb('/murmel', { teilnehmer: [t('twitch', 't-m1')] })).daten.grund, 'allein', 'allein: kein Einsatz');
+  assert.equal((await ruf('/murmel', { method: 'POST', body: '{}' })).status, 401, 'nur mit Streamer.bot-Schlüssel');
+  r = await sb('/murmel', { teilnehmer: [t('twitch', 't-m1'), t('twitch', 't-m2'), t('kick', 'k-m3')], gewinner: t('twitch', 't-m1'), wetter: [t('twitch', 't-w1'), t('twitch', 'unbekannt')] });
+  assert.equal(r.daten.ok, true); assert.equal(r.daten.topf, M.einsatz + 0 + 5); assert.equal(r.daten.gewinner, 'KugelEins');
+  assert.equal(ruhmVon('m1'), vor.m1 + 5, 'Sieger: eigener Einsatz zurück + Einsätze der anderen');
+  assert.equal(ruhmVon('m2'), vor.m2, 'nie unter den Levelbeginn');
+  assert.equal(ruhmVon('m3'), vor.m3 - 5, 'Kick-Kugel zahlt mit');
+  assert.equal(ruhmVon('w1'), vor.w1 + M.wette, 'richtige Wette');
+  assert.deepEqual(r.daten.wetter, ['Wetterin']);
+  assert.equal((await ruf('/pokal')).daten.haeuser.haus2, pokalVor + M.hausBonus, 'Hausbonus im Pokal');
+  assert.equal((await sb('/murmel', { teilnehmer: [t('twitch', 't-m1'), t('twitch', 't-m2')], gewinner: t('twitch', 't-m2') })).daten.grund, 'zu_frueh', 'Sperre gegen Doppelbuchung');
+}
+
 // Unbekannter Pfad
 assert.equal((await ruf('/gibtsnicht')).status, 404);
 

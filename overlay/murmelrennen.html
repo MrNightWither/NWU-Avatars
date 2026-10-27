@@ -9,10 +9,13 @@
      🎲 NWU-Murmelrennen (27.10.2026) – Ebene über der Pause-Szene (Variante A: die Mitte).
      Ist die Quelle in OBS sichtbar, läuft ein Rennen nach dem anderen:
        Anmeldung (!mitmachen, nur mit Haus) → Startaufstellung → Rennen → Sieger → kurze Pause → …
-     Version 1 ohne XP-Einsatz (Testrennen). Die Fläche deckt Ladebalken/Prozent der Pause ab,
-     „Zurück in“ rechts daneben bleibt frei.
+     Version 2 (28.10.2026): jede Kugel setzt Ruhm (data/ruhm.js → murmel), der Sieger nimmt den Topf.
+     !wette 3 = kostenlos auf Kugel 3 tippen (Anmeldung + Aufstellung) · !schub = einmal pro Rennen anschubsen.
+     Nach dem Rennen geht das Ergebnis an die Streamer.bot-Aktion „NWU Murmel“ (die bucht beim Worker).
+     Am 31.10. (NWU_EVENT_AKTIV 'halloween') wird die Bahn zur Gruselstrecke.
+     Die Fläche deckt Ladebalken/Prozent der Pause ab, „Zurück in“ rechts daneben bleibt frei.
      Chat: Streamer.bot-WebSocket (Twitch + Kick). Haus: Avatar-Worker /avatare/profil (nur lesen).
-     Test: ?demo (Fake-Mitspieler, kurze Zeiten) · ?sb=ws://… (andere Streamer.bot-Adresse)
+     Test: ?demo (Fake-Mitspieler, kurze Zeiten, meldet nichts) · ?grusel (Gruselstrecke) · ?sb=ws://…
      ══════════════════════════════════════════════════════════════════ */
   html, body { width: 1920px; height: 1080px; margin: 0; overflow: hidden; background: transparent; }
   #feld {
@@ -64,6 +67,8 @@
 <div id="zahl"><b id="zahlWert">0</b><small>KUGELN</small></div>
 <script src="lib/matter.min.js"></script>
 <script src="../data/haeuser.js"></script>
+<script src="../data/ruhm.js"></script>
+<script src="../data/aussehen.js"></script>
 <script>
 'use strict';
 (function () {
@@ -75,44 +80,69 @@
                     : { anmeldung: 60, aufstellung: 10, rennenMax: 90, sieger: 12, pause: 15 };
   const MAX_FAHRER = 16, R = 11, B = 740, H = 476, ZIEL_Y = 452;
   const HAEUSER = Object.fromEntries((window.NWU_HAEUSER || []).map((h) => [h.id, h]));
+  const EINSATZ = { einsatz: 10, hausBonus: 25, wette: 15, ...((window.NWU_RUHM || {}).murmel || {}) };
+  const GRUSEL = q.has('grusel') || !!(window.NWU_EVENT_AKTIV && window.NWU_EVENT_AKTIV('halloween'));
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
   /* ── Ablauf ─────────────────────────────────────────────────────────── */
   let phase = 'pause', bis = Date.now() + 1500, fahrer = [], ziel = [];
   const angefragt = new Set();
+  const wetten = new Map();          // 'plattform:id' → { plattform, id, name, nr }
+  let gemeldet = null;               // letzte Meldung an Streamer.bot (für ?demo und Tests)
 
   function setzen(neu, sek) { phase = neu; bis = Date.now() + sek * 1000; anzeigen(); }
   function rest() { return Math.max(0, Math.ceil((bis - Date.now()) / 1000)); }
 
   function weiter() {
-    if (phase === 'pause') { fahrer = []; ziel = []; angefragt.clear(); leeren(); setzen('anmeldung', ZEIT.anmeldung); if (DEMO) demoFahrer(); return; }
+    if (phase === 'pause') { fahrer = []; ziel = []; angefragt.clear(); wetten.clear(); leeren(); setzen('anmeldung', ZEIT.anmeldung); if (DEMO) demoFahrer(); return; }
     if (phase === 'anmeldung') {
       if (!fahrer.length) { setzen('pause', ZEIT.pause * 2); hinweis('Niemand dabei – gleich nächste Runde. <b>!mitmachen</b> nicht vergessen'); return; }
-      fahrer.forEach((f, i) => { f.nr = i + 1; });
       setzen('aufstellung', ZEIT.aufstellung); return;
     }
-    if (phase === 'aufstellung') { starten(); setzen('rennen', ZEIT.rennenMax); return; }
-    if (phase === 'rennen') { beenden(); setzen('sieger', ZEIT.sieger); return; }
+    if (phase === 'aufstellung') { starten(); setzen('rennen', ZEIT.rennenMax); hinweis('<b>!schub</b> – einmal pro Rennen deine Kugel anschubsen'); return; }
+    if (phase === 'rennen') { beenden(); melden(); setzen('sieger', ZEIT.sieger); return; }
     if (phase === 'sieger') setzen('pause', ZEIT.pause);
   }
+
+  // Ergebnis an Streamer.bot („NWU Murmel“ → Worker /murmel). Allein gerollt = nichts zu buchen.
+  function ergebnis() {
+    const konto = (f) => ({ plattform: f.plattform, id: f.id });
+    const erster = ziel[0];
+    return {
+      teilnehmer: fahrer.filter((f) => f.id).map(konto),
+      gewinner: erster && erster.id ? konto(erster) : null,
+      wetter: erster ? [...wetten.values()].filter((w) => w.nr === erster.nr).map(konto) : [],
+    };
+  }
+  function melden() {
+    if (fahrer.length < 2) return;
+    gemeldet = ergebnis();
+    if (!DEMO) sbSenden({ request: 'DoAction', id: 'nwu-murmel-' + Date.now(), action: { name: 'NWU Murmel' }, args: { daten: JSON.stringify(gemeldet) } });
+  }
+  const topf = () => fahrer.length * EINSATZ.einsatz;
+  const treffer = () => (ziel[0] ? [...wetten.values()].filter((w) => w.nr === ziel[0].nr) : []);
 
   function anzeigen() {
     const tafel = $('tafel'), liste = $('liste');
     tafel.classList.toggle('an', phase !== 'rennen');
     liste.innerHTML = '';
     if (phase === 'anmeldung') {
-      $('tafelTitel').textContent = 'Wer rollt mit?';
-      $('tafelText').innerHTML = 'Schreib <b style="color:#e8c96d">!mitmachen</b> in den Chat – nur mit Haus (avatare.nightwither.de)';
-      fahrer.forEach((f) => liste.insertAdjacentHTML('beforeend', `<span><i style="background:${f.farbe}"></i>${esc(f.name)}</span>`));
+      $('tafelTitel').textContent = GRUSEL ? 'Wer wagt das Gruselrennen?' : 'Wer rollt mit?';
+      $('tafelText').innerHTML = `<b style="color:#e8c96d">!mitmachen</b> – Einsatz ${EINSATZ.einsatz} Ruhm, der Sieger nimmt den Topf` +
+        `<br><small>nur mit Haus (avatare.nightwither.de) · <b style="color:#e8c96d">!wette 3</b> = kostenlos auf Kugel 3 tippen</small>`;
+      fahrer.forEach((f) => liste.insertAdjacentHTML('beforeend', `<span><i style="background:${f.farbe}">${f.nr}</i>${esc(f.name)}</span>`));
     } else if (phase === 'aufstellung') {
       $('tafelTitel').textContent = 'Startaufstellung';
-      $('tafelText').textContent = fahrer.length === 1 ? 'Nur eine Kugel – sie rollt zum Spaß allein.' : 'Gleich geht’s los …';
+      $('tafelText').innerHTML = fahrer.length === 1 ? 'Nur eine Kugel – sie rollt zum Spaß allein, ohne Einsatz.'
+        : `Topf: bis zu <b style="color:#e8c96d">${topf()} Ruhm</b> · letzte Wetten: <b style="color:#e8c96d">!wette Nummer</b> (${wetten.size})`;
       fahrer.forEach((f) => liste.insertAdjacentHTML('beforeend', `<span><i style="background:${f.farbe}">${f.nr}</i>${esc(f.name)} <small style="color:#9a948a">${esc(f.hausKurz)}</small></span>`));
     } else if (phase === 'sieger') {
-      const erster = ziel[0];
+      const erster = ziel[0], allein = fahrer.length < 2, richtig = treffer().length;
       $('tafelTitel').textContent = erster ? `🏆 ${erster.name}` : 'Kein Sieger';
-      $('tafelText').textContent = erster ? `gewinnt für ${erster.hausName}!` : 'Die Kugeln haben sich verlaufen.';
+      $('tafelText').textContent = !erster ? 'Die Kugeln haben sich verlaufen.' : allein ? 'rollt allein ins Ziel – diesmal ohne Topf.'
+        : `nimmt den Topf (bis zu ${topf()} Ruhm) · +${EINSATZ.hausBonus} für ${erster.hausName}` +
+          (richtig ? ` · ${richtig} richtige Wette${richtig > 1 ? 'n' : ''} (+${EINSATZ.wette})` : '');
       ziel.slice(0, 3).forEach((f, i) => liste.insertAdjacentHTML('beforeend', `<span>${['🥇', '🥈', '🥉'][i]} <i style="background:${f.farbe}">${f.nr}</i>${esc(f.name)}</span>`));
     } else if (phase === 'pause') {
       $('tafelTitel').textContent = 'Gleich das nächste Rennen';
@@ -131,7 +161,29 @@
   }, 250);
 
   /* ── Mitmachen ──────────────────────────────────────────────────────── */
-  async function mitmachen(plattform, name) {
+  // !wette N: kostenlos, eine pro Person, bis zum Start. Zählt nur mit Konto-ID (sonst kann der Worker nichts buchen).
+  function wette(plattform, id, name, nr) {
+    if ((phase !== 'anmeldung' && phase !== 'aufstellung') || !id) return;
+    const f = fahrer.find((x) => x.nr === nr);
+    if (!f) { hinweis(`<b>${esc(name)}</b>: Kugel ${nr} gibt es nicht`); return; }
+    const schluessel = plattform + ':' + id;
+    if (wetten.has(schluessel)) return;
+    wetten.set(schluessel, { plattform, id, name, nr });
+    hinweis(`<b>${esc(name)}</b> tippt auf Kugel ${nr} (${esc(f.name)})`);
+    anzeigen();
+  }
+  // !schub: einmal pro Rennen, nur die eigene Kugel
+  function schub(plattform, id, name) {
+    if (phase !== 'rennen') return;
+    const k = kugeln.find((x) => x.fahrer.plattform === plattform && (id ? x.fahrer.id === id : x.fahrer.name.toLowerCase() === name.toLowerCase()));
+    if (!k || k.fahrer.geschubst || ziel.includes(k.fahrer)) return;
+    k.fahrer.geschubst = true; k.schubBis = Date.now() + 700;
+    const richtung = k.velocity.x < 0 ? -1 : 1;
+    M.Body.setVelocity(k, { x: k.velocity.x + richtung * SCHUB.x, y: Math.min(k.velocity.y, 0) - SCHUB.y });
+    hinweis(`💨 <b>${esc(k.fahrer.name)}</b> schubst an!`);
+  }
+
+  async function mitmachen(plattform, name, id = '') {
     const schluessel = plattform + ':' + name.toLowerCase();
     if (phase !== 'anmeldung' || angefragt.has(schluessel) || fahrer.length >= MAX_FAHRER) return;
     angefragt.add(schluessel);
@@ -143,7 +195,8 @@
     const haus = p && p.gefunden && HAEUSER[p.haus];
     if (!haus) { hinweis(`<b>${esc(name)}</b>: erst ein Haus wählen – avatare.nightwither.de`); return; }
     if (phase !== 'anmeldung' || fahrer.length >= MAX_FAHRER) return;
-    fahrer.push({ name: p.name || name, plattform, farbe: haus.css, hausName: haus.name, hausKurz: haus.kurz });
+    if (id && fahrer.some((f) => f.plattform === plattform && f.id === id)) return;
+    fahrer.push({ nr: fahrer.length + 1, name: p.name || name, plattform, id: String(id), farbe: haus.css, hausName: haus.name, hausKurz: haus.kurz });
     anzeigen();
   }
 
@@ -153,14 +206,17 @@
     namen.forEach((n, i) => setTimeout(() => {
       if (phase !== 'anmeldung') return;
       const h = HAEUSER[ids[i % ids.length]];
-      fahrer.push({ name: n, plattform: 'twitch', farbe: h.css, hausName: h.name, hausKurz: h.kurz }); anzeigen();
+      fahrer.push({ nr: fahrer.length + 1, name: n, plattform: 'twitch', id: 'demo' + i, farbe: h.css, hausName: h.name, hausKurz: h.kurz }); anzeigen();
     }, 400 + i * 500));
   }
 
   /* ── Streamer.bot: Chat von Twitch und Kick ─────────────────────────── */
+  let sbWs = null;
+  const sbSenden = (obj) => { if (sbWs && sbWs.readyState === 1) sbWs.send(JSON.stringify(obj)); };
   function verbinden() {
     let ws;
     try { ws = new WebSocket(SB); } catch (e) { setTimeout(verbinden, 5000); return; }
+    sbWs = ws;
     ws.onopen = () => ws.send(JSON.stringify({ request: 'Subscribe', id: 'nwu-murmel', events: { Twitch: ['ChatMessage'], Kick: ['ChatMessage'] } }));
     ws.onmessage = (e) => {
       let raw; try { raw = JSON.parse(e.data); } catch (err) { return; }
@@ -169,8 +225,12 @@
       const d = raw.data || {}, m = (d.message && typeof d.message === 'object') ? d.message : d;
       const text = String(typeof d.message === 'string' ? d.message : (m.message || m.text || d.text || '')).trim().toLowerCase();
       const user = d.user || m.user || {};
-      const name = m.username || m.userName || user.login || user.name || d.userName || m.displayName || '';
-      if (name && /^!mitmachen\b/.test(text)) mitmachen(quelle, String(name));
+      const name = String(m.username || m.userName || user.login || user.name || d.userName || m.displayName || '');
+      const id = String(user.id || m.userId || d.userId || user.userId || '');
+      if (!name) return;
+      if (/^!mitmachen\b/.test(text)) mitmachen(quelle, name, id);
+      else if (/^!schub\b/.test(text)) schub(quelle, id, name);
+      else { const w = text.match(/^!wette\s+#?(\d{1,2})\b/); if (w) wette(quelle, id, name, Number(w[1])); }
     };
     ws.onclose = () => setTimeout(verbinden, 5000);
     ws.onerror = () => {};
@@ -191,8 +251,13 @@
   balken(4, 0, 4, H, 8); balken(B - 4, 0, B - 4, H, 8);                  // Wände
   balken(10, 44, 630, 134);                                               // Rampe 1 → rechts
   balken(B - 10, 164, 110, 254);                                          // Rampe 2 → links
-  for (let reihe = 0; reihe < 3; reihe++)                                 // Stiftfeld: hier entscheidet der Zufall
-    for (let s = 0; s < 9; s++) stift(70 + s * 75 + (reihe % 2) * 37, 284 + reihe * 28, 6);
+  // Stiftfeld: hier entscheidet der Zufall. Kein Stift so knapp über Rampe 3, dass eine Kugel darunter klemmt
+  const rampe3Oben = (x) => 362 + (x - 10) * (78 / 590) - 4;
+  for (let reihe = 0; reihe < 3; reihe++)
+    for (let s = 0; s < 9; s++) {
+      const x = 70 + s * 75 + (reihe % 2) * 37, y = 284 + reihe * 28;
+      if (rampe3Oben(x) - (y + 6) > 2 * R + 6) stift(x, y, 6);
+    }
   balken(10, 362, 600, 440);                                              // Rampe 3 → rechts, dann ins Ziel
   balken(8, H - 4, B - 8, H - 4, 8);                                      // Boden (Auffangbecken)
   M.Composite.add(welt, teile);
@@ -210,7 +275,7 @@
     M.Composite.add(welt, kugeln);
   }
   /* Ein Physik-Schritt (1/60 s): Zieleinlauf merken, liegengebliebene Kugeln anschubsen */
-  const STILL = 0.12, SCHUBS = 0.0012;
+  const STILL = 0.12, SCHUBS = 0.0012, SCHUB = { x: 2.5, y: 3 };
   function schritt() {
     M.Engine.update(engine, 1000 / 60);
     kugeln.forEach((k) => {
@@ -240,13 +305,16 @@
       if (fahrer.length && ziel.length === fahrer.length && bis - Date.now() > 1200) bis = Date.now() + 1200;
     }
     g.clearRect(0, 0, B, H);
+    if (GRUSEL) fledermaeuse(t);
     // Ziellinie
-    g.strokeStyle = 'rgba(201,168,76,.55)'; g.setLineDash([8, 6]); g.beginPath(); g.moveTo(8, ZIEL_Y); g.lineTo(B - 8, ZIEL_Y); g.stroke(); g.setLineDash([]);
-    g.fillStyle = 'rgba(201,168,76,.7)'; g.font = '700 12px Segoe UI'; g.fillText('ZIEL', B - 46, ZIEL_Y - 6);
+    const linie = GRUSEL ? 'rgba(255,122,26,' : 'rgba(201,168,76,';
+    g.strokeStyle = linie + '.55)'; g.setLineDash([8, 6]); g.beginPath(); g.moveTo(8, ZIEL_Y); g.lineTo(B - 8, ZIEL_Y); g.stroke(); g.setLineDash([]);
+    g.fillStyle = linie + '.7)'; g.font = '700 12px Segoe UI'; g.textAlign = 'left'; g.fillText('ZIEL', B - 46, ZIEL_Y - 6);
     teile.forEach((b) => {
+      if (GRUSEL && b.art === 'stift') { kuerbis(b.position.x, b.position.y, b.circleRadius); return; }
       g.beginPath(); b.vertices.forEach((v, i) => (i ? g.lineTo(v.x, v.y) : g.moveTo(v.x, v.y))); g.closePath();
-      g.fillStyle = b.art === 'stift' ? '#6b5a2e' : '#2a2430'; g.fill();
-      g.strokeStyle = b.art === 'stift' ? '#c9a84c' : 'rgba(201,168,76,.5)'; g.lineWidth = 1; g.stroke();
+      g.fillStyle = b.art === 'stift' ? '#6b5a2e' : (GRUSEL ? '#241a2e' : '#2a2430'); g.fill();
+      g.strokeStyle = b.art === 'stift' ? '#c9a84c' : (GRUSEL ? 'rgba(160,110,220,.55)' : 'rgba(201,168,76,.5)'); g.lineWidth = 1; g.stroke();
     });
     kugeln.forEach((k) => {
       const f = k.fahrer;
@@ -255,14 +323,51 @@
       g.beginPath(); g.arc(0, 0, R, 0, Math.PI * 2); g.fillStyle = f.farbe; g.fill();
       g.shadowBlur = 0; g.lineWidth = 1.5; g.strokeStyle = '#0b0a0d'; g.stroke();
       g.fillStyle = '#0b0a0d'; g.font = '700 11px Segoe UI'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(f.nr, 0, 0.5);
+      if (k.schubBis > Date.now()) {          // !schub: kurzer Ring um die Kugel
+        const a = (k.schubBis - Date.now()) / 700;
+        g.beginPath(); g.arc(0, 0, R + 4 + (1 - a) * 10, 0, Math.PI * 2); g.strokeStyle = `rgba(232,201,109,${a})`; g.lineWidth = 2; g.stroke();
+      }
       g.restore();
     });
+  }
+
+  /* ── Gruselstrecke (Halloween): Kürbisse statt Stifte, Fledermäuse im Hintergrund ── */
+  function kuerbis(x, y, r) {
+    g.save(); g.translate(x, y);
+    g.fillStyle = '#e8721a'; g.beginPath(); g.ellipse(0, 0.5, r + 2, r + 0.5, 0, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = '#9c4508'; g.lineWidth = 1; g.beginPath(); g.ellipse(0, 0.5, (r + 2) * 0.45, r + 0.5, 0, 0, Math.PI * 2); g.stroke();
+    g.fillStyle = '#3d6b1f'; g.fillRect(-1, -r - 3, 2, 3.5);
+    g.fillStyle = '#ffd36b'; g.fillRect(-3, -1.5, 1.6, 1.6); g.fillRect(1.4, -1.5, 1.6, 1.6); g.fillRect(-2.5, 2, 5, 1.2);
+    g.restore();
+  }
+  const FLEDERMAUS = Array.from({ length: 5 }, (_, i) => ({ y: 30 + i * 70, tempo: 0.025 + i * 0.006, versatz: i * 170, groesse: 7 + (i % 3) * 2 }));
+  function fledermaeuse(t) {
+    g.save(); g.fillStyle = 'rgba(120,80,170,.35)';
+    FLEDERMAUS.forEach((f) => {
+      const x = (f.versatz + t * f.tempo) % (B + 60) - 30, y = f.y + Math.sin(t / 400 + f.versatz) * 8;
+      const s = f.groesse, flug = Math.sin(t / 90 + f.versatz) * 0.5 + 0.5;
+      g.beginPath(); g.moveTo(x, y);
+      g.quadraticCurveTo(x - s, y - s * flug, x - s * 2, y + s * 0.2); g.quadraticCurveTo(x - s, y, x, y + s * 0.4);
+      g.quadraticCurveTo(x + s, y, x + s * 2, y + s * 0.2); g.quadraticCurveTo(x + s, y - s * flug, x, y);
+      g.fill();
+    });
+    g.restore();
+  }
+  if (GRUSEL) {
+    $('titel').textContent = '🎃 GRUSELRENNEN';
+    $('titel').style.color = '#ff7a1a';
+    $('feld').style.background = 'radial-gradient(120% 90% at 50% 0%, #1f1430 0%, #0b0a0d 70%)';
   }
   requestAnimationFrame(bild);
   requestAnimationFrame(() => { $('feld').classList.add('an'); $('zahl').classList.add('an'); });
   anzeigen();
-  window.NWU_MURMEL = { mitmachen, zustand: () => ({ phase, fahrer: fahrer.length, ziel: ziel.map((f) => f.name) }) };
+  window.NWU_MURMEL = { mitmachen, wette, schub, ergebnis, gemeldet: () => gemeldet,
+    zustand: () => ({ phase, fahrer: fahrer.length, ziel: ziel.map((f) => f.name), wetten: wetten.size, grusel: GRUSEL }) };
   /* Nur zum Testen (?demo): ein ganzes Rennen ohne Warten durchrechnen → Sekunden bis alle im Ziel */
+  if (DEMO) Object.assign(window.NWU_MURMEL, {
+    zeitAb: () => { bis = 0; },                                      // aktuelle Phase sofort beenden
+    rechnen: (n) => { for (let i = 0; i < n; i++) schritt(); return ziel.length; },
+  });
   if (DEMO) window.NWU_MURMEL.durchrechnen = () => {
     if (!fahrer.length) demoFahrer.sofort = true;
     fahrer.forEach((f, i) => { f.nr = i + 1; }); starten(); phase = 'rennen'; bis = Date.now() + 1e9;

@@ -582,6 +582,51 @@ async function spielMelden(req, env) {
     gewinner: sieger.map((p) => p.name), verlierer: pech.map((p) => p.name), aufstiege });
 }
 
+// Von Streamer.bot (Aktion „NWU Murmel“, ausgelöst vom Murmelrennen-Overlay): Einsatz, Topf, Hausbonus, Wetten.
+// teilnehmer/wetter = [{ plattform, id }], gewinner = { plattform, id }. Twitch und Kick können gemischt sein.
+const kontoListe = (x) => (Array.isArray(x) ? x : []).filter((k) => k && PLATTFORMEN.includes(k.plattform) && typeof k.id === 'string' && k.id && k.id.length <= 64).slice(0, 50);
+async function profileVonKonten(env, konten) {
+  const gesehen = new Map();
+  for (const p of PLATTFORMEN) {
+    const ids = konten.filter((k) => k.plattform === p).map((k) => k.id);
+    if (ids.length) for (const prof of await profileZu(env, p, ids)) gesehen.set(prof.id, { ...prof, plattform: p });
+  }
+  return [...gesehen.values()];
+}
+async function murmelMelden(req, env) {
+  if (!sbErlaubt(req, env)) return fehler('Nicht erlaubt', 401);
+  const d = await jsonLesen(req);
+  const M = RUHM.murmel;
+  if (!d || !M) return antwort({ ok: false, grund: 'ungueltig' }, 400);
+  const fahrer = await profileVonKonten(env, kontoListe(d.teilnehmer));
+  if (fahrer.length < 2) return antwort({ ok: true, topf: 0, grund: 'allein' });       // allein gerollt: kein Einsatz
+  const seit = new Date(Date.now() - M.pauseSekunden * 1000).toISOString();
+  if (await env.DB.prepare("SELECT 1 FROM spiel_log WHERE spiel = 'murmel' AND zeit > ? LIMIT 1").bind(seit).first())
+    return antwort({ ok: false, grund: 'zu_frueh' });
+  const [sieger] = d.gewinner ? await profileVonKonten(env, kontoListe([d.gewinner])) : [];
+  const gewinner = sieger && fahrer.find((f) => f.id === sieger.id);
+  // Einsatz: nie unter den Beginn des eigenen Levels
+  const bezahlt = new Map(fahrer.map((f) => [f.id, Math.max(0, Math.min(M.einsatz, f.ruhm - RUHM.ruhmFuerLevel(f.level)))]));
+  const topf = [...bezahlt.values()].reduce((a, b) => a + b, 0);
+  await env.DB.prepare('INSERT INTO spiel_log (spiel, zeit, gewinner, verlierer) VALUES (?, ?, ?, ?)').bind('murmel', jetzt(), gewinner ? 1 : 0, fahrer.length - (gewinner ? 1 : 0)).run();
+  const abzug = fahrer.filter((f) => f !== gewinner && bezahlt.get(f.id) > 0)
+    .map((f) => env.DB.prepare('UPDATE profil SET ruhm = ? WHERE id = ?').bind(f.ruhm - bezahlt.get(f.id), f.id));
+  if (abzug.length) await env.DB.batch(abzug);
+  let aufstiege = [];
+  if (gewinner) {
+    // Sieger: eigener Einsatz zurück + die Einsätze der anderen
+    aufstiege = await ruhmBuchen(env, [{ ...gewinner, menge: topf - bezahlt.get(gewinner.id) }], false);
+    if (gewinner.haus) await env.DB.prepare('INSERT INTO haus_ruhm (monat, haus, ruhm) VALUES (?, ?, ?) ON CONFLICT(monat, haus) DO UPDATE SET ruhm = ruhm + excluded.ruhm')
+      .bind(monat(), gewinner.haus, M.hausBonus).run();
+  }
+  // Richtige Wetten (das Overlay schickt nur die Treffer)
+  const wetter = gewinner ? (await profileVonKonten(env, kontoListe(d.wetter))) : [];
+  if (wetter.length) aufstiege = aufstiege.concat(await ruhmBuchen(env, wetter.map((w) => ({ ...w, menge: M.wette })), false));
+  const haus = gewinner && HAEUSER.find((h) => h.id === gewinner.haus);
+  return antwort({ ok: true, topf, gewinner: gewinner ? gewinner.name : null, haus: haus ? haus.name : null, hausBonus: haus ? M.hausBonus : 0,
+    wette: M.wette, wetter: wetter.map((w) => w.name), aufstiege });
+}
+
 // Von Streamer.bot: !wurf – Würfel der Morrígan, einmal pro Stream
 async function wurf(req, env) {
   if (!sbErlaubt(req, env)) return fehler('Nicht erlaubt', 401);
@@ -827,6 +872,7 @@ export default {
       if (req.method === 'POST' && url.pathname === '/pruefung/antwort') return await pruefungAntwort(req, env);
       if (req.method === 'POST' && url.pathname === '/pruefung/ende') return await pruefungEnde(req, env);
       if (req.method === 'POST' && url.pathname === '/spiel') return await spielMelden(req, env);
+      if (req.method === 'POST' && url.pathname === '/murmel') return await murmelMelden(req, env);
       if (req.method === 'POST' && url.pathname === '/wurf') return await wurf(req, env);
       if (req.method === 'POST' && url.pathname === '/prophezeiung') return await prophezeiung(req, env);
       if (req.method === 'GET' && url.pathname === '/reise') return await reiseLesen(env, cors);
