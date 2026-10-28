@@ -37,7 +37,9 @@
 
   // ---------- PixiJS ----------
   const app = new PIXI.Application();
-  await app.init({ backgroundAlpha: 0, resizeTo: window, antialias: true, preference: 'webgl' });
+  // Kantenglättung (MSAA) über das ganze 1080p-Bild kostet in OBS spürbar Grafikleistung;
+  // die Figuren sind Bilder und brauchen sie nicht. Bei Bedarf per ?aa=1 einschalten (28.10.2026).
+  await app.init({ backgroundAlpha: 0, resizeTo: window, antialias: an('aa', false), preference: 'webgl' });
   document.body.appendChild(app.canvas);
   app.ticker.maxFPS = S.fps;
   const welt = new PIXI.Container();
