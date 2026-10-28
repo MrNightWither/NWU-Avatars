@@ -46,6 +46,10 @@ window.NWU_CONFIG = {
   // Flüstern aus dem Westen: ungefähr alle X Minuten (zufällig ±40 %), 0 = aus. Taste W zum Testen.
   fluesternMinuten: 25,
 
+  // Eck-Duelle (28.10.2026): verfeindete Häuser treffen sich an einer Gold-Ecke → kurzer Clash, Verlierer stürzt
+  // und kommt unten durchs Portal zurück. minuten = frühestens so oft (0 = aus), chance = je Begegnung.
+  eckDuell: { minuten: 3, chance: 0.5 },
+
   // Spiele im Overlay. Start per Chat: !rennen, !tauziehen [haus] [haus], !letzter, !schatz, !rabe
   // starter: 'mods' = Streamer und Mods dürfen starten, 'streamer' = nur der Streamer. Tasten zum Testen siehe Anzeige.
   spiele: {

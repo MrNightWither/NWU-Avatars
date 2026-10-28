@@ -500,6 +500,16 @@
     fi.zustandZeit = fi.zustand === 'laufen' ? 3 + Math.random() * 7 : 2.5 + Math.random() * 6;
     if (fi.zustand === 'idle' && Math.random() < 0.3) fi.richtung *= -1;
     if (!fi.lurker && Math.random() < 0.06) huepfen(fi);
+    // Leerlauf (28.10.2026): ab und zu zaubern (Hand hoch, Funken in Hausfarbe) …
+    if (fi.modus === 'rahmen' && fi.zustand === 'idle' && !fi.mod && Math.random() < 0.25) { fi.zauberBis = zeit + fi.zustandZeit; fi.winkenBis = fi.zauberBis; }
+    // … oder zur nahen Gold-Ecke laufen und sich genau darauf setzen
+    if (fi.modus === 'rahmen' && !linien && fi.zustand !== 'laufen' && Math.random() < 0.15) {
+      const e = ecken().find((x) => eckAbstand(fi.s, x) < S.hoehe * 0.9 && eckAbstand(fi.s, x) > 4);
+      if (e !== undefined && !figuren.some((o) => o !== fi && (o.eckSitzen === e || (o.zustand === 'sitzen' && eckAbstand(o.s, e) < 6)))) {
+        let d = norm(e - fi.s); if (d > umfang / 2) d -= umfang;
+        fi.eckSitzen = e; fi.richtung = Math.sign(d) || 1; fi.zustand = 'laufen'; fi.zustandZeit = 8;
+      }
+    }
   }
   const huepfen = (fi) => { if (fi.sprung < 0) fi.sprung = 0; };
 
@@ -767,6 +777,90 @@
     }
   }
 
+  // ---------- Eck-Duelle (28.10.2026, Ideenliste „Haus-Duelle auf den Eckwinkeln“) ----------
+  // Treffen sich zwei wache Figuren verfeindeter Häuser an einer Gold-Ecke des Kamerarahmens: kurzer Clash
+  // (2 Schläge), der Verlierer fliegt vom Rahmen und kommt unten durch ein kleines Portal zurück.
+  // Nur beim Rechteck-Rahmen (nicht NoCam-Linien). Höchstens alle CFG.eckDuell.minuten (Standard 3), 0 = aus.
+  // Testen: ?ecktest (sofort möglich) oder Taste C (erzwingt ein Eck-Duell mit zwei Figuren).
+  let eckDuell = null, eckDuellAb = q.has('ecktest') ? -1 : 45, eckPruefen = 0;
+  const ecken = () => [0, R.w, R.w + R.h, 2 * R.w + R.h];
+  const eckAbstand = (s, e) => { const d = Math.abs(norm(s - e)); return Math.min(d, umfang - d); };
+  const eckWach = (f) => darfDuellieren(f) && f.vorlage.haus && !f.lurker && f.zustand !== 'schlafen' && f.zustand !== 'sitzen' && (f.duellPause || 0) <= zeit;
+  function eckDuellStarten(a, b, ecke) {
+    if (eckDuell || duell || linien || SPIELE.laeuft() || KAMPF.laeuft() || a === b) return false;
+    const abstand = S.hoehe * 0.34;
+    // a kommt von „vor“ der Ecke, b von „hinter“ ihr – sie stehen sich über die Ecke hinweg gegenüber
+    const [vor, nach] = norm(a.s - ecke) > umfang / 2 ? [a, b] : [b, a];
+    for (const [f, seite] of [[vor, -1], [nach, 1]]) {
+      f.modus = 'duell'; f.zielS = norm(ecke + seite * abstand); f.duellRichtung = -seite;
+      f.lurkerVorher = f.lurker; f.lurker = false; f.angekommen = false; f.duellPause = zeit + DUELL_PAUSE;
+    }
+    eckDuell = { a: vor, b: nach, phase: 'anlauf', t: 0, schlaege: 0 };
+    return true;
+  }
+  function eckDuellPruefen(dt) {
+    const minuten = CFG.eckDuell?.minuten ?? 3;
+    if (!minuten || eckDuell || duell || linien || zeit < eckDuellAb || (eckPruefen -= dt) > 0) return;
+    eckPruefen = 1;
+    const zone = S.hoehe * 0.55, da = figuren.filter(eckWach);
+    for (const e of ecken()) {
+      const nah = da.filter((f) => eckAbstand(f.s, e) < zone);
+      for (let i = 0; i < nah.length; i++) for (let j = i + 1; j < nah.length; j++) {
+        if (nah[i].vorlage.haus === nah[j].vorlage.haus || Math.random() > (CFG.eckDuell?.chance ?? 0.5)) continue;
+        if (eckDuellStarten(nah[i], nah[j], e)) { eckDuellAb = zeit + minuten * 60 * (0.7 + Math.random() * 0.6); return; }
+      }
+    }
+  }
+  function eckDuellErzwingen() {
+    const da = figuren.filter((f) => eckWach(f) || (darfDuellieren(f) && f.vorlage.haus));
+    for (let i = 0; i < da.length; i++) for (let j = i + 1; j < da.length; j++) {
+      if (da[i].vorlage.haus !== da[j].vorlage.haus) {
+        const e = ecken().reduce((best, x) => eckAbstand(da[i].s, x) < eckAbstand(da[i].s, best) ? x : best);
+        da[i].duellPause = 0; da[j].duellPause = 0;
+        return eckDuellStarten(da[i], da[j], e);
+      }
+    }
+    return false;
+  }
+  function eckDuellSchritt(dt) {
+    if (!eckDuell) return;
+    const ed = eckDuell, { a, b } = ed;
+    ed.t += dt;
+    const zurueck = (f) => { if (f.modus === 'duell') { f.modus = 'rahmen'; f.lurker = f.lurkerVorher; f.zustandZeit = 2; } };
+    if ([a, b].some((f) => f.entfernen || f.versteckt || (f.modus !== 'duell' && f.modus !== 'sturz' && f.modus !== 'rueckkehr'))) {
+      zurueck(a); zurueck(b); eckDuell = null; return;
+    }
+    if (ed.phase === 'anlauf') {
+      if ((a.angekommen && b.angekommen) || ed.t > 6) { ed.phase = 'kampf'; ed.t = 0; }
+    } else if (ed.phase === 'kampf') {
+      if (ed.t > 0.45) {
+        ed.t = 0;
+        const angreifer = ed.schlaege % 2 ? b : a;
+        angreifer.schlagBis = zeit + 0.28; angreifer.puls = 0.7;
+        const m = { x: (a.root.x + b.root.x) / 2, y: (a.root.y + b.root.y) / 2 };
+        funken(m.x, m.y - S.hoehe * 0.4, 0xffe2a0, 9); funken(m.x, m.y - S.hoehe * 0.4, angreifer.farbe, 7);
+        if (++ed.schlaege >= 2) { ed.phase = 'ende'; ed.t = 0; }
+      }
+    } else if (ed.phase === 'ende' && !ed.verlierer) {
+      const vorteil = Math.max(-0.2, Math.min(0.2, ((a.level || 1) - (b.level || 1)) * 0.02));
+      const sieger = Math.random() < 0.5 + vorteil ? a : b, verlierer = sieger === a ? b : a;
+      ed.verlierer = verlierer;
+      sieger.jubelBis = zeit + 2.5; huepfen(sieger); leuchten(sieger);
+      // Sturz: weg vom Rahmen (nach außen), mit Schwung nach oben, dann Schwerkraft und Drehung
+      const raus = versetzt(0, 0, verlierer.winkel, 1);
+      verlierer.modus = 'sturz'; verlierer.sturz = { vx: raus.x * 160 - verlierer.duellRichtung * 120, vy: -260 + raus.y * 80, dreh: (Math.random() < 0.5 ? -1 : 1) * 7, t: 0 };
+      verlierer.lurker = verlierer.lurkerVorher; verlierer.zustand = 'idle';
+      funken(verlierer.root.x, verlierer.root.y, verlierer.farbe, 10);
+      const t = new PIXI.Text({ text: '⚔', style: duellStil });
+      t.anchor.set(0.5);
+      const p = versetzt(sieger.root.x, sieger.root.y, sieger.winkel, S.hoehe * 1.3);
+      t.position.set(p.x, p.y);
+      effekt(t, { vy: -14, leben: 2, max: 2 });
+    } else if (ed.phase === 'ende' && ed.t > 2.4) {
+      zurueck(a); zurueck(b); eckDuell = null;
+    }
+  }
+
   // ---------- Morrígans Prüfung (aus den Bot-Nachrichten von Streamer.bot) ----------
   // „🔮 Morrígans Prüfung: Frage — A) … · B) … · C) … — Antworte mit !a … (45 Sekunden)“
   // „🔮 @Name hat Morrígans Prüfung bestanden! …“ · „🔮 Die Zeit ist um. Niemand … Richtig war B) …“
@@ -820,14 +914,44 @@
     try {
       const d = await (await fetch(`${S.api.replace(/\/$/, '')}/pokal`, { credentials: 'omit' })).json();
       siegerHaus = (d.vormonat && d.vormonat.sieger) || null;
+      if (!q.get('fuehrend')) flaggeSetzen(d.fuehrend || null);
     } catch (e) { /* nächstes Mal */ }
   }
+
+  // ---------- Gilden-Wappen (28.10.2026): das im Monat führende Haus ----------
+  // Sein Wappen weht als Flagge rechts auf dem Portal-Terrain, seine Figuren tragen einen leisen Gold-Glanz.
+  // Die Krone (oben) bleibt dem Sieger des Vormonats. Testen ohne Worker: ?fuehrend=haus3
+  let fuehrendHaus = null;
+  const flagge = new PIXI.Container();
+  const flaggenMast = new PIXI.Graphics().rect(-2, -118, 4, 118).fill(0x6b5420).rect(-2, -118, 1.5, 118).fill(0xd8bb6a).circle(0, -121, 4.5).fill(0xe8c96d);
+  const flaggenTuch = new PIXI.Container();
+  flaggenTuch.position.set(2, -114);
+  flagge.addChild(flaggenMast, flaggenTuch);
+  flagge.visible = false;
+  // nicht ins Terrain selbst: kampf.js räumt es beim Weltwechsel komplett ab – die Flagge fährt nur mit
+  terrainEbene.addChild(flagge);
+  function flaggeSetzen(haus) {
+    if (haus === fuehrendHaus) return;
+    fuehrendHaus = haus;
+    flaggenTuch.removeChildren().forEach((c) => c.destroy());
+    flagge.visible = false;
+    if (!haus) return;
+    texHolen(`../assets/wappen-${haus}.webp`).then((t) => {
+      if (!t || fuehrendHaus !== haus) return;
+      const sp = new PIXI.Sprite(t); sp.scale.set(64 / t.height); sp.anchor.set(0, 0);
+      flaggenTuch.addChild(sp);
+      flagge.visible = true;
+    });
+  }
+  if (q.get('fuehrend')) flaggeSetzen(q.get('fuehrend'));
   pokalLaden();
   setInterval(pokalLaden, 10 * 60 * 1000);
 
   // ---------- Flüstern aus dem Westen: seltenes Zeichen der verborgenen Häuser (Raben, Dornen) ----------
   // Am linken Bildrand: Nebel, zwei violette Augen und entweder ein Rabe, der davonfliegt, oder eine Dornenranke.
   const laufende = [];                      // kleine Abläufe mit eigener update(dt)-Funktion
+  // Flagge des führenden Hauses (oben, Gilden-Wappen) weht leicht
+  laufende.push((dt) => { flagge.position.set(terrain.x + TERRAIN.breite - 70, terrain.y + 2); flaggenTuch.skew.y = Math.sin(zeit * 2.1) * 0.06; flaggenTuch.scale.x = 1 - Math.abs(Math.sin(zeit * 1.3)) * 0.05; return true; });
   const FLUESTERN = (CFG.fluesternMinuten ?? 25) * 60;
   let fluesterIn = FLUESTERN * (0.6 + Math.random() * 0.8);
   // Rabe: Körper, Kopf mit Schnabel, Schwanz, zwei Flügel (schlagen über scale.y)
@@ -1052,6 +1176,8 @@
     KAMPF.schritt(dt);
     duellSchritt(dt);
     autoDuell(dt);
+    eckDuellSchritt(dt);
+    eckDuellPruefen(dt);
     SPIELE.schritt(dt);
     for (let i = laufende.length - 1; i >= 0; i--) if (!laufende[i](dt)) laufende.splice(i, 1);
     if (FLUESTERN > 0 && (fluesterIn -= dt) <= 0) { fluestern(); fluesterIn = FLUESTERN * (0.6 + Math.random() * 0.8); }
@@ -1113,6 +1239,11 @@
         } else if (fi.g.laufen > 0.05) {
           fi.s += fi.richtung * fi.tempo * dt * fi.g.laufen;
         }
+        // auf der Ecke angekommen → hinsetzen (siehe zustandWechseln)
+        if (fi.eckSitzen !== undefined && fi.eckSitzen !== null) {
+          if (fi.modus !== 'rahmen' || fi.zustand !== 'laufen') fi.eckSitzen = null;
+          else if (eckAbstand(fi.s, fi.eckSitzen) < 3) { fi.s = fi.eckSitzen; fi.eckSitzen = null; fi.zustand = 'sitzen'; fi.zustandZeit = 6 + Math.random() * 6; }
+        }
         const p = aufPfad(fi.s);
         if (linien) {     // Linienwechsel = Portal: Funken und sofort richtig herum
           const li = linieBei(fi.s);
@@ -1122,6 +1253,18 @@
         fi.winkel = winkelLerp(fi.winkel, p.a, Math.min(1, dt * 6));
         fi.root.position.set(p.x, p.y);
         fi.modusAlpha = lerp(fi.modusAlpha, 1, Math.min(1, dt * 3));
+      } else if (fi.modus === 'sturz') {
+        // Eck-Duell verloren: im Bogen vom Rahmen fallen, ausblenden, dann unten durchs Portal zurück
+        const st = fi.sturz;
+        st.t += dt; st.vy += 1500 * dt;
+        fi.root.position.set(fi.root.x + st.vx * dt, fi.root.y + st.vy * dt);
+        fi.winkel += st.dreh * dt;
+        fi.modusAlpha = Math.max(0, 1 - Math.max(0, st.t - 0.7) / 0.5);
+        if (st.t > 1.2) {
+          fi.sturz = null;
+          fi.s = norm(R.w + R.h + R.w * (0.2 + Math.random() * 0.6));     // irgendwo an der Unterkante
+          fi.modus = 'rueckkehr'; fi.wartet = 1.2 + Math.random() * 0.8; fi.modusAlpha = 0;
+        }
       } else if (fi.modus === 'ins-portal') {
         // vom Rahmen ins Portal "gezogen": funkeln und verblassen
         fi.wartet -= dt;
@@ -1175,6 +1318,19 @@
       fi.root.scale.set(0.6 + 0.4 * Math.max(0, Math.min(1, fi.einblenden)) * (0.7 + 0.3 * fi.modusAlpha));
       fi.root.rotation = fi.winkel;
       fi.krone.visible = !fi.ungebunden && !fi.diadem && fi.vorlage.haus === siegerHaus;
+      // Gold-Glanz für das im Monat führende Haus (leise pulsierend hinter der Figur)
+      const fuehrt = !!fuehrendHaus && !fi.ungebunden && fi.vorlage.haus === fuehrendHaus;
+      if (fuehrt && !fi.goldGlanz) {
+        fi.goldGlanz = new PIXI.Sprite(T.glanz); fi.goldGlanz.anchor.set(0.5); fi.goldGlanz.tint = 0xe8c96d;
+        fi.goldGlanz.scale.set(S.hoehe / 38, S.hoehe / 28); fi.goldGlanz.y = -S.hoehe * 0.5;
+        fi.root.addChildAt(fi.goldGlanz, 0);
+      }
+      if (fi.zauberBis > zeit && !S.sparmodus && fi.modus === 'rahmen' && (fi.zauberTakt = (fi.zauberTakt || 0) - dt) <= 0) {
+        fi.zauberTakt = 0.22;
+        const hand = versetzt(fi.root.x, fi.root.y, fi.winkel, S.hoehe * (0.9 + Math.random() * 0.25));
+        funken(hand.x + (Math.random() - 0.5) * S.hoehe * 0.3, hand.y, fi.farbe, 2);
+      }
+      if (fi.goldGlanz) { fi.goldGlanz.visible = fuehrt; if (fuehrt) fi.goldGlanz.alpha = 0.45 + 0.2 * Math.sin(zeit * 1.8 + fi.versatz); }
       if (fi.zeichen) fi.zeichen.alpha = 0.55 + 0.35 * Math.sin(zeit * 2.2 + fi.versatz);
       if (fi.diadem) fi.diadem.y = fi.koerper.y - S.hoehe * 0.93 + (fi.koerper.pivot.y || 0) * fi.basis;
       if (fi.krone.visible) fi.krone.y = fi.koerper.y - S.hoehe * 0.95 + (fi.koerper.pivot.y || 0) * fi.basis;
@@ -1241,7 +1397,7 @@
       `<b>NWU Avatare</b> · ${Math.round(app.ticker.FPS)} FPS · ${da.filter((f) => !f.versteckt).length}/${da.length} Figuren · Chat: ${chatStatus}` +
       `${S.sparmodus ? ' · <b>Sparmodus</b>' : ''}${EV.phase !== 'aus' ? ' · Portal: ' + EV.phase + (KAMPF.welt() ? ' (' + KAMPF.welt().kurz + ')' : '') : ''}` +
       `${KAMPF.stand() ? ' · Kampf: ' + KAMPF.stand().phase : ''}` +
-      `<div class="klein">T Test-Chatter · M Nachricht · N !lurk · K Kreaturen-Kampf (Shift+K Boss) · R Raid (Shift+R Raid-Boss) · P Portal · U Level-Up · G Gruppenbild · J Jubeln · D Duell · F Haus-Ruf · W Westen · B Rabe · E Rennen · Z Tauziehen · L Letzter steht · X Schatz · O Seelen-Ernte · Q Würfel · V Fluch · S Sparmodus · 1/2/3 Demo · H Anzeige</div>`;
+      `<div class="klein">T Test-Chatter · M Nachricht · N !lurk · K Kreaturen-Kampf (Shift+K Boss) · R Raid (Shift+R Raid-Boss) · P Portal · U Level-Up · G Gruppenbild · J Jubeln · D Duell · C Eck-Duell · F Haus-Ruf · W Westen · B Rabe · E Rennen · Z Tauziehen · L Letzter steht · X Schatz · O Seelen-Ernte · Q Würfel · V Fluch · S Sparmodus · 1/2/3 Demo · H Anzeige</div>`;
   }
 
   let testNr = 0;
@@ -1280,6 +1436,7 @@
     else if (k === 'o') SPIELE.ernte(4);
     else if (k === 'q') { const f = zufallsFigur(); if (f && !f.ungebunden) SPIELE.wurfZeigen(f, 1 + Math.floor(Math.random() * 6)); }
     else if (k === 'f') { const f = zufallsFigur(); if (f) hausRuf(f); }
+    else if (k === 'c') eckDuellErzwingen();
     else if (k === 'd') { const da = figuren.filter(darfDuellieren); if (da.length > 1) duellStarten(da[0], da[1 + Math.floor(Math.random() * (da.length - 1))]); }
     else if (k === 'j') figuren.forEach((f, i) => setTimeout(() => { huepfen(f); f.jubelBis = zeit + 2.5; }, i * 60));
     else if (k === 's') { S.sparmodus = !S.sparmodus; sichtbarkeit(); }
@@ -1290,7 +1447,8 @@
   });
 
   demoSetzen(S.demo);
-  window.NWU = { S, figuren, chatter, hausRuf, sammeln, fluestern, formation, portalStarten, portalBeenden, levelUp, EV, demoSetzen, figurErzeugen, VORLAGEN, duellStarten, duellLaeuft: () => !!duell, autoDuell,
+  window.NWU = { S, figuren, chatter, hausRuf, sammeln, fluestern, formation, portalStarten, portalBeenden, levelUp, EV, demoSetzen, figurErzeugen, VORLAGEN, duellStarten, duellLaeuft: () => !!duell, autoDuell, eckDuellErzwingen, eckDuellLaeuft: () => !!eckDuell,
+    ticker: app.ticker,   // für Tests im Zeitraffer (ticker.update(ms)), z. B. wenn der Browser im Hintergrund pausiert
     rabeStarten: SPIELE.rabe, rennenStarten: SPIELE.rennen, tauziehenStarten: SPIELE.tauziehen, letzterStarten: SPIELE.letzter,
     kampfStarten: portalStarten, kampfStand: KAMPF.stand, kampfEingabe: KAMPF.eingabe, kampfBefehl: KAMPF.befehl,
     schatzStarten: SPIELE.schatz, ernteStarten: SPIELE.ernte, wurfZeigen: SPIELE.wurfZeigen, spielLaeuft: () => (SPIELE.laeuft() ? SPIELE.laeuft().art : null), letzteMeldung: SPIELE.letzteMeldung };
