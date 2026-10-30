@@ -28,14 +28,16 @@ window.NWU_KAMPF = function (K) {
   const ansageStil = new PIXI.TextStyle(ANSAGE);
   const plusStil = new PIXI.TextStyle({ fontFamily: 'Georgia, serif', fontSize: 19, fontWeight: 'bold', fill: 0xe8c96d, stroke: { color: 0x120d06, width: 3 } });
   const nameStil = new PIXI.TextStyle({ fontFamily: 'Georgia, serif', fontSize: 17, fontWeight: 'bold', fill: 0xf1e9d6, stroke: { color: 0x120d06, width: 3 } });
+  const ansageStile = new Map();
   function ansage(text, dauer, farbe) {
-    const stil = farbe ? new PIXI.TextStyle({ ...ANSAGE, fill: farbe }) : ansageStil;
+    if (farbe && !ansageStile.has(farbe)) ansageStile.set(farbe, new PIXI.TextStyle({ ...ANSAGE, fill: farbe }));
+    const stil = farbe ? ansageStile.get(farbe) : ansageStil;
     const t = new PIXI.Text({ text, style: stil });
     t.anchor.set(0.5); t.position.set(TERRAIN.x + TERRAIN.breite / 2, terrain.y - 190);
     effekt(t, { vy: -6, leben: dauer || 2.4, max: dauer || 2.4 });
   }
   function ueberFigur(fi, text) {
-    const t = new PIXI.Text({ text, style: plusStil });
+    const t = new PIXI.BitmapText({ text, style: plusStil });     // 30.10.2026: ein Zeichensatz für alle Ruhm-Zahlen
     const p = versetzt(fi.root.x, fi.root.y, fi.winkel, S.hoehe * 1.3);
     t.anchor.set(0.5); t.position.set(p.x, p.y);
     effekt(t, { vy: -16, leben: 2.6, max: 2.6 });
@@ -372,11 +374,14 @@ window.NWU_KAMPF = function (K) {
   function leisteZeichnen(c) {
     const b = c.boss ? 150 : Math.max(34, c.h * 0.7), y = -c.h - (c.def.bauart === 'schweber' ? c.h * 0.2 : 0) - (c.boss ? 14 : 8);
     const anteil = Math.max(0, c.hp / c.max), hoch = c.boss ? 9 : 6;
+    c.leiste.alpha = c.tot ? 0 : 1;
+    if (c.schild) { c.schild.y = y - 4; c.schild.alpha = c.tot ? 0 : 1; }
+    const stand = Math.round(anteil * 300) + (c.tot ? 't' : '');      // 30.10.2026: nur bei Änderung neu zeichnen, nicht jedes Bild
+    if (c.leisteStand === stand) return;
+    c.leisteStand = stand;
     c.leiste.clear().roundRect(-b / 2 - 1.5, y - 1.5, b + 3, hoch + 3, 3).fill({ color: 0x0a0810, alpha: 0.85 })
       .rect(-b / 2, y, b * anteil, hoch).fill(anteil > 0.3 ? 0xb3122e : 0xff5a3a);
     if (c.boss) c.leiste.roundRect(-b / 2 - 1.5, y - 1.5, b + 3, hoch + 3, 3).stroke({ width: 1.2, color: 0xc9a84c });
-    c.leiste.alpha = c.tot ? 0 : 1;
-    if (c.schild) { c.schild.y = y - 4; c.schild.alpha = c.tot ? 0 : 1; }
   }
 
   // ---------- Der Riss, aus dem sie kommen ----------
@@ -392,9 +397,12 @@ window.NWU_KAMPF = function (K) {
   // ---------- Ablauf ----------
   let geplant = null, kampf = null;
   const geschosse = [];
-  const kaempfer = () => figuren.filter((f) => f.modus === 'terrain' && !f.entfernen && f.root && !f.versteckt);
-  const lebende = () => (kampf ? kampf.kreaturen.filter((c) => !c.tot && !c.weg) : []);
-  const kaempferSortiert = () => kaempfer().sort((a, b) => (b.mod - a.mod) || ((b.level || 1) - (a.level || 1)) || String(a.id || a.name).localeCompare(String(b.id || b.name)));
+  // 30.10.2026: Die Listen werden pro Bild nur einmal gebaut – vorher mehrmals pro Bild gefiltert und neu sortiert.
+  // Im selben Bild gelten sie als fest (stirbt eine Kreatur mitten im Bild, merken es die Listen ein Bild später).
+  const proBild = (rechnen) => { let stand = NaN, wert = null; return () => { const z = zeit(); if (z !== stand) { stand = z; wert = rechnen(); } return wert; }; };
+  const kaempfer = proBild(() => figuren.filter((f) => f.modus === 'terrain' && !f.entfernen && f.root && !f.versteckt));
+  const lebende = proBild(() => (kampf ? kampf.kreaturen.filter((c) => !c.tot && !c.weg) : []));
+  const kaempferSortiert = proBild(() => kaempfer().slice().sort((a, b) => (b.mod - a.mod) || ((b.level || 1) - (a.level || 1)) || String(a.id || a.name).localeCompare(String(b.id || b.name))));
 
   // vor dem Öffnen des Portals: Welt wählen und aufbauen (avatare.js färbt damit das Portal)
   function vorbereiten(opt) {

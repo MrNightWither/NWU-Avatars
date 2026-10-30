@@ -1166,11 +1166,28 @@
     }
   }
 
+  // ---------- Auto-Sparmodus (30.10.2026) ----------
+  // Fällt die Bildrate im Portal länger als 3 s unter 70 % (z. B. OBS im Hintergrund neben dem Spiel), schaltet der
+  // Sparmodus von selbst an und nach dem Portal wieder aus – nur, wenn er nicht von Hand an war (Taste S).
+  const AUTO_SPAR_GRENZE = 0.7, AUTO_SPAR_SEKUNDEN = 3;
+  let autoSpar = false, langsamSeit = 0;
+  function autoSparPruefen(dt, fps) {
+    if (EV.phase === 'aus') {
+      if (autoSpar) { autoSpar = false; S.sparmodus = false; sichtbarkeit(); }
+      langsamSeit = 0;
+      return;
+    }
+    if (S.sparmodus) return;
+    langsamSeit = fps < S.fps * AUTO_SPAR_GRENZE ? langsamSeit + dt : 0;
+    if (langsamSeit > AUTO_SPAR_SEKUNDEN) { autoSpar = true; S.sparmodus = true; sichtbarkeit(); }
+  }
+
   // ---------- Hauptschleife ----------
   let sichtTimer = 0;
   app.ticker.add((ticker) => {
     const dt = Math.min(0.1, ticker.deltaMS / 1000);
     zeit += dt;
+    autoSparPruefen(dt, ticker.FPS);
     portalAblauf(dt);
     raidPruefen();
     KAMPF.schritt(dt);
@@ -1439,7 +1456,7 @@
     else if (k === 'c') eckDuellErzwingen();
     else if (k === 'd') { const da = figuren.filter(darfDuellieren); if (da.length > 1) duellStarten(da[0], da[1 + Math.floor(Math.random() * (da.length - 1))]); }
     else if (k === 'j') figuren.forEach((f, i) => setTimeout(() => { huepfen(f); f.jubelBis = zeit + 2.5; }, i * 60));
-    else if (k === 's') { S.sparmodus = !S.sparmodus; sichtbarkeit(); }
+    else if (k === 's') { S.sparmodus = !S.sparmodus; autoSpar = false; sichtbarkeit(); }
     else if (k === '1') demoSetzen(4);
     else if (k === '2') demoSetzen(12);
     else if (k === '3') demoSetzen(30);
